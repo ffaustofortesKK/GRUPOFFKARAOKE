@@ -1,0 +1,254 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
+
+import {
+  adminAprovarPrestador,
+  adminApagarPrestador,
+  adminDados,
+  adminDecidirReforco,
+  adminEstado,
+  adminLogin,
+  adminLogout,
+} from "@/lib/ffk.functions";
+import { Cabecalho, Marquee, Painel, formatarTempo } from "@/components/ffk/shell";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "FFKaraoke — Painel do Administrador" },
+      {
+        name: "description",
+        content: "Área do administrador FFKaraoke: aprovar prestadores e reforços de tempo.",
+      },
+      { property: "og:title", content: "FFKaraoke — Painel do Administrador" },
+      {
+        property: "og:description",
+        content: "Área do administrador FFKaraoke: aprovar prestadores e reforços de tempo.",
+      },
+    ],
+  }),
+  component: AdminPage,
+});
+
+function AdminPage() {
+  const estadoFn = useServerFn(adminEstado);
+  const { data: estado, isLoading } = useQuery({
+    queryKey: ["admin-estado"],
+    queryFn: () => estadoFn(),
+  });
+
+  return (
+    <main className="mx-auto min-h-screen max-w-5xl px-4 pb-20 pt-8">
+      <Cabecalho titulo="FFKaraoke · Administração" subtitulo="Gestão de acessos ao programa FFK" />
+      {isLoading ? (
+        <p className="text-muted-foreground">A carregar…</p>
+      ) : estado?.logged ? (
+        <AdminDashboard />
+      ) : (
+        <LoginForm />
+      )}
+      <Marquee texto="🎤 FF KARAOKE CLOUD · GESTÃO DE PRESTADORES · 921204050" />
+    </main>
+  );
+}
+
+function LoginForm() {
+  const queryClient = useQueryClient();
+  const loginFn = useServerFn(adminLogin);
+  const [password, setPassword] = useState("");
+  const [erro, setErro] = useState("");
+
+  const mutation = useMutation({
+    mutationFn: () => loginFn({ data: { password } }),
+    onSuccess: (r) => {
+      if (r.ok) {
+        setErro("");
+        void queryClient.invalidateQueries();
+      } else {
+        setErro(r.erro ?? "Erro ao entrar."); }
+    },
+  });
+
+  return (
+    <div className="mx-auto max-w-md space-y-4">
+      <Painel titulo="🔒 Área restrita">
+        <form
+          className="space-y-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            mutation.mutate();
+          }}
+        >
+          <Input
+            type="password"
+            placeholder="Palavra-passe de administrador"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          {erro ? <p className="text-sm text-destructive">{erro}</p> : null}
+          <Button type="submit" className="w-full" disabled={mutation.isPending}>
+            Entrar
+          </Button>
+        </form>
+      </Painel>
+      <p className="text-center text-sm text-muted-foreground">
+        É prestador?{" "}
+        <Link to="/registo" className="text-primary underline">
+          Faça aqui o seu registo
+        </Link>
+        .
+      </p>
+    </div>
+  );
+}
+
+function AdminDashboard() {
+  const queryClient = useQueryClient();
+  const dadosFn = useServerFn(adminDados);
+  const aprovarFn = useServerFn(adminAprovarPrestador);
+  const apagarFn = useServerFn(adminApagarPrestador);
+  const reforcoFn = useServerFn(adminDecidirReforco);
+  const logoutFn = useServerFn(adminLogout);
+
+  const { data } = useQuery({
+    queryKey: ["admin-dados"],
+    queryFn: () => dadosFn(),
+    refetchInterval: 5000,
+  });
+
+  const recarregar = () => void queryClient.invalidateQueries();
+
+  const aprovar = useMutation({
+    mutationFn: (v: { token: string; approved: boolean }) => aprovarFn({ data: v }),
+    onSuccess: recarregar,
+  });
+  const apagar = useMutation({
+    mutationFn: (token: string) => apagarFn({ data: { token } }),
+    onSuccess: recarregar,});
+  const decidir = useMutation({
+    mutationFn: (v: { id: string; aprovar: boolean }) => reforcoFn({ data: v }),
+    onSuccess: recarregar,
+  });
+  const sair = useMutation({ mutationFn: () => logoutFn(), onSuccess: recarregar });
+
+  const pendentes = (data?.prestadores ?? []).filter((p) => !p.approved);
+  const ativos = (data?.prestadores ?? []).filter((p) => p.approved);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-end">
+        <Button variant="outline" onClick={() => sair.mutate()}>
+          Terminar sessão
+        </Button>
+      </div>
+
+      <Painel titulo={`⏳ Registos pendentes (${pendentes.length})`}>
+        {pendentes.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Nenhum registo à espera de aprovação.</p>
+        ) : (
+          <ul className="space-y-3">
+            {pendentes.map((p) => (
+              <li key={p.token} className="rounded-md border border-border p-3">
+                <p className="font-bold text-primary">{p.nome}</p>
+                <p className="text-xs text-muted-foreground">
+                  Telefone: {p.telefone} · Plano: {p.plano} · Token: {p.token}
+                </p>
+                <div className="mt-2 flex gap-2">
+                  <Button size="sm" onClick={() => aprovar.mutate({ token: p.token, approved: true })}>
+                    ✅ Aprovar
+                  </Button>
+                  <Button size="sm" variant="destructive" onClick={() => apagar.mutate(p.token)}>
+                    ❌ Recusar
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Painel>
+
+      <Painel titulo={`⚡ Reforços de tempo pendentes (${data?.reforcos.length ?? 0})`}>
+        {(data?.reforcos ?? []).length === 0 ? (
+          <p className="text-sm text-muted-foreground">Nenhum pedido de reforço neste momento.</p>
+        ) : (
+          <ul className="space-y-3">
+            {data?.reforcos.map((r) => (
+              <li key={r.id} className="rounded-md border border-border p-3">
+                <p className="font-bold text-primary">{r.nome_prestador}</p>
+                <p className="text-xs text-muted-foreground">
+                  Referência: {r.referencia} · Duração: {r.plano} · Token: {r.provider_token}
+                </p>
+                <div className="mt-2 flex gap-2">
+                  <Button size="sm" onClick={() => decidir.mutate({ id: r.id, aprovar: true })}>
+                    ✅ Aprovar reforço
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => decidir.mutate({ id: r.id, aprovar: false })}
+                  >
+                    ❌ Recusar</Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Painel>
+
+      <Painel titulo={`🎤 Prestadores ativos (${ativos.length})`}>
+        {ativos.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Ainda não há prestadores aprovados.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="text-primary">
+                <tr>
+                  <th className="py-2">Prestador</th>
+                  <th>Plano</th>
+                  <th>Tempo restante</th>
+                  <th>Painel</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {ativos.map((p) => (
+                  <tr key={p.token} className="border-t border-border">
+                    <td className="py-2 font-bold">{p.nome}</td>
+                    <td>{p.plano}</td>
+                    <td className={p.segundos_restantes <= 1800 ? "text-destructive" : ""}>
+                      {formatarTempo(p.segundos_restantes)}
+                    </td>
+                    <td>
+                      <Link to="/p/$token" params={{ token: p.token }} className="text-primary underline">
+                        abrir
+                      </Link>
+                    </td>
+                    <td className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => aprovar.mutate({ token: p.token, approved: false })}
+                        >
+                          Suspender
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => apagar.mutate(p.token)}>
+                          Apagar
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Painel>
+    </div>
+  );
+}
+
+ESSE É O FICHEIRO NOVO ONDE NA QUAL NAO CONSIGO ENCONTRAR A SENHA SO adm
