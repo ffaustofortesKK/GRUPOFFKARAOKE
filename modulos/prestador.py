@@ -1,45 +1,91 @@
 import streamlit as st
 import uuid
-import time
 
 def render():
-    st.title("🎤 Área do Prestador - FFKaraoke")
-    st.write("Inscreva-se ou aceda ao seu painel de controlo.")
-    st.divider()
+    # Injetar CSS específico para o efeito do círculo tracejado e moldura dourada
+    st.markdown("""
+        <style>
+        .card-container {
+            border: 2px solid #eab308;
+            border-radius: 12px;
+            padding: 40px;
+            background-color: #09090b;
+            text-align: center;
+            color: #fafafa;
+            margin-top: 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loader-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 30px 0;
+        }
+        .dashed-circle {
+            width: 100px;
+            height: 100px;
+            border: 4px dashed #eab308;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: spin 6s linear infinite;
+        }
+        .mic-icon {
+            font-size: 40px;
+            animation: spin 6s linear infinite reverse; /* Mantém o microfone direito enquanto o círculo roda */
+        }
+        </style>
+    """, unsafe_allow_html=True)
 
     # Verifica se já existe um identificador guardado na sessão
     prestador_id = st.session_state.get("prestador_id_sessao", None)
 
     if prestador_id:
-        # Procurar o prestador na base de dados pelo ID/token interno
         prestador = next((p for p in st.session_state.prestadores if p["token"] == prestador_id), None)
         
         if not prestador:
-            # Se foi apagado ou recusado pelo admin
             st.session_state.prestador_id_sessao = None
             st.rerun()
         
         if not prestador["approved"]:
-            # ESTADO DE ESPERA (LOADING COM CÍRCULO / SPINNER)
-            st.markdown("---")
-            with st.spinner("⏳ Pedido submetido com sucesso! A aguardar a aprovação do Administrador... Por favor, aguarde."):
-                time.sleep(2)
+            # ESTADO DE ESPERA EXATAMENTE COMO NA IMAGEM
+            st.markdown("""
+                <div class="card-container">
+                    <h1 style="color: #eab308; font-size: 28px; margin-bottom: 10px;">Cadastramento do Prestador</h1>
+                    <p style="color: #a1a1aa; font-size: 14px; margin-bottom: 30px;">
+                        Preencha os seus dados, indique o estabelecimento e escolha o tempo pretendido para solicitar o seu acesso.
+                    </p>
+                    <div class="loader-container">
+                        <div class="dashed-circle">
+                            <div class="mic-icon">🎤</div>
+                        </div>
+                    </div>
+                    <h3 style="color: #fafafa; font-size: 20px; margin-top: 20px;">Aguardando Aprovação</h3>
+                    <p style="color: #d4d4d8; font-size: 14px; margin-top: 10px;">
+                        O seu registo foi enviado com sucesso e está a aguardar a validação do Administrador.
+                    </p>
+                    <p style="color: #71717a; font-size: 13px; margin-top: 5px;">
+                        Assim que for aprovado, esta página atualizar-se-á automaticamente.
+                    </p>
+                </div>
+            """, unsafe_allow_html=True)
             
-            st.warning("⚠️ O seu pedido está a ser analisado pela administração.")
-            
-            col_bt1, col_bt2 = st.columns([2, 8])
-            with col_bt1:
-                if st.button("🔄 Atualizar Estado"):
+            st.write("")
+            col_b1, col_b2, col_b3 = st.columns([2, 2, 2])
+            with col_b2:
+                if st.button("🔄 Verificar Aprovação"):
                     st.rerun()
-            with col_bt2:
-                if st.button("❌ Cancelar / Voltar ao Registo"):
-                    # Remove o pedido pendente para permitir novo registo
+                if st.button("❌ Cancelar / Tentar Novamente"):
                     st.session_state.prestadores = [x for x in st.session_state.prestadores if x["token"] != prestador_id]
                     st.session_state.prestador_id_sessao = None
                     st.rerun()
                 
         else:
-            # APROVADO: Abre o campo de trabalho para o prestador
+            # APROVADO: Painel de trabalho
             st.success(f"🎉 Pedido Aprovado! Bem-vindo ao painel, {prestador['nome']}.")
             st.markdown("---")
             st.subheader("🔗 Os seus Links de Trabalho")
@@ -59,8 +105,15 @@ def render():
                 st.rerun()
                 
     else:
-        # APENAS O FORMULÁRIO DE REGISTO (SEM ABAS DE TOKEN)
-        st.subheader("📝 Formulário de Inscrição de Prestador")
+        # FORMULÁRIO DE REGISTO
+        st.markdown("""
+            <div style="text-align: center; margin-bottom: 25px;">
+                <h1 style="color: #eab308; font-size: 28px;">Cadastramento do Prestador</h1>
+                <p style="color: #a1a1aa; font-size: 14px;">
+                    Preencha os seus dados, indique o estabelecimento e escolha o tempo pretendido para solicitar o seu acesso.
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
         
         with st.form("form_registo_prestador"):
             nome_p = st.text_input("Nome Completo")
@@ -91,9 +144,7 @@ def render():
                         "segundos_restantes": segundos_atribuidos
                     })
                     
-                    # Guarda a sessão e força o ecrã a entrar no modo de espera (loading)
                     st.session_state.prestador_id_sessao = novo_id
-                    st.success("Pedido submetido com sucesso!")
                     st.rerun()
                 else:
                     st.error("Por favor, preencha todos os campos obrigatórios.")
