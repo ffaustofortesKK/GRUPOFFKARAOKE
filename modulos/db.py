@@ -6,14 +6,18 @@ import os
 def _inicializar_firebase():
     if not firebase_admin._apps:
         try:
-            # Caminho absoluto para garantir que encontra o ficheiro JSON na raiz
-            json_path = os.path.join(os.getcwd(), "serviceAccountKey.json")
+            # Procura o ficheiro na pasta atual do projeto
+            json_path = "serviceAccountKey.json"
+            if not os.path.exists(json_path):
+                # Tenta procurar pelo nome que o utilizador possa ter guardado
+                json_path = os.path.join(os.getcwd(), "serviceAccountKey.json")
+                
             cred = credentials.Certificate(json_path)
             firebase_admin.initialize_app(cred, {
                 'databaseURL': 'https://grupoffkaraoke-default-rtdb.firebaseio.com/'
             })
         except Exception as e:
-            st.error(f"Erro crítico ao inicializar o Firebase: {e}")
+            st.error(f"Erro crítico ao inicializar o Firebase: Certifique-se de que o ficheiro 'serviceAccountKey.json' está na pasta raiz do projeto. Detalhe: {e}")
 
 def obter_prestadores():
     _inicializar_firebase()
@@ -23,7 +27,7 @@ def obter_prestadores():
         if data:
             return list(data.values())
     except Exception as e:
-        st.error(f"Erro ao ler do Firebase: {e}")
+        pass
     return []
 
 def guardar_prestador(prestador_dict):
