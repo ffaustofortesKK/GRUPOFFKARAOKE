@@ -1,6 +1,6 @@
 import streamlit as st
 import uuid
-from modulos.db import obter_prestadores, guardar_prestador, remover_prestador
+from modulos.db import obter_prestadores, guardar_prestador
 
 def render():
     st.markdown("""
@@ -48,10 +48,12 @@ def render():
         prestador = next((p for p in prestadores if p["token"] == prestador_id), None)
         
         if not prestador:
+            # Se por algum motivo o ID guardado não existir na BD, limpa a sessão
             st.session_state.prestador_id_sessao = None
             st.rerun()
         
-        if not prestador["approved"]:
+        if not prestador.get("approved", False):
+            # Ecrã de espera com o círculo a rodar e botão logo abaixo
             st.markdown("""
                 <div class="card-container">
                     <h1 style="color: #eab308; font-size: 28px; margin-bottom: 10px;">Cadastramento do Prestador</h1>
@@ -80,6 +82,7 @@ def render():
                     st.rerun()
                 
         else:
+            # Aprovado com sucesso
             st.success(f"🎉 Pedido Aprovado! Bem-vindo ao painel, {prestador['nome']}.")
             st.markdown("---")
             st.subheader("🔗 Os seus Links de Trabalho")
@@ -99,6 +102,7 @@ def render():
                 st.rerun()
                 
     else:
+        # Formulário inicial de submissão
         st.markdown("""
             <div style="text-align: center; margin-bottom: 25px;">
                 <h1 style="color: #eab308; font-size: 28px;">Cadastramento do Prestador</h1>
@@ -137,9 +141,10 @@ def render():
                         "segundos_restantes": segundos_atribuidos
                     }
                     
-                    # Guarda diretamente no Firebase Realtime Database
+                    # Salva diretamente no Firebase
                     guardar_prestador(novo_prestador)
                     
+                    # Guarda a sessão local do prestador e atualiza
                     st.session_state.prestador_id_sessao = novo_id
                     st.rerun()
                 else:
