@@ -36,7 +36,7 @@ def render():
         }
         .mic-icon {
             font-size: 40px;
-            animation: spin 6s linear infinite reverse; /* Mantém o microfone direito enquanto o círculo roda */
+            animation: spin 6s linear infinite reverse;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -52,7 +52,7 @@ def render():
             st.rerun()
         
         if not prestador["approved"]:
-            # ESTADO DE ESPERA EXATAMENTE COMO NA IMAGEM
+            # ESTADO DE ESPERA COM O BOTÃO INTEGRADO DENTRO DO BLOCO
             st.markdown("""
                 <div class="card-container">
                     <h1 style="color: #eab308; font-size: 28px; margin-bottom: 10px;">Cadastramento do Prestador</h1>
@@ -68,20 +68,17 @@ def render():
                     <p style="color: #d4d4d8; font-size: 14px; margin-top: 10px;">
                         O seu registo foi enviado com sucesso e está a aguardar a validação do Administrador.
                     </p>
-                    <p style="color: #71717a; font-size: 13px; margin-top: 5px;">
+                    <p style="color: #71717a; font-size: 13px; margin-top: 5px; margin-bottom: 25px;">
                         Assim que for aprovado, esta página atualizar-se-á automaticamente.
                     </p>
                 </div>
             """, unsafe_allow_html=True)
             
+            # Espaço e botão de verificação centralizado logo abaixo do bloco
             st.write("")
-            col_b1, col_b2, col_b3 = st.columns([2, 2, 2])
-            with col_b2:
-                if st.button("🔄 Verificar Aprovação"):
-                    st.rerun()
-                if st.button("❌ Cancelar / Tentar Novamente"):
-                    st.session_state.prestadores = [x for x in st.session_state.prestadores if x["token"] != prestador_id]
-                    st.session_state.prestador_id_sessao = None
+            col_v1, col_v2, col_v3 = st.columns([3, 2, 3])
+            with col_v2:
+                if st.button("🔄 Verificar Aprovação", use_container_width=True):
                     st.rerun()
                 
         else:
