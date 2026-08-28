@@ -109,22 +109,22 @@ def render():
             </div>
         """, unsafe_allow_html=True)
         
-        with st.form("form_registo_prestador"):
-            nome_p = st.text_input("Nome Completo")
-            tel_p = st.text_input("Telefone")
-            estabelecimento_p = st.text_input("Estabelecimento (Local onde vai prestar o serviço)")
-            
-            contrato_opcoes = {
-                "1 Hora - 12 Mil Kwanzas": 3600,
-                "2 Horas - 17 Mil Kwanzas": 7200,
-                "3 Horas - 20 Mil Kwanzas": 10800
-            }
-            contrato_escolhido = st.selectbox("Escolha o Contrato", list(contrato_opcoes.keys()))
-            
-            submit_reg = st.form_submit_button("Submeter Pedido")
-            
-            if submit_reg:
-                if nome_p and tel_p and estabelecimento_p:
+        # Substituído st.form por inputs normais para garantir feedback e reatividade imediata
+        nome_p = st.text_input("Nome Completo")
+        tel_p = st.text_input("Telefone")
+        estabelecimento_p = st.text_input("Estabelecimento (Local onde vai prestar o serviço)")
+        
+        contrato_opcoes = {
+            "1 Hora - 12 Mil Kwanzas": 3600,
+            "2 Horas - 17 Mil Kwanzas": 7200,
+            "3 Horas - 20 Mil Kwanzas": 10800
+        }
+        contrato_escolhido = st.selectbox("Escolha o Contrato", list(contrato_opcoes.keys()))
+        
+        st.write("")
+        if st.button("Submeter Pedido", type="primary", use_container_width=True):
+            if nome_p and tel_p and estabelecimento_p:
+                try:
                     novo_id = str(uuid.uuid4())[:8]
                     segundos_atribuidos = contrato_opcoes[contrato_escolhido]
                     
@@ -140,6 +140,10 @@ def render():
                     
                     guardar_prestador(novo_prestador)
                     st.session_state.prestador_id_sessao = novo_id
+                    st.success("Pedido submetido com sucesso! A carregar painel de espera...")
                     st.rerun()
-                else:
-                    st.error("Por favor, preencha todos os campos obrigatórios.")
+                    
+                except Exception as e:
+                    st.error(f"Erro ao submeter o pedido para a base de dados: {e}")
+            else:
+                st.warning("Por favor, preencha todos os campos obrigatórios antes de submeter.")
