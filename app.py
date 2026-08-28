@@ -39,7 +39,8 @@ if "logged" not in st.session_state:
 
 if "prestadores" not in st.session_state:
     st.session_state.prestadores = [
-        {"token": "demo-token-1", "nome": "João Silva", "telefone": "921000000", "estabelecimento": "Bar Central", "plano": "1 Hora - 12 Mil Kwanzas", "approved": True, "segundos_restantes": 3600},
+        {"token": "demo-111", "nome": "João Silva", "telefone": "921000000", "estabelecimento": "Bar Central", "plano": "1 Hora - 12 Mil Kwanzas", "approved": True, "segundos_restantes": 3600},
+        {"token": "pend-222", "nome": "Carlos Mendes", "telefone": "923111222", "estabelecimento": "Restaurante O Kubico", "plano": "2 Horas - 17 Mil Kwanzas", "approved": False, "segundos_restantes": 7200}
     ]
 
 if "reforcos" not in st.session_state:
