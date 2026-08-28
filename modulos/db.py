@@ -1,21 +1,22 @@
 import firebase_admin
 from firebase_admin import credentials, db
 import streamlit as st
-import json
 import os
 
 def _inicializar_firebase():
     if not firebase_admin._apps:
         try:
-            if "firebase" in st.secrets and "JSON_DATA" in st.secrets["firebase"]:
-                cred_dict = json.loads(st.secrets["firebase"]["JSON_DATA"])
-                cred = credentials.Certificate(cred_dict)
-            else:
-                json_path = "serviceAccountKey.json"
-                if not os.path.exists(json_path):
-                    json_path = os.path.join(os.getcwd(), "serviceAccountKey.json")
-                cred = credentials.Certificate(json_path)
+            # Procura o ficheiro JSON na raiz do projeto ou no diretório corrente
+            json_path = "serviceAccountKey.json"
+            if not os.path.exists(json_path):
+                json_path = os.path.join(os.getcwd(), "serviceAccountKey.json")
+            
+            if not os.path.exists(json_path):
+                st.error("O ficheiro 'serviceAccountKey.json' não foi encontrado na raiz do projeto!")
+                return
 
+            cred = credentials.Certificate(json_path)
+            
             firebase_admin.initialize_app(cred, {
                 'databaseURL': 'https://grupoffkaraoke-default-rtdb.firebaseio.com/'
             })
