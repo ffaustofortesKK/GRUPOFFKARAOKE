@@ -13,6 +13,15 @@ def render():
     st.caption("Gestão de acessos e controlos do programa FFK")
     st.divider()
 
+    # --- BOTÃO DE ATALHO PARA O PRESTADOR ---
+    col_at1, col_at2 = st.columns([3, 7])
+    with col_at1:
+        if st.button("🎤 Ir para o Registo de Prestador"):
+            st.query_params["view"] = "prestador"
+            st.rerun()
+            
+    st.markdown("---")
+
     if not st.session_state.get("logged", False):
         st.subheader("🔒 Área restrita")
         with st.form("login_form"):
@@ -32,10 +41,9 @@ def render():
                 st.session_state.logged = False
                 st.rerun()
 
-        # As 3 Abas do Administrador criadas de forma segura dentro da função render
+        # As 3 Abas do Administrador
         aba1, aba2, aba3 = st.tabs(["1º Pedidos e Aprovação", "2º Gestão Online", "3º Controle de Gestão"])
 
-        # ABA 1: Pedidos e Aprovação
         with aba1:
             pendentes = [p for p in st.session_state.prestadores if not p["approved"]]
             st.subheader(f"⏳ Registos pendentes ({len(pendentes)})")
@@ -58,7 +66,6 @@ def render():
                                 st.session_state.historico.append({"acao": "Recusa", "detalhe": f"Prestador {p['nome']} foi recusado.", "data": "Hoje"})
                                 st.rerun()
 
-        # ABA 2: Gestão Online
         with aba2:
             ativos = [p for p in st.session_state.prestadores if p["approved"]]
             st.subheader(f"🟢 Prestadores Ativos / Online ({len(ativos)})")
@@ -74,7 +81,6 @@ def render():
                             p["approved"] = False
                             st.rerun()
 
-        # ABA 3: Controle de Gestão
         with aba3:
             st.subheader("📊 Histórico e Informações Gerais")
             for h in st.session_state.historico:
