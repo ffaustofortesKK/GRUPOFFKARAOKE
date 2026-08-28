@@ -1,22 +1,23 @@
 import firebase_admin
 from firebase_admin import credentials, db
 import streamlit as st
+import base64
+import json
 import os
 
 def _inicializar_firebase():
     if not firebase_admin._apps:
         try:
-            if "firebase" in st.secrets:
-                # Transforma a secção [firebase] dos segredos num dicionário puro em Python
-                cred_dict = dict(st.secrets["firebase"])
+            if "firebase" in st.secrets and "b64_json" in st.secrets["firebase"]:
+                # Descodifica a string Base64 diretamente para um dicionário JSON válido
+                b64_str = st.secrets["firebase"]["b64_json"]
+                json_bytes = base64.b64decode(b64_str)
+                cred_dict = json.loads(json_bytes.decode('utf-8'))
                 cred = credentials.Certificate(cred_dict)
             else:
                 json_path = "serviceAccountKey.json"
                 if not os.path.exists(json_path):
                     json_path = os.path.join(os.getcwd(), "serviceAccountKey.json")
-                if not os.path.exists(json_path):
-                    st.error("As credenciais do Firebase não foram encontradas nem nos Secrets nem como ficheiro local!")
-                    return
                 cred = credentials.Certificate(json_path)
 
             firebase_admin.initialize_app(cred, {
