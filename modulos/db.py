@@ -6,17 +6,19 @@ import os
 def _inicializar_firebase():
     if not firebase_admin._apps:
         try:
-            # Procura o ficheiro JSON na raiz do projeto ou no diretório corrente
-            json_path = "serviceAccountKey.json"
-            if not os.path.exists(json_path):
-                json_path = os.path.join(os.getcwd(), "serviceAccountKey.json")
-            
-            if not os.path.exists(json_path):
-                st.error("O ficheiro 'serviceAccountKey.json' não foi encontrado na raiz do projeto!")
-                return
+            if "firebase" in st.secrets:
+                # Transforma a secção [firebase] dos segredos num dicionário puro em Python
+                cred_dict = dict(st.secrets["firebase"])
+                cred = credentials.Certificate(cred_dict)
+            else:
+                json_path = "serviceAccountKey.json"
+                if not os.path.exists(json_path):
+                    json_path = os.path.join(os.getcwd(), "serviceAccountKey.json")
+                if not os.path.exists(json_path):
+                    st.error("As credenciais do Firebase não foram encontradas nem nos Secrets nem como ficheiro local!")
+                    return
+                cred = credentials.Certificate(json_path)
 
-            cred = credentials.Certificate(json_path)
-            
             firebase_admin.initialize_app(cred, {
                 'databaseURL': 'https://grupoffkaraoke-default-rtdb.firebaseio.com/'
             })
