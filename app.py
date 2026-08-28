@@ -39,25 +39,22 @@ if "logged" not in st.session_state:
 
 if "prestadores" not in st.session_state:
     st.session_state.prestadores = [
-        {"token": "demo-token-1", "nome": "João Silva", "telefone": "921000000", "plano": "Standard", "approved": True, "segundos_restantes": 3600},
-        {"token": "demo-token-2", "nome": "Maria Santos", "telefone": "923000000", "plano": "VIP", "approved": False, "segundos_restantes": 7200},
+        {"token": "demo-token-1", "nome": "João Silva", "telefone": "921000000", "estabelecimento": "Bar Central", "plano": "1 Hora - 12 Mil Kwanzas", "approved": True, "segundos_restantes": 3600},
     ]
 
 if "reforcos" not in st.session_state:
-    st.session_state.reforcos = [
-        {"id": "ref-1", "nome_prestador": "João Silva", "referencia": "REF12345", "plano": "1 Hora Extra", "provider_token": "demo-token-1"}
-    ]
+    st.session_state.reforcos = []
 
 if "historico" not in st.session_state:
     st.session_state.historico = [
-        {"acao": "Registo aprovado", "detalhe": "João Silva foi aprovado no sistema.", "data": "Hoje"}
+        {"acao": "Sistema Iniciado", "detalhe": "Plataforma FFKaraoke carregada.", "data": "Hoje"}
     ]
 
 # --- SISTEMA DE ROTAS POR PARÂMETRO DE URL ---
 query_params = st.query_params
 view = query_params.get("view", "admin")
 
-# Carrega o módulo correspondente
+# Carrega o módulo correspondente executando a respetiva função render()
 if view == "admin":
     from modulos import admin
     admin.render()
@@ -72,6 +69,3 @@ elif view == "tela":
     tela.render()
 else:
     st.error("Página não encontrada.")
-    if st.button("Ir para Administração"):
-        st.query_params["view"] = "admin"
-        st.rerun()
