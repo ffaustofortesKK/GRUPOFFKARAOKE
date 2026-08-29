@@ -9,6 +9,8 @@ def render():
         st.session_state.pedido_submetido = False
         st.session_state.token_prestador = None
         st.session_state.estado_pedido = "pendente"
+    if "aprovado" not in st.session_state:
+        st.session_state.aprovado = False
 
     # Se já submetido, verifica o estado atual na base de dados em cada ciclo
     if st.session_state.pedido_submetido and st.session_state.token_prestador:
@@ -21,7 +23,24 @@ def render():
             
             if status_atual == "aprovado":
                 st.session_state.aprovado = True
-                st.rerun()
+
+    # SE JÁ ESTIVER APROVADO: Abre o painel/perfil do prestador imediatamente
+    if st.session_state.get("aprovado", False) or st.session_state.get("estado_pedido") == "aprovado":
+        st.markdown("<h2 style='text-align: center; color: #22c55e;'>🎉 Acesso Aprovado!</h2>", unsafe_allow_html=True)
+        st.success("O seu registo foi validado com sucesso pelo Administrador.")
+        
+        # Bloco do Painel Operacional do Prestador
+        st.markdown("""
+            <div style="background-color: #18181b; padding: 25px; border-radius: 10px; border: 1px solid #27272a; margin-top: 20px;">
+                <h3 style="color: #eab308; margin-top: 0;">Painel Operacional do Prestador</h3>
+                <p style="color: #d4d4d8;">O seu acesso está ativo. Já pode gerir as suas requisições e utilizar o sistema de karaoke.</p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("Atualizar / Recarregar Página", use_container_width=True):
+            st.rerun()
+        return
 
     # Se o pedido foi recusado pelo administrador
     if st.session_state.pedido_submetido and st.session_state.estado_pedido == "recusado":
@@ -42,6 +61,7 @@ def render():
                 st.session_state.pedido_submetido = False
                 st.session_state.token_prestador = None
                 st.session_state.estado_pedido = "pendente"
+                st.session_state.aprovado = False
                 st.rerun()
 
     # Se o pedido continua pendente (aguardando aprovação com animação)
@@ -102,7 +122,7 @@ def render():
         st.rerun()
                 
     else:
-        # Título e formulário com os 3 contratos atualizados
+        # Título e formulário com os 3 contratos configurados
         st.markdown("<h2 style='text-align: center; color: #eab308;'>Cadastramento</h2>", unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; color: #a1a1aa; margin-bottom: 30px;'>Preencha os dados abaixo para submeter o seu pedido de acesso ao sistema.</p>", unsafe_allow_html=True)
 
@@ -111,7 +131,6 @@ def render():
             telefone = st.text_input("Telefone")
             estabelecimento = st.text_input("Estabelecimento (Local onde vai prestar o serviço)")
             
-            # Atualizado com os 3 contratos solicitados
             contrato = st.selectbox("Escolha o Contrato", [
                 "1 Hora - 12 Mil Kwanzaas", 
                 "2 Horas - 17 Mil Kwanzaas",
@@ -124,7 +143,6 @@ def render():
                 if nome.strip() and telefone.strip():
                     token_gerado = f"token_{int(time.time())}"
                     
-                    # Definir o tempo em segundos com base no contrato escolhido
                     if "1 Hora" in contrato:
                         segundos_contrato = 3600
                     elif "2 Horas" in contrato:
@@ -145,13 +163,12 @@ def render():
                         "data_pedido": datetime.now().strftime("%d/%m/%Y %H:%M")
                     }
                     
-                    # Guarda na base de dados
                     guardar_prestador(novo_prestador)
                     
-                    # Atualiza o estado da sessão local para exibir a tela de espera
                     st.session_state.pedido_submetido = True
                     st.session_state.token_prestador = token_gerado
                     st.session_state.estado_pedido = "pendente"
+                    st.session_state.aprovado = False
                     st.rerun()
                 else:
                     st.error("Por favor, preencha pelo menos o Nome Completo e o Telefone.")
