@@ -12,7 +12,6 @@ def _carregar_dados():
         _guardar_dados(dados_iniciais)
         return dados_iniciais
     try:
-        # Abre o ficheiro ignorando qualquer cache do sistema operativo
         with open(FICHEIRO_DB, "r", encoding="utf-8") as f:
             content = f.read().strip()
             if not content:
