@@ -102,13 +102,9 @@ def render():
                     <p style="color: #d4d4d8; font-size: 14px; margin-top: 10px;">
                         O seu registo foi enviado com sucesso e está a aguardar a validação do Administrador.
                     </p>
-                    <p style="color: #71717a; font-size: 12px; margin-top: 5px;">
-                        (Esta página atualizar-se-á automaticamente assim que houver uma resposta)
-                    </p>
                 </div>
             """, unsafe_allow_html=True)
             
-            # Atualização automática nativa a cada 4 segundos enquanto estiver pendente
             time.sleep(4)
             st.rerun()
                 
