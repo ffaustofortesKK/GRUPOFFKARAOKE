@@ -47,8 +47,8 @@ def render():
             st.subheader("Portal do Prestadores")
             st.write("Partilhe este link ou o QR Code com os prestadores para que possam submeter os seus dados.")
             
-            # URL base dinâmico do app
-            base_url = "http://localhost:8501/?view=prestador"
+            # URL da aplicação no Streamlit Cloud (substitua se o seu link exato for diferente)
+            base_url = "https://grupoffkaraoke.streamlit.app/?view=prestador"
             
             st.markdown(f"""
                 <div style="border: 2px solid #eab308; border-radius: 8px; padding: 15px; background-color: #18181b; margin-bottom: 20px;">
@@ -59,7 +59,7 @@ def render():
 
             col_q1, col_q2 = st.columns([2, 5])
             with col_q1:
-                # Gera o QR Code via API online de forma totalmente segura e independente de bibliotecas externas
+                # Gera o QR Code dinamicamente via API pública segura
                 url_encoded = urllib.parse.quote(base_url)
                 qr_api_url = f"https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={url_encoded}"
                 st.image(qr_api_url, width=180, caption="QR Code de Registo")
