@@ -181,7 +181,6 @@ def render():
                 
                 st.dataframe(dados_tabela, use_container_width=True)
                 
-                # Aguarda 1 segundo e atualiza a página para decrementar o relógio em tempo real
                 time.sleep(1)
                 st.rerun()
 
@@ -189,11 +188,18 @@ def render():
             st.subheader("📈 Relatórios e Estatísticas Gerais")
             st.write("Registo completo de todas as solicitações, submissões e contratos concluídos/expirados:")
             
+            # Atualiza lista direto da base de dados para garantir todos os históricos
+            todos_registos = obter_prestadores()
             dados_historico_tabela = []
-            for p in prestadores_atuais:
+            
+            for p in todos_registos:
                 status_atual = p.get("status_str", "pendente")
+                
                 if status_atual == "aprovado":
-                    estado_formatado = "Ativo / Em curso"
+                    if p.get("segundos_restantes", 0) <= 0:
+                        estado_formatado = "Concluído / Expirado"
+                    else:
+                        estado_formatado = "Ativo / Em curso"
                 elif status_atual == "expirado":
                     estado_formatado = "Concluído / Expirado"
                 elif status_atual == "recusado":
@@ -203,10 +209,23 @@ def render():
                 else:
                     estado_formatado = "Pendente"
                 
+                contrato_str = p.get('plano', p.get('contrato', 'N/A'))
+                
+                # Identificação precisa do valor em Kwanzaas para qualquer formato de contrato
+                if "1 Hora" in contrato_str or "12" in contrato_str:
+                    valor_str = "12.000,00 Kwanzaas"
+                elif "2 Horas" in contrato_str or "17" in contrato_str:
+                    valor_str = "17.000,00 Kwanzaas"
+                elif "3 Horas" in contrato_str or "20" in contrato_str:
+                    valor_str = "20.000,00 Kwanzaas"
+                else:
+                    valor_str = "N/A"
+                
                 dados_historico_tabela.append({
                     "Nome": p.get('nome', 'N/A'),
                     "Estabelecimento": p.get('estabelecimento', 'N/A'),
-                    "Contrato": p.get('plano', p.get('contrato', 'N/A')),
+                    "Contrato": contrato_str,
+                    "Valor": valor_str,
                     "Estado": estado_formatado,
                     "Reforço": p.get('reforco', 'N/A'),
                     "Data do contrato": p.get('data_pedido', datetime.now().strftime("%d/%m/%Y %H:%M"))
