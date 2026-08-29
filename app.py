@@ -5,7 +5,6 @@ import os
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 import streamlit as st
-from modulos.db import obter_prestadores
 
 st.set_page_config(
     page_title="FFKaraoke — Sistema Principal",
@@ -40,34 +39,29 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- INICIALIZAÇÃO DA BASE DE DADOS GLOBAL ---
+# --- INICIALIZAÇÃO DA BASE DE DADOS GLOBAL EM SESSÃO ---
 if "logged" not in st.session_state:
     st.session_state.logged = False
 
-# Carrega os prestadores do armazenamento local/JSON
-st.session_state.prestadores = obter_prestadores()
+# CORREÇÃO CRUCIAL: 'setdefault' garante que a lista só é criada UMA VEZ.
+# Assim, quando o prestador se regista e o app faz rerun, os dados NÃO SE APAGAM.
+if "prestadores" not in st.session_state:
+    st.session_state.prestadores = [
+        {"token": "demo-111", "nome": "João Silva", "telefone": "921000000", "estabelecimento": "Bar Central", "plano": "1 Hora - 12 Mil Kwanzas", "approved": True, "segundos_restantes": 3600},
+        {"token": "pend-222", "nome": "Carlos Mendes", "telefone": "923111222", "estabelecimento": "Restaurante O Kubico", "plano": "2 Horas - 17 Mil Kwanzas", "approved": False, "segundos_restantes": 7200}
+    ]
 
 if "reforcos" not in st.session_state:
     st.session_state.reforcos = []
 
 if "historico" not in st.session_state:
     st.session_state.historico = [
-        {"acao": "Sistema Iniciado", "detalhe": "Plataforma FFKaraoke carregada com sucesso.", "data": "Hoje"}
+        {"acao": "Sistema Iniciado", "detalhe": "Plataforma FFKaraoke carregada.", "data": "Hoje"}
     ]
 
-# --- SISTEMA DE ROTAS ROBUSTO ---
-# Lê os parâmetros do URL de forma segura independentemente da versão do Streamlit
-try:
-    query_params = st.query_params
-    view = query_params.get("view", "admin")
-    if isinstance(view, list):
-        view = view[0]
-except Exception:
-    view = "admin"
-
-# Se o URL estiver completamente vazio, força o admin
-if not view:
-    view = "admin"
+# --- SISTEMA DE ROTAS POR PARÂMETRO DE URL ---
+query_params = st.query_params
+view = query_params.get("view", "admin")
 
 # Carrega o módulo correspondente executando a respetiva função render()
 if view == "admin":
