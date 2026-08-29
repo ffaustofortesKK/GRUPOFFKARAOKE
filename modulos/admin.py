@@ -34,10 +34,11 @@ def render():
     else:
         prestadores_atuais = obter_prestadores()
         
-        # Filtros estritos para garantir separação correta
+        # Filtros estritos baseados no status_str
         ativos = [p for p in prestadores_atuais if p.get("status_str") == "aprovado"]
         qtd_ativos = len(ativos)
         
+        # Apenas exibe na lista de pendentes se o status for exatamente "pendente"
         pendentes_lista = [p for p in prestadores_atuais if p.get("status_str") == "pendente"]
         qtd_pendentes = len(pendentes_lista)
 
