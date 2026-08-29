@@ -1,8 +1,9 @@
 import sys
 import os
+
+# Adiciona o diretório atual ao path do Python para evitar erros de importação
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-import streamlit as st
-from modulos.db import obter_prestadores
+
 import streamlit as st
 from modulos.db import obter_prestadores
 
@@ -39,11 +40,11 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- INICIALIZAÇÃO DA BASE DE DADOS GLOBAL COM FIREBASE ---
+# --- INICIALIZAÇÃO DA BASE DE DADOS GLOBAL ---
 if "logged" not in st.session_state:
     st.session_state.logged = False
 
-# Carrega os prestadores do Firebase em vez de lista estática local
+# Carrega os prestadores do armazenamento local/JSON
 st.session_state.prestadores = obter_prestadores()
 
 if "reforcos" not in st.session_state:
@@ -51,7 +52,7 @@ if "reforcos" not in st.session_state:
 
 if "historico" not in st.session_state:
     st.session_state.historico = [
-        {"acao": "Sistema Iniciado", "detalhe": "Plataforma FFKaraoke carregada com Firebase.", "data": "Hoje"}
+        {"acao": "Sistema Iniciado", "detalhe": "Plataforma FFKaraoke carregada com sucesso.", "data": "Hoje"}
     ]
 
 # --- SISTEMA DE ROTAS POR PARÂMETRO DE URL ---
