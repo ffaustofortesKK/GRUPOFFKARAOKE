@@ -1,7 +1,7 @@
 import streamlit as st
 import time
 from datetime import datetime
-from modulos.db import guardar_prestador, obter_prestadores
+from db import guardar_prestador, obter_prestadores
 
 def render():
     # Inicializar estado de sessão se não existir
