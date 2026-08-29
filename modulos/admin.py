@@ -190,14 +190,6 @@ def render():
                             p["status_str"] = "suspenso"
                             guardar_prestador(p)
                             st.rerun()
-                
-                # Atualização automática contínua do relógio decrescente a cada 1 segundo
-                time.sleep(1)
-                for p in ativos:
-                    if p.get("segundos_restantes", 0) > 0:
-                        p["segundos_restantes"] -= 1
-                        guardar_prestador(p)
-                st.rerun()
 
         with aba4:
             st.subheader("📈 Relatórios e Estatísticas Gerais")
