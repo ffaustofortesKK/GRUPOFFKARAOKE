@@ -57,7 +57,20 @@ def render():
         ativos = [p for p in prestadores_atuais if isinstance(p, dict) and (p.get("status_str") == "aprovado" or p.get("approved") is True) and p.get("segundos_restantes", 0) > 0]
         qtd_ativos = len(ativos)
         
-        pendentes_lista = [p for p in prestadores_atuais if isinstance(p, dict) and (p.get("status_str") == "pendente" or (p.get("status_str") not in ["aprovado", "expirado", "recusado", "suspenso"] and not p.get("approved")))]
+        # Filtro corrigido e mais abrangente para apanhar todos os pendentes reais
+        pendentes_lista = []
+        for p in prestadores_atuais:
+            if not isinstance(p, dict):
+                continue
+            status_str = str(p.get("status_str", "")).lower()
+            approved_val = p.get("approved")
+            
+            # É considerado pendente se não estiver explicitamente aprovado, recusado, expirado ou suspenso
+            if status_str in ["pendente", ""] and approved_val is not True:
+                pendentes_lista.append(p)
+            elif approved_val is False and status_str not in ["recusado", "expirado", "suspenso"]:
+                pendentes_lista.append(p)
+                
         qtd_pendentes = len(pendentes_lista)
 
         col_topo_esq, col_topo_dir = st.columns([8, 3])
