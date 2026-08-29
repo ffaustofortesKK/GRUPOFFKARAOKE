@@ -50,14 +50,11 @@ def render():
         </style>
     """, unsafe_allow_html=True)
 
-    # Lê os dados mais recentes diretamente do ficheiro JSON
+    # Lê sempre em tempo real da base de dados local
     todos_prestadores = obter_prestadores()
-    st.session_state.prestadores = todos_prestadores
-
     prestador_id = st.session_state.get("prestador_id_sessao", None)
 
     if prestador_id:
-        # Encontra o prestador pelo token atual
         prestador = next((p for p in todos_prestadores if str(p["token"]) == str(prestador_id)), None)
         
         if not prestador:
@@ -70,7 +67,6 @@ def render():
         status = prestador.get("status_str", "pendente")
 
         if status == "recusado":
-            # ECRÃ DE RECUSA
             st.markdown("""
                 <div class="card-container-recusado">
                     <h1 style="color: #ef4444; font-size: 28px; margin-bottom: 10px;">Pedido Recusado</h1>
@@ -78,7 +74,7 @@ def render():
                         Lamentamos informar que o seu pedido de registo foi recusado pelo Administrador.
                     </p>
                     <p style="color: #a1a1aa; font-size: 13px; margin-top: 10px;">
-                        Pode submeter um novo pedido preenchendo os dados novamente.
+                        Pode submeter um novo pedido preenchendo os dados abaixo.
                     </p>
                 </div>
             """, unsafe_allow_html=True)
@@ -91,7 +87,6 @@ def render():
                     st.rerun()
 
         elif status == "pendente":
-            # ECRÃ DE ESPERA
             st.markdown("""
                 <div class="card-container">
                     <h1 style="color: #eab308; font-size: 28px; margin-bottom: 10px;">Cadastramento do Prestador</h1>
@@ -107,20 +102,16 @@ def render():
                     <p style="color: #d4d4d8; font-size: 14px; margin-top: 10px;">
                         O seu registo foi enviado com sucesso e está a aguardar a validação do Administrador.
                     </p>
-                    <p style="color: #71717a; font-size: 13px; margin-top: 5px; margin-bottom: 25px;">
-                        Clique no botão abaixo para verificar se já foi aprovado.
-                    </p>
                 </div>
             """, unsafe_allow_html=True)
             
             st.write("")
             col_v1, col_v2, col_v3 = st.columns([3, 2, 3])
             with col_v2:
-                if st.button("🔄 Atualizar Estado", use_container_width=True):
+                if st.button("🔄 Verificar Estado Agora", use_container_width=True):
                     st.rerun()
                 
         else:
-            # ECRÃ DE APROVADO
             st.success(f"🎉 Pedido Aprovado! Bem-vindo ao painel, {prestador['nome']}.")
             st.markdown("---")
             st.subheader("🔗 Os seus Links de Trabalho")
@@ -140,7 +131,6 @@ def render():
                 st.rerun()
                 
     else:
-        # FORMULÁRIO DE REGISTO INICIAL
         st.markdown("""
             <div style="text-align: center; margin-bottom: 25px;">
                 <h1 style="color: #eab308; font-size: 28px;">Cadastramento do Prestador</h1>
