@@ -16,12 +16,19 @@ def formatarTempoDecrescente(segundos: int) -> str:
     return f"{minutos:02d}m {secs:02d}s"
 
 def render():
-    # --- AUTO-REFRESH NATIVO VIA JAVASCRIPT (A CADA 10 SEGUNDOS) ---
+    # --- AUTO-REFRESH INVISÍVEL (A CADA 10 SEGUNDOS SEM INTERRUPÇÃO VISUAL) ---
     components.html(
         """
         <script>
             setTimeout(function(){
-                window.parent.location.reload();
+                // Dispara o evento de recarregamento de forma suave no container do Streamlit
+                const doc = window.parent.document;
+                const featherIcons = doc.querySelector('[data-testid="stStatusWidget"]');
+                if (window.parent.streamlit && window.parent.streamlit.rerun) {
+                    window.parent.streamlit.rerun();
+                } else {
+                    window.parent.location.reload();
+                }
             }, 10000);
         </script>
         """,
