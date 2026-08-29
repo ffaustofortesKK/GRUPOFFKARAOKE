@@ -34,14 +34,14 @@ def render():
     else:
         prestadores_atuais = obter_prestadores()
         
-        # Contagem de ativos e pendentes
+        # Filtros estritos para garantir separação correta
         ativos = [p for p in prestadores_atuais if p.get("status_str") == "aprovado"]
         qtd_ativos = len(ativos)
         
-        pendentes_lista = [p for p in prestadores_atuais if p.get("status_str", "pendente") == "pendente"]
+        pendentes_lista = [p for p in prestadores_atuais if p.get("status_str") == "pendente"]
         qtd_pendentes = len(pendentes_lista)
 
-        # Indicador de Activos com o tamanho duplicado (aumentado 100%)
+        # Indicador de Activos com o tamanho duplicado
         col_topo_esq, col_topo_dir = st.columns([8, 3])
         with col_topo_dir:
             st.markdown(f"""
