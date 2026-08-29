@@ -3,9 +3,6 @@ import time
 from datetime import datetime
 from modulos.db import guardar_prestador, obter_prestadores
 
-# Importe aqui a função do painel completo do prestador (ajuste o nome do módulo se necessário)
-# Exemplo: from modulos.painel_prestador import render as render_painel_completo
-
 def render():
     # Inicializar estado de sessão se não existir
     if "pedido_submetido" not in st.session_state:
@@ -27,32 +24,60 @@ def render():
             if status_atual == "aprovado":
                 st.session_state.aprovado = True
 
-    # SE JÁ ESTIVER APROVADO: Entra logo no perfil/painel completo do prestador
+    # SE JÁ ESTIVER APROVADO: Entra logo no painel operacional completo do prestador
     if st.session_state.get("aprovado", False) or st.session_state.get("estado_pedido") == "aprovado":
         
-        # Se tiver o painel completo modularizado, chame-o diretamente aqui:
-        # render_painel_completo()
-        
-        # --- SE O PAINEL COMPLETO ESTIVER DIRETO OU ENQUANTO INTEGRA ---
+        # Cabeçalho do Painel do Prestador
         st.markdown("""
-            <div style="border: 2px solid #eab308; background-color: #0f0f11; padding: 25px; border-radius: 12px;">
-                <div style="text-align: right; margin-bottom: 15px;">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://grupoffkaraoke.streamlit.app" width="120" style="border: 2px solid #eab308; border-radius: 6px;">
+            <div style="border: 2px solid #eab308; background-color: #0f0f11; padding: 25px; border-radius: 12px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h2 style="color: #eab308; margin: 0;">Painel Operacional — FF Karaoke</h2>
+                        <p style="color: #a1a1aa; margin: 5px 0 0 0;">Gestão de sala, fila de reprodução e leitor em tempo real.</p>
+                    </div>
                 </div>
-                <h2 style="color: #eab308; text-align: center;">Painel Operacional — FF Karaoke</h2>
-                <hr style="border-color: #3f3f46;">
             </div>
         """, unsafe_allow_html=True)
         
-        st.success("Acesso validado com sucesso! Bem-vindo ao seu painel de gestão de karaoke.")
+        # Abas principais do painel do prestador
+        tab_fila, tab_definicoes = st.tabs(["🎵 Fila de Reprodução & Leitor", "⚙️ Definições / Terminar Sessão"])
         
-        # Espaço para os controlos de fila e leitor
-        col_f1, col_f2 = st.tabs(["🎵 Fila de Reprodução", "⚙️ Definições do Prestador"])
-        with col_f1:
-            st.info("O sistema está a escutar novos pedidos de música dos clientes em tempo real.")
-            # Aqui renderiza os componentes da fila e leitor conforme a sua imagem 2
-        with col_f2:
-            if st.button("Terminar Sessão / Sair do Painel", use_container_width=True):
+        with tab_fila:
+            st.info("O sistema está ativo e a escutar novos pedidos de música dos clientes.")
+            
+            # Layout simétrico com Links e QR Code à direita
+            col_links, col_qr = st.columns([2, 1])
+            with col_links:
+                st.markdown("##### 🔗 Links de Acesso")
+                st.text_input("LINK DO CLIENTE (REGISTO DE MÚSICA)", value="https://appadm.streamlit.app/?page=client_register", disabled=True)
+                st.text_input("LINK DA TELA DE TV / REPRODUÇÃO", value="https://appadm.streamlit.app/?page=client_screen", disabled=True)
+            with col_qr:
+                st.markdown("##### 📱 QR Code Cliente")
+                st.image("https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https://grupoffkaraoke.streamlit.app", width=140)
+
+            st.markdown("---")
+            st.markdown("#### 📋 Estado da Fila e Controlo de Reprodução")
+            
+            # Caixa de estado da fila vazia ou com itens
+            st.markdown("""
+                <div style="background-color: #18181b; border: 1px solid #eab308; padding: 20px; text-align: center; border-radius: 8px; margin-bottom: 20px;">
+                    <p style="color: #d4d4d8; font-weight: bold; margin: 0;">NENHUM PEDIDO NA LISTA NESTE MOMENTO.<br>À ESPERA DE NOVOS PEDIDOS...</p>
+                </div>
+            """, unsafe_allow_html=True)
+
+            col_ctrl1, col_ctrl2 = st.columns(2)
+            with col_ctrl1:
+                if st.button("▶ Play", use_container_width=True):
+                    st.toast("A reproduzir...")
+            with col_ctrl2:
+                if st.button("⏹ Stop", use_container_width=True):
+                    st.toast("Reprodução parada.")
+
+        with tab_definicoes:
+            st.markdown("#### Gestão de Sessão")
+            st.write("Pode encerrar a sua sessão de atendimento a qualquer momento.")
+            
+            if st.button("Terminar Sessão / Sair do Painel", use_container_width=True, type="primary"):
                 st.session_state.pedido_submetido = False
                 st.session_state.token_prestador = None
                 st.session_state.estado_pedido = "pendente"
