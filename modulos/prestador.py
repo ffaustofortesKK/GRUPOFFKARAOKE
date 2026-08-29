@@ -23,11 +23,11 @@ def render():
                 st.session_state.aprovado = True
                 st.rerun()
                 
-            # Se foi recusado pelo administrador, guarda o estado para mostrar o aviso
+            # Se foi recusado pelo administrador
             elif status_atual == "recusado":
                 st.session_state.estado_pedido = "recusado"
 
-    # Se o pedido foi recusado pelo administrador
+    # Se o pedido foi recusado pelo administrador, exibe a notificação de recusa
     if st.session_state.pedido_submetido and st.session_state.estado_pedido == "recusado":
         st.markdown("""
             <div style="background-color: #0f0f11; border: 2px solid #ef4444; padding: 40px 20px; text-align: center; border-radius: 12px; margin-top: 20px;">
@@ -48,7 +48,7 @@ def render():
                 st.session_state.estado_pedido = "pendente"
                 st.rerun()
 
-    # Se o pedido continua pendente (aguardando aprovação)
+    # Se o pedido continua pendente (aguardando aprovação com círculos em rotação oposta)
     elif st.session_state.pedido_submetido:
         st.markdown("""
             <style>
@@ -96,13 +96,13 @@ def render():
                     O seu registo foi enviado com sucesso e está a aguardar a validação do Administrador.
                 </p>
                 <p style="color: #a1a1aa; font-size: 14px;">
-                    Assim que for aprovado, esta página atualizar-se-á automaticamente.
+                    Assim que houver uma decisão, esta página atualizar-se-á automaticamente.
                 </p>
             </div>
         """, unsafe_allow_html=True)
         
-        # Faz o refresh automático a cada 5 segundos para detetar alterações (aprovação ou recusa)
-        time.sleep(5)
+        # Faz o refresh automático a cada 4 segundos para detetar a recusa ou aprovação instantaneamente
+        time.sleep(4)
         st.rerun()
                 
     else:
@@ -116,9 +116,8 @@ def render():
             estabelecimento = st.text_input("Estabelecimento (Local onde vai prestar o serviço)")
             contrato = st.selectbox("Escolha o Contrato", [
                 "1 Hora - 12 Mil Kwanzaas", 
-                "3 Horas - 20 Mil Kwanzaas",
-                "Personalizado / Noite Completa"
-            ])
+                "2 Horas - 17 Mil Kwanzaas",
+                "3 Horas - 20 Mil Kwanzaas",])
             
             submitted = st.form_submit_button("Submeter Pedido", use_container_width=True)
             
