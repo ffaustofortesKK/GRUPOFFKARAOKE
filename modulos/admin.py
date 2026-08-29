@@ -1,5 +1,16 @@
 import streamlit as st
+import qrcode
+from io import BytesIO
 from modulos.db import obter_prestadores, guardar_prestador
+
+def gerar_qr_code(url):
+    qr = qrcode.QRCode(version=1, box_size=10, border=2)
+    qr.add_data(url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    buffered = BytesIO()
+    img.save(buffered, format="PNG")
+    return buffered.getvalue()
 
 def formatarTempo(segundos: int) -> str:
     horas = segundos // 3600
@@ -10,17 +21,9 @@ def formatarTempo(segundos: int) -> str:
     return f"{minutos}m {secs}s"
 
 def render():
-    st.title("FFKaraoke · Administração")
+    st.title("Painel de Administração — FF Karaoke")
     st.caption("Gestão de acessos e controlos do programa FFK")
     st.divider()
-
-    col_at1, col_at2 = st.columns([3, 7])
-    with col_at1:
-        if st.button("🎤 Ir para o Registo de Prestador"):
-            st.query_params["view"] = "prestador"
-            st.rerun()
-            
-    st.markdown("---")
 
     if not st.session_state.get("logged", False):
         st.subheader("🔒 Área restrita")
@@ -41,12 +44,47 @@ def render():
                 st.session_state.logged = False
                 st.rerun()
 
-        # Lê os dados em tempo real a cada carregamento da página do Admin
         prestadores_atuais = obter_prestadores()
 
-        aba1, aba2, aba3 = st.tabs(["1º Pedidos e Aprovação", "2º Gestão Online", "3º Controle de Gestão"])
+        # Estrutura com as 4 Abas tal como na imagem de referência
+        aba1, aba2, aba3, aba4 = st.tabs([
+            "🔗 Link e QR Registo", 
+            "⏳ Pedidos e Aprovação", 
+            "📊 Gestão Total", 
+            "📈 Relatórios e Estatísticas"
+        ])
 
         with aba1:
+            st.subheader("Portal do Prestadores")
+            st.write("Partilhe este link ou o QR Code com os prestadores para que possam submeter os seus dados.")
+            
+            # URL base dinâmico do app
+            base_url = "http://localhost:8501/?view=prestador"
+            
+            st.markdown(f"""
+                <div style="border: 2px solid #eab308; border-radius: 8px; padding: 15px; background-color: #18181b; margin-bottom: 20px;">
+                    <p style="color: #eab308; font-weight: bold; margin-bottom: 5px;">Link Direto de Registo:</p>
+                    <a href="{base_url}" target="_blank" style="color: #facc15; font-size: 16px; word-break: break-all;">{base_url}</a>
+                </div>
+            """, unsafe_allow_html=True)
+
+            col_q1, col_q2 = st.columns([2, 5])
+            with col_q1:
+                try:
+                    qr_bytes = gerar_qr_code(base_url)
+                    st.image(qr_bytes, width=200, caption="QR Code de Registo")
+                except Exception:
+                    st.info("Instale a biblioteca `qrcode` para visualizar o gráfico QR no ecrã.")
+            with col_q2:
+                st.markdown("""
+                    <div style="padding-top: 20px;">
+                        <p style="color: #d4d4d8; font-size: 15px;">
+                            Os prestadores que acederem a este link ou lerem o QR Code poderão preencher o nome, contacto, estabelecimento e tempo pretendido para a prestação do serviço de karaoke.
+                        </p>
+                    </div>
+                """, unsafe_allow_html=True)
+
+        with aba2:
             pendentes = [p for p in prestadores_atuais if p.get("status_str", "pendente") == "pendente"]
             st.subheader(f"⏳ Registos pendentes ({len(pendentes)})")
             
@@ -79,7 +117,7 @@ def render():
                                 st.session_state.historico.append({"acao": "Recusa", "detalhe": f"Prestador {p['nome']} foi recusado.", "data": "Hoje"})
                                 st.rerun()
 
-        with aba2:
+        with aba3:
             ativos = [p for p in prestadores_atuais if p.get("status_str") == "aprovado"]
             st.subheader(f"🟢 Prestadores Ativos / Online ({len(ativos)})")
             if not ativos:
@@ -96,8 +134,10 @@ def render():
                             guardar_prestador(p)
                             st.rerun()
 
-        with aba3:
-            st.subheader("📊 Histórico e Informações Gerais")
-            if "historico" in st.session_state:
+        with aba4:
+            st.subheader("📊 Relatórios e Estatísticas Gerais")
+            if "historico" in st.session_state and st.session_state.historico:
                 for h in st.session_state.historico:
                     st.markdown(f"- **[{h['data']}] {h['acao']}**: {h['detalhe']}")
+            else:
+                st.info("Nenhum registo estatístico recente.")
