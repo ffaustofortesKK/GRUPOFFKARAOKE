@@ -36,9 +36,8 @@ def render():
             estabelecimento = st.text_input("Estabelecimento (Local onde vai prestar o serviço)")
             contrato = st.selectbox("Escolha o Contrato", [
                 "1 Hora - 12 Mil Kwanzaas", 
-                "3 Horas - 20 Mil Kwanzaas",
-                "Personalizado / Noite Completa"
-            ])
+                "2 Horas - 17 Mil Kwanzaas",
+                "3 Horas - 20 Mil Kwanzaas",])
             
             submitted = st.form_submit_button("Submeter Pedido", use_container_width=True)
             
