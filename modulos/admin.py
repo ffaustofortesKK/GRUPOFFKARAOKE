@@ -34,15 +34,28 @@ def render():
     else:
         prestadores_atuais = obter_prestadores()
         
-        # Filtros estritos baseados no status_str
-        ativos = [p for p in prestadores_atuais if p.get("status_str") == "aprovado"]
+        # Processa a expiração automática de tempo antes de filtrar
+        houve_alteracao = False
+        for p in prestadores_atuais:
+            if p.get("status_str") == "aprovado":
+                segundos = p.get("segundos_restantes", 0)
+                if segundos > 0:
+                    segundos -= 1
+                    p["segundos_restantes"] = segundos
+                    if segundos <= 0:
+                        p["status_str"] = "expirado"  # Transita automaticamente para histórico/relatório
+                    guardar_prestador(p)
+                    houve_alteracao = True
+
+        # Filtros atualizados: Activos são apenas os aprovados com tempo restante > 0
+        ativos = [p for p in prestadores_atuais if p.get("status_str") == "aprovado" and p.get("segundos_restantes", 0) > 0]
         qtd_ativos = len(ativos)
         
         # Apenas exibe na lista de pendentes se o status for exatamente "pendente"
         pendentes_lista = [p for p in prestadores_atuais if p.get("status_str") == "pendente"]
         qtd_pendentes = len(pendentes_lista)
 
-        # Indicador de Activos com o tamanho duplicado
+        # Indicador de Activos com o tamanho correto baseado estritamente nos online
         col_topo_esq, col_topo_dir = st.columns([8, 3])
         with col_topo_dir:
             st.markdown(f"""
@@ -155,7 +168,7 @@ def render():
             else:
                 dados_tabela = []
                 for p in ativos:
-                    segundos_restantes = p.get("segundos_restantes", 3600)
+                    segundos_restantes = p.get("segundos_restantes", 0)
                     tempo_formatado = formatarTempoDecrescente(segundos_restantes)
                     
                     dados_tabela.append({
@@ -168,23 +181,21 @@ def render():
                 
                 st.dataframe(dados_tabela, use_container_width=True)
                 
-                # Relógio a decrementar segundos em tempo real
+                # Aguarda 1 segundo e atualiza a página para decrementar o relógio em tempo real
                 time.sleep(1)
-                for p in ativos:
-                    if p.get("segundos_restantes", 3600) > 0:
-                        p["segundos_restantes"] = p.get("segundos_restantes", 3600) - 1
-                        guardar_prestador(p)
                 st.rerun()
 
         with aba4:
             st.subheader("📈 Relatórios e Estatísticas Gerais")
-            st.write("Registo completo de todas as solicitações e submissões de prestadores:")
+            st.write("Registo completo de todas as solicitações, submissões e contratos concluídos/expirados:")
             
             dados_historico_tabela = []
             for p in prestadores_atuais:
                 status_atual = p.get("status_str", "pendente")
                 if status_atual == "aprovado":
-                    estado_formatado = "Aprovado"
+                    estado_formatado = "Ativo / Em curso"
+                elif status_atual == "expirado":
+                    estado_formatado = "Concluído / Expirado"
                 elif status_atual == "recusado":
                     estado_formatado = "Recusado"
                 elif status_atual == "suspenso":
@@ -194,6 +205,7 @@ def render():
                 
                 dados_historico_tabela.append({
                     "Nome": p.get('nome', 'N/A'),
+                    "Estabelecimento": p.get('estabelecimento', 'N/A'),
                     "Contrato": p.get('plano', p.get('contrato', 'N/A')),
                     "Estado": estado_formatado,
                     "Reforço": p.get('reforco', 'N/A'),
