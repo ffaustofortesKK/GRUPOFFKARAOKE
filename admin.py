@@ -3,7 +3,6 @@ import urllib.parse
 from datetime import datetime
 from collections import defaultdict
 from db import obter_prestadores, guardar_prestador
-import streamlit.components.v1 as components
 
 def formatarTempoDecrescente(segundos: int) -> str:
     if segundos <= 0:
@@ -16,25 +15,6 @@ def formatarTempoDecrescente(segundos: int) -> str:
     return f"{minutos:02d}m {secs:02d}s"
 
 def render():
-    # --- AUTO-REFRESH INVISÍVEL (A CADA 10 SEGUNDOS SEM INTERRUPÇÃO VISUAL) ---
-    components.html(
-        """
-        <script>
-            setTimeout(function(){
-                // Dispara o evento de recarregamento de forma suave no container do Streamlit
-                const doc = window.parent.document;
-                const featherIcons = doc.querySelector('[data-testid="stStatusWidget"]');
-                if (window.parent.streamlit && window.parent.streamlit.rerun) {
-                    window.parent.streamlit.rerun();
-                } else {
-                    window.parent.location.reload();
-                }
-            }, 10000);
-        </script>
-        """,
-        height=0,
-    )
-
     st.title("Painel de Administração — FF Karaoke")
     st.caption("Gestão de acessos e controlos do programa FFK")
 
