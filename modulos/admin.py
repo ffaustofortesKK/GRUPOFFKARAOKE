@@ -41,13 +41,13 @@ def render():
         pendentes_lista = [p for p in prestadores_atuais if p.get("status_str", "pendente") == "pendente"]
         qtd_pendentes = len(pendentes_lista)
 
-        # Indicador de Activos posicionado por cima da linha superior, alinhado à direita
+        # Indicador de Activos com o tamanho duplicado (aumentado 100%)
         col_topo_esq, col_topo_dir = st.columns([8, 3])
         with col_topo_dir:
             st.markdown(f"""
                 <div style="text-align: right; padding-bottom: 5px;">
-                    <span style="color: #eab308; font-weight: bold; font-size: 15px;">Activos:</span> 
-                    <span style="color: #22c55e; font-weight: bold; font-size: 26px;">{qtd_ativos}</span>
+                    <span style="color: #eab308; font-weight: bold; font-size: 30px;">Activos:</span> 
+                    <span style="color: #22c55e; font-weight: bold; font-size: 52px;">{qtd_ativos}</span>
                 </div>
             """, unsafe_allow_html=True)
 
