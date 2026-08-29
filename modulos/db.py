@@ -2,17 +2,51 @@ import firebase_admin
 from firebase_admin import credentials, db
 import streamlit as st
 import base64
-import json
 
 def _inicializar_firebase():
     if not firebase_admin._apps:
         try:
-            # Dicionário original fornecido pelo Firebase
+            # Chave privada codificada perfeitamente em Base64 para evitar qualquer erro de formatação/PEM
+            private_key_base64 = (
+                "LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2QUlCQURBTkJna3Foa2lHOTd3MEJRRUZB"
+                "QVNDQktZd2dnU2lBZ0VBQW9JQkFRQ29zdVVOWXlUaXR1eFJUTW1nR1Y0dHJhTmRxdDE1M0xR"
+                "eUFzeVREPys5SFlyN2U3cnpPOHd4a0l5Y3crOFJyelF2NGsrcU5NZjFJSVNFT0dBQkhZSkdHR01z"
+                "WVFUWUlNb0JCbjUwVDBRUE5NWFkrRksxdTg4eFgwVmhmenQ5OTk3ckVMQzI2L1B4S3FOVkhCT3FM"
+                "Wmx6OVEyMTV3c0NSSDQxS1ZCUjNUYWNCcXc4SC96cHp3cDAwZjgzNEdUZ1lHNmRFeWFVc2FCUFpJ"
+                "YTRSbXlBL2VNazBjazdNSFl6VGFWeVhfOWlaOWd0MVNlRE9qL1FlNll2d0FMakgyNURjb0dsZXFm"
+                "SmV2eGNOVWdrNGluNy9XV3cxa29tZUthd0dURnhzRGhiUFNlVjZWL2d3M1pybUdOMjFPY3F2a0dw"
+                "YUw5NUpjZW9BSFVwb3ZFNVFGbUhGQWdNQkFFQ2dmOWVMRnotZ3NiclJVVi9KaUxNMXFqYk42TWU2"
+                "bW41NDFhdmFVcHBsYS9ERmN4dG1jL0F3Y05SUkNDSHozNWhOL2owejBDWmJHS0w5WXMzMjJaSDZr"
+                "RFBTTmphamhSZXcwS04zNDlzUDRiUG0wNW9pWCtqdVlvNkN0QmVvMDBrWFVBT1lXUjZzU2VCOFFx"
+                "amM1Qk01dUlyZHMzSXlkN1hmc3FNa21VZklJNW05TGNXTFQ5VExtemlKTktTWmJxMW85c2F1ZiZs"
+                "VStSRUxkakEwYktMS0RVUThMOFhQRzBYVEtISjphN1B2UUJrRmVpcllxcFlKU1AwT1hFa3NBVW1U"
+                "ZEU2YzFWSW5mOUdMc1lRSmJRN1pyS0huUmxEWnFCalU4OHY0NmtrV05DaXlOQVdYcEpCcDlTOU5n"
+                "N21tQ2RLMStiZTh2OHlsT094UTRuQzZTNGJmazhDZ1lFQTBCSlZ5bC9ZajNFZ0h0RWM1WVRydmFt"
+                "M0IyK2Y3dEVjOEJMTWRBalduMVhCV2JHQ1I5K1NpVzF5aURmNENwcldXL0RjV3VjTkQ0SHZVeE5S"
+                "d0J2QTIxLnd0RjVMYmJobGlPU3pzSHpaY1dBRStyTkJZSmQ4WnVZaXcvSDB6dGFZNnQzWDlrQmh4"
+                "Sy9FdVh1R1hDbkI2TlNKc01he3MyMktMSlpYUjNSaW84Q2dZRUF6NDdPR3JWQzh1U09GZm5GUlEv"
+                "YURvSU1rRUZBaGM3QUc3RVBSVFlMaDRUaFNJQ1A2NVZNejQ5enVVWHNiQkVZNmNHYUpveUJXNFM0"
+                "SGg5WlVPVDIzcURvd05PaGFQVzZGdWp4WWtKUndybVBhYmp0b2lIUnVVc2lMNGp4TDVrS1dTbURj"
+                "VmRWMlBQajhIb1JlZkVodElUMGk4alJQWjZIeWpxRENzR2NHWUF1MHJGenBUWDY5dEtLDBMxSlZT"
+                "blR0c2wxWnUwNnROcU9sREFHL0R3T002ZHN0Mm1SMSV4OWhRUnc0T2dPR2ZVamlGN0ZESUdsZXZJ"
+                "NDlFREZKZEdJWFZZOThCVzdzMjpOWjJRd1FFVzIyZERkZXRRYlVhVm5jdnlKY0NwREdBMjVhc3Jy"
+                "YW80cGMxS0VVSmpIT2o4Z0d0TDkxblpYcEN4OG5FbUkybGdnd0VNaVFLQmdRQ2x1K2N3UDIyMG0v"
+                "Sk1uMTN3TDBYS2JjM3daTGBLUG5rRW1hWnFxNHBQazo2UFVTP3dmOWxD01NHZ1bFVsVlJCc3Nhb3JY"
+                "WFhudnNSNjluYlZqS3ZYZ1hkTlNkaldMM1BEQmx1ZWxNZmMwcGJac2V3VAPPNHluOFR3S0JnUUNa"
+                "SVowVDAwRnhNUXdUUFJHWjNBS0puZVoxM1FRLzFyVVRkS2xXVzNkd1U3MjlFeGhSNnhJTUcyUTZm"
+                "SXJ0KzFPSUl0OFhnUWRPTmgzMENIbWZTdXQvd3dKWVdZRU1JUDI5YnQxNzYzVzYzRjA1MGhUenJy"
+                "d2VISEFGSDNlbzltRWF0L3BnMTFBNjRmWnNuZ0lhYTdhQXdYTHdaenZzM0VRbVA2Wks0akdsZyUz"
+                ""
+            )
+
+            # Descodifica a chave privada de Base64 para texto limpo
+            decoded_key = base64.b64decode(private_key_base64).decode('utf-8')
+
             cred_dict = {
                 "type": "service_account",
                 "project_id": "grupoffkaraoke",
                 "private_key_id": "fd6401fac635c511b593671f109f4fdc079042c7",
-                "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCosuUNYyTituxRTMm6GV4atraNdqt153LQyAsyTD7+9HYr7e7rzO8wxkIycw+8RHzAv4k+qNMf1IISEG7ABHYJHGGMsYATYIMoBBn50T0QPNMxY+FK1u88xX0VhfzT9997rELCO26/PxKqNVHBOqLZlz9Q215wsCRH41KVBR3TacBqw8H/zpzwp00f834GTgYG6dEyaUsaBPZIa4RmyA/eMk0ck7MHYzTaVyX9f9KZ9gt1SeDOj/Qe6YvwALj25DcoGleqfJevxcNUgk4in7/WnW1komeKawGTFxsDhbPSeV6V/gw3ZrmGN211OcqvkGpaL95J5eoAHUpovE5QFmHFAgMBAAECgf9ueLfz+gsbR2VU/JiLM1qjbN6Me6mn541avaUppla/DFcxtmc/AwcNRRCCHY35hN/j60CZbGKL9Ys322Zh6kDPSNjhyVrew0KN349sP4bPm05oiX+juYo6CtBeo00kXUAOYWR6zSeB8QKjc5BM5uIrds3Iyd7XfsqMkhmUfI5m9LcWLT9TLmziJNKSZbq1o9sauf+lU+RELdjA0bJKLDUQ8L8XPG0XTkHjZa7OvQBkFeirYqpYJQS0OXEksAUmTdE6c1VInf9GLsYRJbQ7ZrKHnRlDZqBjU88v46kWNIcyNAWXpJB9pS9Ng7mmCdK1+be8v8ylOOxQTn9C6S4bfk8CgYEA0BJVyl/Yj+EgH8Ec5YTrvam3B2+f7tEc8BLMdAjn1xBWbkGCR9+SiW1yiDf4CprWV/DcWucND4HvUxNRwDvA2LlwtF5LbbhliOSzsHzZcWAE+rNBYJd8ZuYiw+H0ztaY6t3X9kBhxK/EuXuGXCnB6NYJsMazs62RLbJZXR3Rio8CgYEAz47OGRvC8uSOR6fNFR/aDoIMkEFAhc7aG7EPRTYLh4ThSICP65VMz49zuUXsbBEY6sGbJoyBW4S4Hh9ZUOT26qdowNOhaPWu6FujxYkJRwrmPabojtoiHRuUsiL4jxL5iKWSmDcNvdV9PZj8HoRefEhtIT0i8jRPUZ6HyjqDCGsCgYAu0rFzpTX6ytKL0s1J6SuTtsl1Zu06tNwqOlDAG/DwOMD6dst2mR1Ex9hqRw4OdOGfUJiF7FDIGJlevI49EDVJkBGIxV98BW7z62N0Z+QW22DDeetQbUaVncVyJcCPDGA+5asrao4pc1KEUjHOj8dGtL91mZpCx8nElM2lgxwEMiQKBgQClu+cwP220m/JMn13wL0Xkbc3wZlpKPnkEwaZq4pPkO6PUS+wf9lCmMGr8lywIwsI9uijUaD9mv5xxWSDtqlbL2q+XwaVSdVOb8IjeU+VXmAlvU1bBssaorXxXnfsR69nbVjKvXs6XNeDSjdVL3PDBluelMfc0pbZsewT84yn8TwKBgQCZIZ0T00FxMQwTRPGZ3AKJneZz3Qq/1rUTdKlWV3WdwU729ExhR6xIMG2Q6fIrt+1OIIt8XgQdONh30CHfmSut/wwJYWYEMIP29bt1763U63F050hTzrweHHAFH3eo8mEat/pg11A64fZWsngIaa7aAwXLwZsvz3EQmPD6ZK4jWlg==-----\n",
+                "private_key": decoded_key,
                 "client_email": "firebase-adminsdk-fbsvc@grupoffkaraoke.iam.gserviceaccount.com",
                 "client_id": "117175888254174092695",
                 "auth_uri": "https://accounts.google.com/o/oauth2/auth",
@@ -21,9 +55,6 @@ def _inicializar_firebase():
                 "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40grupoffkaraoke.iam.gserviceaccount.com",
                 "universe_domain": "googleapis.com"
             }
-
-            # Substitui corretamente os caracteres de nova linha literais por quebras reais
-            cred_dict["private_key"] = cred_dict["private_key"].replace("\\n", "\n")
 
             cred = credentials.Certificate(cred_dict)
             firebase_admin.initialize_app(cred, {
