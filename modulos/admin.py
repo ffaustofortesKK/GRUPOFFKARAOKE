@@ -17,9 +17,9 @@ def formatarTempoDecrescente(segundos: int) -> str:
 def render():
     st.title("Painel de Administração — FF Karaoke")
     st.caption("Gestão de acessos e controlos do programa FFK")
-    st.divider()
 
     if not st.session_state.get("logged", False):
+        st.divider()
         st.subheader("🔒 Área restrita")
         with st.form("login_form"):
             password_input = st.text_input("Palavra-passe de administrador", type="password")
@@ -41,10 +41,21 @@ def render():
         pendentes_lista = [p for p in prestadores_atuais if p.get("status_str", "pendente") == "pendente"]
         qtd_pendentes = len(pendentes_lista)
 
-        # Cabeçalho superior direito com o indicador de Activos por cima do botão Terminar sessão
-        col_top_1, col_top_2 = st.columns([9, 2])
-        with col_top_2:
-            st.markdown(f"<p style='text-align: right; color: #eab308; font-weight: bold; margin-bottom: 2px;'>Activos: {qtd_ativos}</p>", unsafe_allow_html=True)
+        # Indicador de Activos posicionado por cima da linha superior, alinhado à direita, com número verde e maior destaque
+        col_topo_esq, col_topo_dir = st.columns([8, 3])
+        with col_topo_dir:
+            st.markdown(f"""
+                <div style="text-align: right; padding-bottom: 5px;">
+                    <span style="color: #eab308; font-weight: bold; font-size: 15px;">Activos:</span> 
+                    <span style="color: #22c55e; font-weight: bold; font-size: 26px;">{qtd_ativos}</span>
+                </div>
+            """, unsafe_allow_html=True)
+
+        st.divider()
+
+        # Linha do botão Terminar sessão por baixo da linha divisoria
+        col_l1, col_l2 = st.columns([9, 2])
+        with col_l2:
             if st.button("Terminar sessão", use_container_width=True):
                 st.session_state.logged = False
                 st.rerun()
