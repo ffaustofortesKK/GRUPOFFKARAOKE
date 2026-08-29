@@ -1,76 +1,49 @@
-import firebase_admin
-from firebase_admin import credentials, db
+import json
+import os
 import streamlit as st
 
-def _inicializar_firebase():
-    if not firebase_admin._apps:
-        try:
-            sec = st.secrets["Firebase"]
-            pk = sec["private_key"]
-            
-            # Limpa e formata corretamente a chave privada independentemente de como foi colada
-            pk = pk.strip().strip('"').strip("'")
-            if "\\n" in pk:
-                pk = pk.replace("\\n", "\n")
-            
-            # Garante os headers do PEM caso tenham sido omitidos
-            if not pk.startswith("-----BEGIN PRIVATE KEY-----"):
-                pk = "-----BEGIN PRIVATE KEY-----\n" + pk
-            if not pk.endswith("-----END PRIVATE KEY-----"):
-                pk = pk + "\n-----END PRIVATE KEY-----"
+FICHEIRO_DB = "prestadores.json"
 
-            cred_dict = {
-                "type": sec.get("type", "service_account"),
-                "project_id": sec["project_id"],
-                "private_key_id": sec["private_key_id"],
-                "private_key": pk,
-                "client_email": sec["client_email"],
-                "client_id": sec["client_id"],
-                "auth_uri": sec["auth_uri"],
-                "token_uri": sec["token_uri"],
-                "auth_provider_x509_cert_url": sec["auth_provider_x509_cert_url"],
-                "client_x509_cert_url": sec["client_x509_cert_url"],
-            }
+def _carregar_dados():
+    if not os.path.exists(FICHEIRO_DB):
+        # Dados iniciais de demonstração caso o ficheiro não exista
+        dados_iniciais = [
+            {"token": "demo-111", "nome": "João Silva", "telefone": "921000000", "estabelecimento": "Bar Central", "plano": "1 Hora - 12 Mil Kwanzas", "approved": True, "segundos_restantes": 3600},
+            {"token": "pend-222", "nome": "Carlos Mendes", "telefone": "923111222", "estabelecimento": "Restaurante O Kubico", "plano": "2 Horas - 17 Mil Kwanzas", "approved": False, "segundos_restantes": 7200}
+        ]
+        _guardar_dados(dados_iniciais)
+        return dados_iniciais
+    try:
+        with open(FICHEIRO_DB, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return []
 
-            cred = credentials.Certificate(cred_dict)
-            firebase_admin.initialize_app(cred, {
-                'databaseURL': sec["databaseURL"]
-            })
-        except Exception as e:
-            # Caso ocorra erro, exibe um aviso amigável para não quebrar a aplicação inteira
-            st.warning(f"Modo Offline / Erro de Ligação: A funcionar temporariamente sem persistência remota. ({e})")
+def _guardar_dados(lista_prestadores):
+    try:
+        with open(FICHEIRO_DB, "w", encoding="utf-8") as f:
+            json.dump(lista_prestadores, f, ensure_ascii=False, indent=4)
+    except Exception as e:
+        st.error(f"Erro ao salvar dados localmente: {e}")
 
 def obter_prestadores():
-    _inicializar_firebase()
-    try:
-        ref = db.reference('prestadores')
-        data = ref.get()
-        if data:
-            return list(data.values())
-    except Exception:
-        pass
-    return []
+    return _carregar_dados()
 
 def guardar_prestador(prestador_dict):
-    _inicializar_firebase()
-    try:
-        ref = db.reference('prestadores')
-        ref.child(str(prestador_dict['token'])).set(prestador_dict)
-    except Exception as e:
-        st.error(f"Erro ao guardar dados: {e}")
+    prestadores = _carregar_dados()
+    # Evita duplicados pelo token
+    prestadores = [p for p in prestadores if p["token"] != prestador_dict["token"]]
+    prestadores.append(prestador_dict)
+    _guardar_dados(prestadores)
 
 def atualizar_estado_prestador(token, approved):
-    _inicializar_firebase()
-    try:
-        ref = db.reference(f'prestadores/{token}')
-        ref.update({'approved': approved})
-    except Exception as e:
-        st.error(f"Erro ao atualizar dados: {e}")
+    prestadores = _carregar_dados()
+    for p in prestadores:
+        if p["token"] == token:
+            p["approved"] = approved
+    _guardar_dados(prestadores)
 
 def remover_prestador(token):
-    _inicializar_firebase()
-    try:
-        ref = db.reference(f'prestadores/{token}')
-        ref.delete()
-    except Exception as e:
-        st.error(f"Erro ao remover dados: {e}")
+    prestadores = _carregar_dados()
+    prestadores = [p for p in prestadores if p["token"] != token]
+    _guardar_dados(prestadores)
