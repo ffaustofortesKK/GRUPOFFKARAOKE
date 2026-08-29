@@ -42,53 +42,55 @@ def render():
                 st.session_state.logged = False
                 st.rerun()
 
-        # Atualiza a lista diretamente da base de dados
+        # Obtém os dados atualizados diretamente da base de dados JSON
         prestadores_atuais = obter_prestadores()
 
         # As 3 Abas do Administrador
         aba1, aba2, aba3 = st.tabs(["1º Pedidos e Aprovação", "2º Gestão Online", "3º Controle de Gestão"])
 
         with aba1:
-            pendentes = [p for p in prestadores_atuais if not p["approved"]]
+            pendentes = [p for p in prestadores_atuais if not p.get("approved", False)]
             st.subheader(f"⏳ Registos pendentes ({len(pendentes)})")
+            
             if not pendentes:
                 st.info("Nenhum registo à espera de aprovação.")
             else:
                 for p in pendentes:
                     with st.container(border=True):
-                        st.markdown(f"**{p['nome']}**")
-                        st.caption(f"Telefone: {p['telefone']} · Estabelecimento: {p.get('estabelecimento', 'N/A')} · Plano: {p['plano']} · Token: {p['token']}")
+                        st.markdown(f"**{p.get('nome')}**")
+                        st.caption(f"Telefone: {p.get('telefone')} · Estabelecimento: {p.get('estabelecimento', 'N/A')} · Plano: {p.get('plano')} · Token: `{p.get('token')}`")
+                        
                         col_a, col_b = st.columns(2)
                         with col_a:
-                            if st.button("✅ Aprovar", key=f"aprov_{p['token']}"):
-                                atualizar_estado_prestador(p['token'], True)
-                                if "historico" in st.session_state:
-                                    st.session_state.historico.append({"acao": "Aprovação", "detalhe": f"Prestador {p['nome']} aprovado.", "data": "Hoje"})
+                            if st.button("✅ Aprovar", key=f"aprov_{p.get('token')}"):
+                                atualizar_estado_prestador(p.get('token'), True)
+                                st.success(f"Prestador {p.get('nome')} aprovado com sucesso!")
                                 st.rerun()
                         with col_b:
-                            if st.button("❌ Recusar", key=f"rec_{p['token']}"):
-                                remover_prestador(p['token'])
-                                if "historico" in st.session_state:
-                                    st.session_state.historico.append({"acao": "Recusa", "detalhe": f"Prestador {p['nome']} foi recusado.", "data": "Hoje"})
+                            if st.button("❌ Recusar", key=f"rec_{p.get('token')}"):
+                                remover_prestador(p.get('token'))
+                                st.warning(f"Pedido de {p.get('nome')} recusado.")
                                 st.rerun()
 
         with aba2:
-            ativos = [p for p in prestadores_atuais if p["approved"]]
+            ativos = [p for p in prestadores_atuais if p.get("approved", False)]
             st.subheader(f"🟢 Prestadores Ativos / Online ({len(ativos)})")
             if not ativos:
                 st.info("Nenhum prestador ativo no momento.")
             else:
                 for p in ativos:
                     with st.container(border=True):
-                        tempo_str = formatarTempo(p["segundos_restantes"])
-                        st.markdown(f"**{p['nome']}** — Estabelecimento: {p.get('estabelecimento', 'N/A')} — Plano: {p['plano']}")
-                        st.write(f"Tempo restante: **{tempo_str}** | Token: `{p['token']}`")
-                        if st.button("Suspender Acesso", key=f"susp_{p['token']}"):
-                            atualizar_estado_prestador(p['token'], False)
+                        tempo_restante = p.get("segundos_restantes", 0)
+                        tempo_str = formatarTempo(tempo_restante)
+                        st.markdown(f"**{p.get('nome')}** — Estabelecimento: {p.get('estabelecimento', 'N/A')} — Plano: {p.get('plano')}")
+                        st.write(f"Tempo restante: **{tempo_str}** | Token: `{p.get('token')}`")
+                        
+                        if st.button("Suspender Acesso", key=f"susp_{p.get('token')}"):
+                            atualizar_estado_prestador(p.get('token'), False)
                             st.rerun()
 
         with aba3:
             st.subheader("📊 Histórico e Informações Gerais")
-            if "historico" in st.session_state:
-                for h in st.session_state.historico:
-                    st.markdown(f"- **[{h['data']}] {h['acao']}**: {h['detalhe']}")
+            st.write(f"Total de registos na base de dados: **{len(prestadores_atuais)}**")
+            st.write(f"Total aprovados: **{len([p for p in prestadores_atuais if p.get('approved')])}**")
+            st.write(f"Total pendentes: **{len([p for p in prestadores_atuais if not p.get('approved')])}**")
