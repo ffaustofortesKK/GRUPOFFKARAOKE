@@ -47,8 +47,22 @@ def render():
             st.subheader("Portal do Prestadores")
             st.write("Partilhe este link ou o QR Code com os prestadores para que possam submeter os seus dados.")
             
-            # URL da aplicação no Streamlit Cloud (substitua se o seu link exato for diferente)
-            base_url = "https://grupoffkaraoke.streamlit.app/?view=prestador"
+            # Deteta automaticamente o URL base atual da aplicação (funciona tanto em local como na nuvem)
+            try:
+                # Tenta capturar o URL base através dos componentes do Streamlit se disponível
+                base_url = st.context.headers.get("Host", "")
+                if base_url:
+                    protocol = "https" if "streamlit.app" in base_url or "https" in str(st.context.headers) else "http"
+                    # Se estiver em localhost puro, mantém uma estrutura limpa
+                    if "localhost" in base_url or "127.0.0.1" in base_url:
+                        base_url = f"http://{base_url}/?view=prestador"
+                    else:
+                        base_url = f"https://{base_url}/?view=prestador"
+                else:
+                    raise Exception()
+            except Exception:
+                # Fallback seguro caso o contexto não esteja acessível
+                base_url = "https://grupoffkaraoke.streamlit.app/?view=prestador"
             
             st.markdown(f"""
                 <div style="border: 2px solid #eab308; border-radius: 8px; padding: 15px; background-color: #18181b; margin-bottom: 20px;">
@@ -59,7 +73,7 @@ def render():
 
             col_q1, col_q2 = st.columns([2, 5])
             with col_q1:
-                # Gera o QR Code dinamicamente via API pública segura
+                # Gera o QR Code dinamicamente via API pública segura com o link correto detetado
                 url_encoded = urllib.parse.quote(base_url)
                 qr_api_url = f"https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={url_encoded}"
                 st.image(qr_api_url, width=180, caption="QR Code de Registo")
