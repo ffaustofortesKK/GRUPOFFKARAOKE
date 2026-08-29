@@ -32,6 +32,20 @@ def render():
                 else:
                     st.error("Palavra-passe incorreta.")
     else:
+        # --- ATUALIZAÇÃO AUTOMÁTICA EM SEGUNDO PLANO (A CADA 5 SEGUNDOS) ---
+        # Isto força o Streamlit a recarregar a página e ler o JSON fresco automaticamente
+        try:
+            from streamlit_autorefresh import st_autorefresh
+            # Atualiza a página a cada 5000 milissegundos (5 segundos)
+            st_autorefresh(interval=5000, key="auto_refresh_admin_pedidos")
+        except ImportError:
+            # Fallback nativo com HTML caso a biblioteca não esteja instalada no ambiente
+            st.markdown(
+                '<meta http-equiv="refresh" content="5">',
+                unsafe_allow_html=True
+            )
+        # -------------------------------------------------------------------
+
         try:
             prestadores_atuais = obter_prestadores()
             if not isinstance(prestadores_atuais, list):
