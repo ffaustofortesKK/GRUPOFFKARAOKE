@@ -1,3 +1,4 @@
+import time
 import streamlit as st
 import uuid
 from modulos.db import guardar_prestador, obter_prestadores
@@ -42,21 +43,21 @@ def render():
         </style>
     """, unsafe_allow_html=True)
 
-    # Sincroniza a lista de prestadores do Firebase
+    # Sincroniza a lista de prestadores da base de dados
     st.session_state.prestadores = obter_prestadores()
 
     # Verifica se já existe um identificador guardado na sessão
     prestador_id = st.session_state.get("prestador_id_sessao", None)
 
     if prestador_id:
-        prestador = next((p for p in st.session_state.prestadores if p["token"] == prestador_id), None)
+        prestador = next((p for p in st.session_state.prestadores if str(p["token"]) == str(prestador_id)), None)
         
         if not prestador:
             st.session_state.prestador_id_sessao = None
             st.rerun()
         
-        if not prestador["approved"]:
-            # ESTADO DE ESPERA COM O BOTÃO INTEGRADO DENTRO DO BLOCO
+        if not prestador.get("approved", False):
+            # ESTADO DE ESPERA COM VERIFICAÇÃO AUTOMÁTICA EM SEGUNDO PLANO
             st.markdown("""
                 <div class="card-container">
                     <h1 style="color: #eab308; font-size: 28px; margin-bottom: 10px;">Cadastramento do Prestador</h1>
@@ -73,20 +74,17 @@ def render():
                         O seu registo foi enviado com sucesso e está a aguardar a validação do Administrador.
                     </p>
                     <p style="color: #71717a; font-size: 13px; margin-top: 5px; margin-bottom: 25px;">
-                        Assim que for aprovado, esta página atualizar-se-á automaticamente.
+                        Assim que o administrador aprovar, esta página abrirá o seu painel automaticamente...
                     </p>
                 </div>
             """, unsafe_allow_html=True)
             
-            # Espaço e botão de verificação centralizado logo abaixo do bloco
-            st.write("")
-            col_v1, col_v2, col_v3 = st.columns([3, 2, 3])
-            with col_v2:
-                if st.button("🔄 Verificar Aprovação", use_container_width=True):
-                    st.rerun()
-                
+            # Aguarda 3 segundos em segundo plano e recarrega de forma 100% automática para detetar a aprovação
+            time.sleep(3)
+            st.rerun()
+            
         else:
-            # APROVADO: Painel de trabalho
+            # APROVADO: Abre logo o painel do prestador sem cliques adicionais
             st.success(f"🎉 Pedido Aprovado! Bem-vindo ao painel, {prestador['nome']}.")
             st.markdown("---")
             st.subheader("🔗 Os seus Links de Trabalho")
@@ -145,7 +143,7 @@ def render():
                         "segundos_restantes": segundos_atribuidos
                     }
                     
-                    # Guarda diretamente na base de dados do Firebase
+                    # Guarda diretamente na base de dados
                     guardar_prestador(novo_prestador)
                     
                     st.session_state.prestador_id_sessao = novo_id
