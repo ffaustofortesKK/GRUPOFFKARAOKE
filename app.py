@@ -55,11 +55,17 @@ if "historico" not in st.session_state:
         {"acao": "Sistema Iniciado", "detalhe": "Plataforma FFKaraoke carregada com sucesso.", "data": "Hoje"}
     ]
 
-# --- SISTEMA DE ROTAS POR PARÂMETRO DE URL CORRIGIDO ---
-# Lê diretamente o parâmetro 'view' da URL
-view = st.query_params.get("view")
+# --- SISTEMA DE ROTAS ROBUSTO ---
+# Lê os parâmetros do URL de forma segura independentemente da versão do Streamlit
+try:
+    query_params = st.query_params
+    view = query_params.get("view", "admin")
+    if isinstance(view, list):
+        view = view[0]
+except Exception:
+    view = "admin"
 
-# Se nenhum parâmetro for fornecido, força a abertura na página de administração
+# Se o URL estiver completamente vazio, força o admin
 if not view:
     view = "admin"
 
