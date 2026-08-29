@@ -16,7 +16,8 @@ def _carregar_dados():
             content = f.read().strip()
             if not content:
                 return []
-            return json.loads(content)
+            dados = json.loads(content)
+            return dados if isinstance(dados, list) else []
     except Exception:
         return []
 
@@ -32,6 +33,7 @@ def obter_prestadores():
 
 def guardar_prestador(prestador_dict):
     prestadores = _carregar_dados()
+    # Remove se já existir pelo token para atualizar os dados sem duplicar
     prestadores = [p for p in prestadores if str(p.get("token")) != str(prestador_dict.get("token"))]
     prestadores.append(prestador_dict)
     _guardar_dados(prestadores)
