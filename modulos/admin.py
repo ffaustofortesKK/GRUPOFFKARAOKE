@@ -1,5 +1,6 @@
 import streamlit as st
 import urllib.parse
+import time
 from modulos.db import obter_prestadores, guardar_prestador
 
 def formatarTempo(segundos: int) -> str:
@@ -47,13 +48,9 @@ def render():
             st.subheader("Portal do Prestadores")
             st.write("Partilhe este link ou o QR Code com os prestadores para que possam submeter os seus dados.")
             
-            # Deteta automaticamente o URL base atual da aplicação (funciona tanto em local como na nuvem)
             try:
-                # Tenta capturar o URL base através dos componentes do Streamlit se disponível
                 base_url = st.context.headers.get("Host", "")
                 if base_url:
-                    protocol = "https" if "streamlit.app" in base_url or "https" in str(st.context.headers) else "http"
-                    # Se estiver em localhost puro, mantém uma estrutura limpa
                     if "localhost" in base_url or "127.0.0.1" in base_url:
                         base_url = f"http://{base_url}/?view=prestador"
                     else:
@@ -61,7 +58,6 @@ def render():
                 else:
                     raise Exception()
             except Exception:
-                # Fallback seguro caso o contexto não esteja acessível
                 base_url = "https://grupoffkaraoke.streamlit.app/?view=prestador"
             
             st.markdown(f"""
@@ -73,7 +69,6 @@ def render():
 
             col_q1, col_q2 = st.columns([2, 5])
             with col_q1:
-                # Gera o QR Code dinamicamente via API pública segura com o link correto detetado
                 url_encoded = urllib.parse.quote(base_url)
                 qr_api_url = f"https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={url_encoded}"
                 st.image(qr_api_url, width=180, caption="QR Code de Registo")
@@ -92,7 +87,10 @@ def render():
             st.subheader(f"⏳ Registos pendentes ({len(pendentes)})")
             
             if not pendentes:
-                st.info("Nenhum registo à espera de aprovação.")
+                st.info("Nenhum registo à espera de aprovação. O painel verifica novos pedidos automaticamente...")
+                # Faz uma verificação automática suave a cada 5 segundos se não houver pendentes
+                time.sleep(5)
+                st.rerun()
             else:
                 for p in pendentes:
                     with st.container(border=True):
