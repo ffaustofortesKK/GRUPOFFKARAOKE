@@ -1,12 +1,9 @@
-import sys
-import os
-
-# Adiciona o diretório atual ao path do Python
-current_dir = os.path.dirname(os.path.abspath(__file__))
-if current_dir not in sys.path:
-    sys.path.insert(0, current_dir)
-
 import streamlit as st
+import admin
+import prestador
+import cliente
+import tela
+from db import obter_prestadores
 
 st.set_page_config(
     page_title="FFKaraoke — Sistema Principal",
@@ -41,16 +38,14 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- TENTATIVA DE IMPORTAÇÃO DA BASE DE DADOS ---
-try:
-    from modulos.db import obter_prestadores
-    st.session_state.prestadores = obter_prestadores()
-except Exception as e:
-    st.session_state.prestadores = []
-
 # --- INICIALIZAÇÃO DA SESSÃO GLOBAL ---
 if "logged" not in st.session_state:
     st.session_state.logged = False
+
+try:
+    st.session_state.prestadores = obter_prestadores()
+except Exception:
+    st.session_state.prestadores = []
 
 if "reforcos" not in st.session_state:
     st.session_state.reforcos = []
@@ -64,18 +59,14 @@ if "historico" not in st.session_state:
 query_params = st.query_params
 view = query_params.get("view", "admin")
 
-# Carrega e executa o módulo correspondente de forma isolada
+# Executa o módulo correspondente diretamente
 if view == "admin":
-    from modulos import admin
     admin.render()
 elif view == "prestador":
-    from modulos import prestador
     prestador.render()
 elif view == "cliente":
-    from modulos import cliente
     cliente.render()
 elif view == "tela":
-    from modulos import tela
     tela.render()
 else:
     st.error("Página não encontrada.")
