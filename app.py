@@ -1,3 +1,9 @@
+import sys
+import os
+
+# Adiciona explicitamente a raiz ao path do Python para garantir o carregamento correto no Streamlit Cloud
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+
 import streamlit as st
 import admin
 import prestador
