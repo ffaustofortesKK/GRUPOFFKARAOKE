@@ -1,16 +1,6 @@
 import streamlit as st
-import qrcode
-from io import BytesIO
+import urllib.parse
 from modulos.db import obter_prestadores, guardar_prestador
-
-def gerar_qr_code(url):
-    qr = qrcode.QRCode(version=1, box_size=10, border=2)
-    qr.add_data(url)
-    qr.make(fit=True)
-    img = qr.make_image(fill_color="black", back_color="white")
-    buffered = BytesIO()
-    img.save(buffered, format="PNG")
-    return buffered.getvalue()
 
 def formatarTempo(segundos: int) -> str:
     horas = segundos // 3600
@@ -46,7 +36,6 @@ def render():
 
         prestadores_atuais = obter_prestadores()
 
-        # Estrutura com as 4 Abas tal como na imagem de referência
         aba1, aba2, aba3, aba4 = st.tabs([
             "🔗 Link e QR Registo", 
             "⏳ Pedidos e Aprovação", 
@@ -70,11 +59,11 @@ def render():
 
             col_q1, col_q2 = st.columns([2, 5])
             with col_q1:
-                try:
-                    qr_bytes = gerar_qr_code(base_url)
-                    st.image(qr_bytes, width=200, caption="QR Code de Registo")
-                except Exception:
-                    st.info("Instale a biblioteca `qrcode` para visualizar o gráfico QR no ecrã.")
+                # Gera o QR Code via API online de forma totalmente segura e independente de bibliotecas externas
+                url_encoded = urllib.parse.quote(base_url)
+                qr_api_url = f"https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={url_encoded}"
+                st.image(qr_api_url, width=180, caption="QR Code de Registo")
+                
             with col_q2:
                 st.markdown("""
                     <div style="padding-top: 20px;">
