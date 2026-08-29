@@ -50,22 +50,27 @@ def render():
         </style>
     """, unsafe_allow_html=True)
 
-    # Sincroniza sempre com a base de dados em tempo real
-    st.session_state.prestadores = obter_prestadores()
+    # Lê os dados mais recentes diretamente do ficheiro JSON
+    todos_prestadores = obter_prestadores()
+    st.session_state.prestadores = todos_prestadores
 
     prestador_id = st.session_state.get("prestador_id_sessao", None)
 
     if prestador_id:
-        prestador = next((p for p in st.session_state.prestadores if str(p["token"]) == str(prestador_id)), None)
+        # Encontra o prestador pelo token atual
+        prestador = next((p for p in todos_prestadores if str(p["token"]) == str(prestador_id)), None)
         
         if not prestador:
-            st.session_state.prestador_id_sessao = None
-            st.rerun()
-        
+            st.warning("O seu registo já não se encontra ativo no sistema.")
+            if st.button("🔄 Voltar ao Início"):
+                st.session_state.prestador_id_sessao = None
+                st.rerun()
+            return
+
         status = prestador.get("status_str", "pendente")
 
         if status == "recusado":
-            # MENSAGEM DE RECUSA AUTOMÁTICA
+            # ECRÃ DE RECUSA
             st.markdown("""
                 <div class="card-container-recusado">
                     <h1 style="color: #ef4444; font-size: 28px; margin-bottom: 10px;">Pedido Recusado</h1>
@@ -73,7 +78,7 @@ def render():
                         Lamentamos informar que o seu pedido de registo foi recusado pelo Administrador.
                     </p>
                     <p style="color: #a1a1aa; font-size: 13px; margin-top: 10px;">
-                        Entre em contacto com o suporte para mais informações ou tente efetuar um novo registo.
+                        Pode submeter um novo pedido preenchendo os dados novamente.
                     </p>
                 </div>
             """, unsafe_allow_html=True)
@@ -86,6 +91,7 @@ def render():
                     st.rerun()
 
         elif status == "pendente":
+            # ECRÃ DE ESPERA
             st.markdown("""
                 <div class="card-container">
                     <h1 style="color: #eab308; font-size: 28px; margin-bottom: 10px;">Cadastramento do Prestador</h1>
@@ -102,13 +108,11 @@ def render():
                         O seu registo foi enviado com sucesso e está a aguardar a validação do Administrador.
                     </p>
                     <p style="color: #71717a; font-size: 13px; margin-top: 5px; margin-bottom: 25px;">
-                        Assim que o administrador aprovar, esta página mudará automaticamente.
+                        Clique no botão abaixo para verificar se já foi aprovado.
                     </p>
                 </div>
             """, unsafe_allow_html=True)
             
-            # Recarregamento automático leve a cada segundo usando componentes nativos se necessário, 
-            # ou botão de verificação limpo. (Para atualizar sem intervenção manual pesada, o Streamlit reexecuta com interações)
             st.write("")
             col_v1, col_v2, col_v3 = st.columns([3, 2, 3])
             with col_v2:
@@ -116,7 +120,7 @@ def render():
                     st.rerun()
                 
         else:
-            # APROVADO AUTOMATICAMENTE
+            # ECRÃ DE APROVADO
             st.success(f"🎉 Pedido Aprovado! Bem-vindo ao painel, {prestador['nome']}.")
             st.markdown("---")
             st.subheader("🔗 Os seus Links de Trabalho")
@@ -136,7 +140,7 @@ def render():
                 st.rerun()
                 
     else:
-        # FORMULÁRIO DE REGISTO
+        # FORMULÁRIO DE REGISTO INICIAL
         st.markdown("""
             <div style="text-align: center; margin-bottom: 25px;">
                 <h1 style="color: #eab308; font-size: 28px;">Cadastramento do Prestador</h1>
@@ -177,7 +181,6 @@ def render():
                     }
                     
                     guardar_prestador(novo_registo)
-                    st.session_state.prestadores = obter_prestadores()
                     st.session_state.prestador_id_sessao = novo_id
                     st.rerun()
                 else:
