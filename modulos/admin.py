@@ -87,9 +87,9 @@ def render():
             st.subheader(f"⏳ Registos pendentes ({len(pendentes)})")
             
             if not pendentes:
-                st.info("Nenhum registo à espera de aprovação. O painel verifica novos pedidos automaticamente...")
-                # Faz uma verificação automática suave a cada 5 segundos se não houver pendentes
-                time.sleep(5)
+                st.info("À espera de novos pedidos... A verificar automaticamente novos registos.")
+                # Atualiza automaticamente a aba a cada 3 segundos para apanhar novos pedidos do prestador sem clique manual
+                time.sleep(3)
                 st.rerun()
             else:
                 for p in pendentes:
