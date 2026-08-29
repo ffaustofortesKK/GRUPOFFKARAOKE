@@ -147,7 +147,7 @@ def render():
                                 st.rerun()
 
         with aba3:
-            st.subheader(f"🟢 Prestadores Activos ({qtd_ativos})")
+            st.subheader(f"🟢 Prestadores Activos / Online ({qtd_ativos})")
             
             if not ativos:
                 st.info("Nenhum prestador ativo no momento.")
@@ -167,19 +167,6 @@ def render():
                 
                 st.dataframe(dados_tabela, use_container_width=True)
                 
-                st.markdown("---")
-                st.write("**Gestão individual de acessos ativos:**")
-                for p in ativos:
-                    col_info, col_btn = st.columns([4, 1])
-                    with col_info:
-                        st.text(f"{p['nome']} | {p.get('estabelecimento', 'N/A')} | Contrato: {p.get('plano', p.get('contrato', 'N/A'))}")
-                    with col_btn:
-                        if st.button("Suspender", key=f"susp_{p['token']}"):
-                            p["approved"] = False
-                            p["status_str"] = "suspenso"
-                            guardar_prestador(p)
-                            st.rerun()
-                
                 # Relógio a decrementar segundos em tempo real
                 time.sleep(1)
                 for p in ativos:
@@ -190,9 +177,8 @@ def render():
 
         with aba4:
             st.subheader("📈 Relatórios e Estatísticas Gerais")
-            st.write("Registo completo de todas as solicitações, histórico de contratos e estados:")
+            st.write("Registo completo de todas as solicitações e submissões de prestadores:")
             
-            # Carrega diretamente todos os registos existentes na base de dados
             dados_historico_tabela = []
             for p in prestadores_atuais:
                 status_atual = p.get("status_str", "pendente")
