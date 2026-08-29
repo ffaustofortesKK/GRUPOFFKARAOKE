@@ -32,19 +32,14 @@ def render():
                 else:
                     st.error("Palavra-passe incorreta.")
     else:
-        # --- ATUALIZAÇÃO AUTOMÁTICA EM SEGUNDO PLANO (A CADA 5 SEGUNDOS) ---
-        # Isto força o Streamlit a recarregar a página e ler o JSON fresco automaticamente
+        # --- ATUALIZAÇÃO AUTOMÁTICA SEGURA (A CADA 5 SEGUNDOS) ---
+        # Utiliza exclusivamente o st_autorefresh para atualizar sem destruir o DOM por completo
         try:
             from streamlit_autorefresh import st_autorefresh
-            # Atualiza a página a cada 5000 milissegundos (5 segundos)
             st_autorefresh(interval=5000, key="auto_refresh_admin_pedidos")
         except ImportError:
-            # Fallback nativo com HTML caso a biblioteca não esteja instalada no ambiente
-            st.markdown(
-                '<meta http-equiv="refresh" content="5">',
-                unsafe_allow_html=True
-            )
-        # -------------------------------------------------------------------
+            # Caso a biblioteca não esteja instalada, adverte suavemente sem usar metatag destrutiva
+            st.sidebar.info("Dica: Instale 'streamlit-autorefresh' para atualização automática nativa em segundo plano.")
 
         try:
             prestadores_atuais = obter_prestadores()
@@ -217,7 +212,6 @@ def render():
             if not isinstance(todos_registos, list):
                 todos_registos = []
             
-            # --- SECÇÃO 1: RESUMO DIÁRIO (TOTAL DE CLIENTES E VALOR POR DIA) ---
             st.markdown("### 📅 Resumo Agregado por Dia")
             st.write("Estatísticas consolidadas de prestadores e valores cobrados por dia:")
             
@@ -257,7 +251,6 @@ def render():
 
             st.divider()
 
-            # --- SECÇÃO 2: HISTÓRICO DETALHADO COMPLETO ---
             st.markdown("### 📋 Registo Detalhado de Solicitações")
             st.write("Lista individual de todas as submissões e contratos:")
             
