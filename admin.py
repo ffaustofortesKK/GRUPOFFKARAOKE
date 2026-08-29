@@ -136,7 +136,7 @@ def render():
                 """, unsafe_allow_html=True)
 
         with aba2:
-            col_ p_top1, col_p_top2 = st.columns([8, 2])
+            col_p_top1, col_p_top2 = st.columns([8, 2])
             with col_p_top1:
                 st.subheader(f"⏳ Registos pendentes ({qtd_pendentes})")
             with col_p_top2:
