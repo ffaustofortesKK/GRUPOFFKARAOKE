@@ -1,5 +1,6 @@
 import streamlit as st
 import uuid
+from modulos.db import guardar_prestador, obter_prestadores
 
 def render():
     # Injetar CSS específico para o efeito do círculo tracejado e moldura dourada
@@ -40,6 +41,9 @@ def render():
         }
         </style>
     """, unsafe_allow_html=True)
+
+    # Sincroniza a lista de prestadores do Firebase
+    st.session_state.prestadores = obter_prestadores()
 
     # Verifica se já existe um identificador guardado na sessão
     prestador_id = st.session_state.get("prestador_id_sessao", None)
@@ -131,7 +135,7 @@ def render():
                     novo_id = str(uuid.uuid4())[:8]
                     segundos_atribuidos = contrato_opcoes[contrato_escolhido]
                     
-                    st.session_state.prestadores.append({
+                    novo_prestador = {
                         "token": novo_id,
                         "nome": nome_p,
                         "telefone": tel_p,
@@ -139,7 +143,10 @@ def render():
                         "plano": contrato_escolhido,
                         "approved": False,
                         "segundos_restantes": segundos_atribuidos
-                    })
+                    }
+                    
+                    # Guarda diretamente na base de dados do Firebase
+                    guardar_prestador(novo_prestador)
                     
                     st.session_state.prestador_id_sessao = novo_id
                     st.rerun()
