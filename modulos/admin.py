@@ -69,7 +69,7 @@ def render():
         aba1, aba2, aba3, aba4 = st.tabs([
             "🔗 Link e QR Registo", 
             titulo_aba_pendentes, 
-            "🟢 Prestador Activos", 
+            "🟢 Prestadores Activos", 
             "📈 Relatórios e Estatísticas"
         ])
 
@@ -112,7 +112,6 @@ def render():
                 """, unsafe_allow_html=True)
 
         with aba2:
-            # Alerta destacado com o número de pendentes por cima do título
             if qtd_pendentes > 0:
                 st.markdown(f"""
                     <div style="background-color: #fef08a; color: #713f12; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 15px; display: inline-block;">
@@ -137,16 +136,6 @@ def render():
                                 p["status_str"] = "aprovado"
                                 p["data_pedido"] = p.get("data_pedido", datetime.now().strftime("%d/%m/%Y %H:%M"))
                                 guardar_prestador(p)
-                                
-                                if "historico_pedidos" not in st.session_state:
-                                    st.session_state.historico_pedidos = []
-                                st.session_state.historico_pedidos.append({
-                                    "nome": p['nome'],
-                                    "contrato": p.get('plano', p.get('contrato', 'N/A')),
-                                    "estado": "Aprovado",
-                                    "reforco": p.get('reforco', 'N/A'),
-                                    "data": p["data_pedido"]
-                                })
                                 st.rerun()
                                 
                         with col_b:
@@ -155,16 +144,6 @@ def render():
                                 p["status_str"] = "recusado"
                                 p["data_pedido"] = p.get("data_pedido", datetime.now().strftime("%d/%m/%Y %H:%M"))
                                 guardar_prestador(p)
-                                
-                                if "historico_pedidos" not in st.session_state:
-                                    st.session_state.historico_pedidos = []
-                                st.session_state.historico_pedidos.append({
-                                    "nome": p['nome'],
-                                    "contrato": p.get('plano', p.get('contrato', 'N/A')),
-                                    "estado": "Recusado",
-                                    "reforco": p.get('reforco', 'N/A'),
-                                    "data": p["data_pedido"]
-                                })
                                 st.rerun()
 
         with aba3:
@@ -213,31 +192,28 @@ def render():
             st.subheader("📈 Relatórios e Estatísticas Gerais")
             st.write("Registo completo de todas as solicitações, histórico de contratos e estados:")
             
-            historico = st.session_state.get("historico_pedidos", [])
+            # Carrega diretamente todos os registos existentes na base de dados
+            dados_historico_tabela = []
+            for p in prestadores_atuais:
+                status_atual = p.get("status_str", "pendente")
+                if status_atual == "aprovado":
+                    estado_formatado = "Aprovado"
+                elif status_atual == "recusado":
+                    estado_formatado = "Recusado"
+                elif status_atual == "suspenso":
+                    estado_formatado = "Suspenso"
+                else:
+                    estado_formatado = "Pendente"
+                
+                dados_historico_tabela.append({
+                    "Nome": p.get('nome', 'N/A'),
+                    "Contrato": p.get('plano', p.get('contrato', 'N/A')),
+                    "Estado": estado_formatado,
+                    "Reforço": p.get('reforco', 'N/A'),
+                    "Data do contrato": p.get('data_pedido', datetime.now().strftime("%d/%m/%Y %H:%M"))
+                })
             
-            if not historico:
-                historico = []
-                for p in prestadores_atuais:
-                    estado_reg = "Aprovado" if p.get("status_str") == "aprovado" else ("Recusado" if p.get("status_str") == "recusado" else "Pendente")
-                    historico.append({
-                        "nome": p['nome'],
-                        "contrato": p.get('plano', p.get('contrato', 'N/A')),
-                        "estado": estado_reg,
-                        "reforco": p.get('reforco', 'N/A'),
-                        "data": p.get("data_pedido", datetime.now().strftime("%d/%m/%Y %H:%M"))
-                    })
-            
-            if historico:
-                dados_historico_tabela = []
-                for h in historico:
-                    if isinstance(h, dict):
-                        dados_historico_tabela.append({
-                            "Nome": h.get("nome", "N/A"),
-                            "Contrato": h.get("contrato", h.get("plano", "N/A")),
-                            "Estado": h.get("estado", "N/A"),
-                            "Reforço": h.get("reforco", "N/A"),
-                            "Data do contrato": h.get("data", "N/A")
-                        })
+            if dados_historico_tabela:
                 st.dataframe(dados_historico_tabela, use_container_width=True)
             else:
-                st.info("Nenhum registo estatístico recente.")
+                st.info("Nenhum registo estatístico disponível.")
