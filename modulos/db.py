@@ -1,16 +1,17 @@
 import firebase_admin
 from firebase_admin import credentials, db
 import streamlit as st
-import json
 import os
 
 def _inicializar_firebase():
     if not firebase_admin._apps:
         try:
-            if "firebase" in st.secrets and "json_content" in st.secrets["firebase"]:
-                # Lê o JSON bruto em formato de texto e converte para dicionário
-                raw_json = st.secrets["firebase"]["json_content"]
-                cred_dict = json.loads(raw_json)
+            if "firebase" in st.secrets:
+                cred_dict = dict(st.secrets["firebase"])
+                # Converte o formato literal \n da chave privada para uma quebra de linha real
+                if "private_key" in cred_dict:
+                    cred_dict["private_key"] = cred_dict["private_key"].encode().decode('unicode_escape')
+                
                 cred = credentials.Certificate(cred_dict)
             else:
                 json_path = "serviceAccountKey.json"
