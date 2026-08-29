@@ -1,4 +1,5 @@
 import streamlit as st
+from modulos.db import obter_prestadores
 
 st.set_page_config(
     page_title="FFKaraoke — Sistema Principal",
@@ -33,22 +34,19 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- INICIALIZAÇÃO DA BASE DE DADOS GLOBAL EM SESSÃO ---
+# --- INICIALIZAÇÃO DA BASE DE DADOS GLOBAL COM FIREBASE ---
 if "logged" not in st.session_state:
     st.session_state.logged = False
 
-if "prestadores" not in st.session_state:
-    st.session_state.prestadores = [
-        {"token": "demo-111", "nome": "João Silva", "telefone": "921000000", "estabelecimento": "Bar Central", "plano": "1 Hora - 12 Mil Kwanzas", "approved": True, "segundos_restantes": 3600},
-        {"token": "pend-222", "nome": "Carlos Mendes", "telefone": "923111222", "estabelecimento": "Restaurante O Kubico", "plano": "2 Horas - 17 Mil Kwanzas", "approved": False, "segundos_restantes": 7200}
-    ]
+# Carrega os prestadores do Firebase em vez de lista estática local
+st.session_state.prestadores = obter_prestadores()
 
 if "reforcos" not in st.session_state:
     st.session_state.reforcos = []
 
 if "historico" not in st.session_state:
     st.session_state.historico = [
-        {"acao": "Sistema Iniciado", "detalhe": "Plataforma FFKaraoke carregada.", "data": "Hoje"}
+        {"acao": "Sistema Iniciado", "detalhe": "Plataforma FFKaraoke carregada com Firebase.", "data": "Hoje"}
     ]
 
 # --- SISTEMA DE ROTAS POR PARÂMETRO DE URL ---
