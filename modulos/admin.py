@@ -1,5 +1,5 @@
 import streamlit as st
-from modulos.db import obter_prestadores, guardar_prestador, remover_prestador
+from modulos.db import obter_prestadores, guardar_prestador
 
 def formatarTempo(segundos: int) -> str:
     horas = segundos // 3600
@@ -14,10 +14,9 @@ def render():
     st.caption("Gestão de acessos e controlos do programa FFK")
     st.divider()
 
-    # Atualiza os dados a cada ciclo
+    # Sincroniza dados com a base de dados em cada ciclo
     st.session_state.prestadores = obter_prestadores()
 
-    # --- BOTÃO DE ATALHO PARA O PRESTADOR ---
     col_at1, col_at2 = st.columns([3, 7])
     with col_at1:
         if st.button("🎤 Ir para o Registo de Prestador"):
@@ -45,12 +44,13 @@ def render():
                 st.session_state.logged = False
                 st.rerun()
 
-        # As 3 Abas do Administrador
         aba1, aba2, aba3 = st.tabs(["1º Pedidos e Aprovação", "2º Gestão Online", "3º Controle de Gestão"])
 
         with aba1:
+            # Filtra apenas os pendentes reais
             pendentes = [p for p in st.session_state.prestadores if p.get("status_str", "pendente") == "pendente"]
             st.subheader(f"⏳ Registos pendentes ({len(pendentes)})")
+            
             if not pendentes:
                 st.info("Nenhum registo à espera de aprovação.")
             else:
@@ -59,22 +59,21 @@ def render():
                         st.markdown(f"**{p['nome']}**")
                         st.caption(f"Telefone: {p['telefone']} · Estabelecimento: {p.get('estabelecimento', 'N/A')} · Plano: {p['plano']} · Token: {p['token']}")
                         col_a, col_b = st.columns(2)
+                        
                         with col_a:
                             if st.button("✅ Aprovar", key=f"aprov_{p['token']}"):
                                 p["approved"] = True
                                 p["status_str"] = "aprovado"
                                 guardar_prestador(p)
                                 st.session_state.historico.append({"acao": "Aprovação", "detalhe": f"Prestador {p['nome']} aprovado.", "data": "Hoje"})
-                                st.session_state.prestadores = obter_prestadores()
                                 st.rerun()
+                                
                         with col_b:
                             if st.button("❌ Recusar", key=f"rec_{p['token']}"):
-                                # Altera o estado para recusado para que o prestador veja a mensagem imediatamente
                                 p["approved"] = False
                                 p["status_str"] = "recusado"
                                 guardar_prestador(p)
                                 st.session_state.historico.append({"acao": "Recusa", "detalhe": f"Prestador {p['nome']} foi recusado.", "data": "Hoje"})
-                                st.session_state.prestadores = obter_prestadores()
                                 st.rerun()
 
         with aba2:
@@ -92,7 +91,6 @@ def render():
                             p["approved"] = False
                             p["status_str"] = "suspenso"
                             guardar_prestador(p)
-                            st.session_state.prestadores = obter_prestadores()
                             st.rerun()
 
         with aba3:
