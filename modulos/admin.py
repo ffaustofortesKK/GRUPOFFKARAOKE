@@ -1,5 +1,5 @@
 import streamlit as st
-from modulos.db import obter_prestadores, guardar_prestador
+from modulos.db import obter_prestadores, guardar_prestador, remover_prestador
 
 def formatarTempo(segundos: int) -> str:
     horas = segundos // 3600
@@ -14,7 +14,7 @@ def render():
     st.caption("Gestão de acessos e controlos do programa FFK")
     st.divider()
 
-    # --- ATUALIZA OS DADOS DA BASE DE DADOS LOCAL ---
+    # Atualiza os dados a cada ciclo
     st.session_state.prestadores = obter_prestadores()
 
     # --- BOTÃO DE ATALHO PARA O PRESTADOR ---
@@ -49,7 +49,7 @@ def render():
         aba1, aba2, aba3 = st.tabs(["1º Pedidos e Aprovação", "2º Gestão Online", "3º Controle de Gestão"])
 
         with aba1:
-            pendentes = [p for p in st.session_state.prestadores if not p.get("approved", False)]
+            pendentes = [p for p in st.session_state.prestadores if p.get("status_str", "pendente") == "pendente"]
             st.subheader(f"⏳ Registos pendentes ({len(pendentes)})")
             if not pendentes:
                 st.info("Nenhum registo à espera de aprovação.")
@@ -61,28 +61,24 @@ def render():
                         col_a, col_b = st.columns(2)
                         with col_a:
                             if st.button("✅ Aprovar", key=f"aprov_{p['token']}"):
-                                # Atualiza o dicionário e grava na base de dados JSON persistente
                                 p["approved"] = True
+                                p["status_str"] = "aprovado"
                                 guardar_prestador(p)
                                 st.session_state.historico.append({"acao": "Aprovação", "detalhe": f"Prestador {p['nome']} aprovado.", "data": "Hoje"})
-                                # Atualiza a sessão imediatamente
                                 st.session_state.prestadores = obter_prestadores()
                                 st.rerun()
                         with col_b:
                             if st.button("❌ Recusar", key=f"rec_{p['token']}"):
-                                # Remove do ficheiro JSON reescrevendo a lista sem este token
-                                lista_atualizada = [x for x in st.session_state.prestadores if str(x["token"]) != str(p["token"])]
-                                
-                                # Reescreve o ficheiro através do método de salvamento do db.py
-                                from modulos.db import _guardar_dados
-                                _guardar_dados(lista_atualizada)
-                                
+                                # Altera o estado para recusado para que o prestador veja a mensagem imediatamente
+                                p["approved"] = False
+                                p["status_str"] = "recusado"
+                                guardar_prestador(p)
                                 st.session_state.historico.append({"acao": "Recusa", "detalhe": f"Prestador {p['nome']} foi recusado.", "data": "Hoje"})
                                 st.session_state.prestadores = obter_prestadores()
                                 st.rerun()
 
         with aba2:
-            ativos = [p for p in st.session_state.prestadores if p.get("approved", False)]
+            ativos = [p for p in st.session_state.prestadores if p.get("status_str") == "aprovado"]
             st.subheader(f"🟢 Prestadores Ativos / Online ({len(ativos)})")
             if not ativos:
                 st.info("Nenhum prestador ativo no momento.")
@@ -94,6 +90,7 @@ def render():
                         st.write(f"Tempo restante: **{tempo_str}** | Token: `{p['token']}`")
                         if st.button("Suspender Acesso", key=f"susp_{p['token']}"):
                             p["approved"] = False
+                            p["status_str"] = "suspenso"
                             guardar_prestador(p)
                             st.session_state.prestadores = obter_prestadores()
                             st.rerun()
