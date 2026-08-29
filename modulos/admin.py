@@ -1,15 +1,18 @@
 import streamlit as st
 import urllib.parse
 import time
+from datetime import datetime
 from modulos.db import obter_prestadores, guardar_prestador
 
-def formatarTempo(segundos: int) -> str:
+def formatarTempoDecrescente(segundos: int) -> str:
+    if segundos <= 0:
+        return "00m 00s"
     horas = segundos // 3600
     minutos = (segundos % 3600) // 60
     secs = segundos % 60
     if horas > 0:
-        return f"{horas}h {minutos}m"
-    return f"{minutos}m {secs}s"
+        return f"{horas:02d}h {minutos:02d}m {secs:02d}s"
+    return f"{minutos:02d}m {secs:02d}s"
 
 def render():
     st.title("Painel de Administração — FF Karaoke")
@@ -37,15 +40,21 @@ def render():
 
         prestadores_atuais = obter_prestadores()
 
+        # Calcula o número de pendentes para mostrar o alerta diretamente na aba
+        pendentes_lista = [p for p in prestadores_atuais if p.get("status_str", "pendente") == "pendente"]
+        qtd_pendentes = len(pendentes_lista)
+        
+        titulo_aba_pendentes = f"⏳ Pedidos e Aprovação ({qtd_pendentes})" if qtd_pendentes > 0 else "⏳ Pedidos e Aprovação"
+
         aba1, aba2, aba3, aba4 = st.tabs([
             "🔗 Link e QR Registo", 
-            "⏳ Pedidos e Aprovação", 
-            "📊 Gestão Total", 
+            titulo_aba_pendentes, 
+            "🟢 Prestadores Ativos", 
             "📈 Relatórios e Estatísticas"
         ])
 
         with aba1:
-            st.subheader("Portal do Prestadores")
+            st.subheader("Portal dos Prestadores")
             st.write("Partilhe este link ou o QR Code com os prestadores para que possam submeter os seus dados.")
             
             try:
@@ -77,68 +86,137 @@ def render():
                 st.markdown("""
                     <div style="padding-top: 20px;">
                         <p style="color: #d4d4d8; font-size: 15px;">
-                            Os prestadores que acederem a este link ou lerem o QR Code poderão preencher o nome, contacto, estabelecimento e tempo pretendido para a prestação do serviço de karaoke.
+                            Os prestadores que acederem a este link ou lerem o QR Code poderão preencher o nome, contacto, estabelecimento e o contrato pretendido para a prestação do serviço de karaoke.
                         </p>
                     </div>
                 """, unsafe_allow_html=True)
 
         with aba2:
-            pendentes = [p for p in prestadores_atuais if p.get("status_str", "pendente") == "pendente"]
-            st.subheader(f"⏳ Registos pendentes ({len(pendentes)})")
+            st.subheader(f"⏳ Registos pendentes ({qtd_pendentes})")
             
-            if not pendentes:
+            if not pendentes_lista:
                 st.info("À espera de novos pedidos... A verificar automaticamente novos registos.")
-                # Atualiza automaticamente a aba a cada 3 segundos para apanhar novos pedidos do prestador sem clique manual
                 time.sleep(3)
                 st.rerun()
             else:
-                for p in pendentes:
+                for p in pendentes_lista:
                     with st.container(border=True):
                         st.markdown(f"**{p['nome']}**")
-                        st.caption(f"Telefone: {p['telefone']} · Estabelecimento: {p.get('estabelecimento', 'N/A')} · Plano: {p['plano']} · Token: {p['token']}")
+                        st.caption(f"Telefone: {p['telefone']} · Estabelecimento: {p.get('estabelecimento', 'N/A')} · Contrato: {p.get('plano', p.get('contrato', 'N/A'))} · Token: {p['token']}")
                         col_a, col_b = st.columns(2)
                         
                         with col_a:
                             if st.button("✅ Aprovar", key=f"aprov_{p['token']}"):
                                 p["approved"] = True
                                 p["status_str"] = "aprovado"
+                                p["data_pedido"] = p.get("data_pedido", datetime.now().strftime("%d/%m/%Y %H:%M"))
                                 guardar_prestador(p)
-                                if "historico" not in st.session_state:
-                                    st.session_state.historico = []
-                                st.session_state.historico.append({"acao": "Aprovação", "detalhe": f"Prestador {p['nome']} aprovado.", "data": "Hoje"})
+                                
+                                if "historico_pedidos" not in st.session_state:
+                                    st.session_state.historico_pedidos = []
+                                st.session_state.historico_pedidos.append({
+                                    "nome": p['nome'],
+                                    "contrato": p.get('plano', 'N/A'),
+                                    "estado": "Aprovado",
+                                    "reforco": p.get('reforco', 'N/A'),
+                                    "data": p["data_pedido"]
+                                })
                                 st.rerun()
                                 
                         with col_b:
                             if st.button("❌ Recusar", key=f"rec_{p['token']}"):
                                 p["approved"] = False
                                 p["status_str"] = "recusado"
+                                p["data_pedido"] = p.get("data_pedido", datetime.now().strftime("%d/%m/%Y %H:%M"))
                                 guardar_prestador(p)
-                                if "historico" not in st.session_state:
-                                    st.session_state.historico = []
-                                st.session_state.historico.append({"acao": "Recusa", "detalhe": f"Prestador {p['nome']} foi recusado.", "data": "Hoje"})
+                                
+                                if "historico_pedidos" not in st.session_state:
+                                    st.session_state.historico_pedidos = []
+                                st.session_state.historico_pedidos.append({
+                                    "nome": p['nome'],
+                                    "contrato": p.get('plano', 'N/A'),
+                                    "estado": "Recusado",
+                                    "reforco": p.get('reforco', 'N/A'),
+                                    "data": p["data_pedido"]
+                                })
                                 st.rerun()
 
         with aba3:
             ativos = [p for p in prestadores_atuais if p.get("status_str") == "aprovado"]
             st.subheader(f"🟢 Prestadores Ativos / Online ({len(ativos)})")
+            
             if not ativos:
                 st.info("Nenhum prestador ativo no momento.")
             else:
+                # Criação da tabela organizada com colunas exigidas
+                dados_tabela = []
                 for p in ativos:
-                    with st.container(border=True):
-                        tempo_str = formatarTempo(p.get("segundos_restantes", 0))
-                        st.markdown(f"**{p['nome']}** — Estabelecimento: {p.get('estabelecimento', 'N/A')} — Plano: {p['plano']}")
-                        st.write(f"Tempo restante: **{tempo_str}** | Token: `{p['token']}`")
-                        if st.button("Suspender Acesso", key=f"susp_{p['token']}"):
+                    # Controlo dinâmico de segundos restantes
+                    segundos_restantes = p.get("segundos_restantes", 3600)
+                    tempo_formatado = formatarTempoDecrescente(segundos_restantes)
+                    
+                    dados_tabela.append({
+                        "Nome": p['nome'],
+                        "Estabelecimento": p.get('estabelecimento', 'N/A'),
+                        "Contrato": p.get('plano', 'N/A'),
+                        "Reforço": p.get('reforco', 'N/A'),
+                        "Tempo restante": tempo_formatado
+                    })
+                
+                st.dataframe(dados_tabela, use_container_width=True)
+                
+                st.markdown("---")
+                st.write("**Gestão individual de acessos ativos:**")
+                for p in ativos:
+                    col_info, col_btn = st.columns([4, 1])
+                    with col_info:
+                        st.text(f"{p['nome']} | {p.get('estabelecimento', 'N/A')} | Contrato: {p.get('plano', 'N/A')}")
+                    with col_btn:
+                        if st.button("Suspender", key=f"susp_{p['token']}"):
                             p["approved"] = False
                             p["status_str"] = "suspenso"
                             guardar_prestador(p)
                             st.rerun()
+                
+                # Atualização automática contínua do relógio decrescente a cada 1 segundo
+                time.sleep(1)
+                for p in ativos:
+                    if p.get("segundos_restantes", 0) > 0:
+                        p["segundos_restantes"] -= 1
+                        guardar_prestador(p)
+                st.rerun()
 
         with aba4:
-            st.subheader("📊 Relatórios e Estatísticas Gerais")
-            if "historico" in st.session_state and st.session_state.historico:
-                for h in st.session_state.historico:
-                    st.markdown(f"- **[{h['data']}] {h['acao']}**: {h['detalhe']}")
+            st.subheader("📈 Relatórios e Estatísticas Gerais")
+            st.write("Registo completo de todas as solicitações e submissões de prestadores:")
+            
+            # Histórico em formato de tabela estruturada
+            historico = st.session_state.get("historico_pedidos", [])
+            
+            # Se já existirem prestadores gravados, garante que aparecem na tabela de histórico caso não haja sessão gravada
+            if not historico:
+                historico = []
+                for p in prestadores_atuais:
+                    estado_reg = "Aprovado" if p.get("status_str") == "aprovado" else ("Recusado" if p.get("status_str") == "recusado" else "Pendente")
+                    historico.append({
+                        "Nome": p['nome'],
+                        "Contrato": p.get('plano', 'N/A'),
+                        "Estado": estado_reg,
+                        "Reforço": p.get('reforco', 'N/A'),
+                        "Data do contrato": p.get("data_pedido", "Hoje")
+                    })
+            
+            if historico:
+                dados_historico_tabela = []
+                for h in historico:
+                    if isinstance(h, dict):
+                        dados_historico_tabela.append({
+                            "Nome": h.get("nome", "N/A"),
+                            "Contrato": h.get("contrato", h.get("plano", "N/A")),
+                            "Estado": h.get("estado", "N/A"),
+                            "Reforço": h.get("reforco", "N/A"),
+                            "Data do contrato": h.get("data", "Hoje")
+                        })
+                st.dataframe(dados_historico_tabela, use_container_width=True)
             else:
                 st.info("Nenhum registo estatístico recente.")
