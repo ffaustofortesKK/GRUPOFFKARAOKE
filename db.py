@@ -12,12 +12,14 @@ def _carregar_dados():
         _guardar_dados(dados_iniciais)
         return dados_iniciais
     try:
-        with open(FICHEIRO_DB, "r", encoding="utf-8") as f:
-            content = f.read().strip()
-            if not content:
-                return []
-            dados = json.loads(content)
-            return dados if isinstance(dados, list) else []
+        # Força a leitura fresca do disco evitando cache de ficheiro antiga
+        if os.path.exists(FICHEIRO_DB):
+            with open(FICHEIRO_DB, "r", encoding="utf-8") as f:
+                content = f.read().strip()
+                if not content:
+                    return []
+                dados = json.loads(content)
+                return dados if isinstance(dados, list) else []
     except Exception:
         return []
 
@@ -25,17 +27,23 @@ def _guardar_dados(lista_prestadores):
     try:
         with open(FICHEIRO_DB, "w", encoding="utf-8") as f:
             json.dump(lista_prestadores, f, ensure_ascii=False, indent=4)
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Erro ao guardar dados: {e}")
 
 def obter_prestadores():
     return _carregar_dados()
 
 def guardar_prestador(prestador_dict):
+    # Carrega sempre os dados mais recentes do disco antes de adicionar o novo prestador
     prestadores = _carregar_dados()
+    
     # Remove se já existir pelo token para atualizar os dados sem duplicar
-    prestadores = [p for p in prestadores if str(p.get("token")) != str(prestador_dict.get("token"))]
+    token_atual = str(prestador_dict.get("token"))
+    prestadores = [p for p in prestadores if str(p.get("token")) != token_atual]
+    
+    # Adiciona o novo pedido no topo/fim da lista
     prestadores.append(prestador_dict)
+    
     _guardar_dados(prestadores)
 
 def remover_prestador(token):
