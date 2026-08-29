@@ -41,7 +41,7 @@ def render():
         pendentes_lista = [p for p in prestadores_atuais if p.get("status_str", "pendente") == "pendente"]
         qtd_pendentes = len(pendentes_lista)
 
-        # Indicador de Activos posicionado por cima da linha superior, alinhado à direita, com número verde e maior destaque
+        # Indicador de Activos posicionado por cima da linha superior, alinhado à direita
         col_topo_esq, col_topo_dir = st.columns([8, 3])
         with col_topo_dir:
             st.markdown(f"""
@@ -60,12 +60,16 @@ def render():
                 st.session_state.logged = False
                 st.rerun()
 
-        titulo_aba_pendentes = f"⏳ Pedidos e Aprovação ({qtd_pendentes})" if qtd_pendentes > 0 else "⏳ Pedidos e Aprovação"
+        # Alerta numérico por cima do título da Aba Pedidos e Aprovação
+        if qtd_pendentes > 0:
+            titulo_aba_pendentes = f"⏳ Pedidos ({qtd_pendentes})"
+        else:
+            titulo_aba_pendentes = "⏳ Pedidos e Aprovação"
 
         aba1, aba2, aba3, aba4 = st.tabs([
             "🔗 Link e QR Registo", 
             titulo_aba_pendentes, 
-            "🟢 Prestadores Ativos", 
+            "🟢 Prestador Activos", 
             "📈 Relatórios e Estatísticas"
         ])
 
@@ -108,12 +112,18 @@ def render():
                 """, unsafe_allow_html=True)
 
         with aba2:
+            # Alerta destacado com o número de pendentes por cima do título
+            if qtd_pendentes > 0:
+                st.markdown(f"""
+                    <div style="background-color: #fef08a; color: #713f12; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 15px; display: inline-block;">
+                        ⚠️ Atenção: Existem {qtd_pendentes} pedido(s) pendente(s) a aguardar aprovação!
+                    </div>
+                """, unsafe_allow_html=True)
+            
             st.subheader(f"⏳ Registos pendentes ({qtd_pendentes})")
             
             if not pendentes_lista:
-                st.info("À espera de novos pedidos... A verificar automaticamente novos registos.")
-                time.sleep(3)
-                st.rerun()
+                st.info("Nenhum pedido pendente de momento.")
             else:
                 for p in pendentes_lista:
                     with st.container(border=True):
@@ -132,7 +142,7 @@ def render():
                                     st.session_state.historico_pedidos = []
                                 st.session_state.historico_pedidos.append({
                                     "nome": p['nome'],
-                                    "contrato": p.get('plano', 'N/A'),
+                                    "contrato": p.get('plano', p.get('contrato', 'N/A')),
                                     "estado": "Aprovado",
                                     "reforco": p.get('reforco', 'N/A'),
                                     "data": p["data_pedido"]
@@ -150,7 +160,7 @@ def render():
                                     st.session_state.historico_pedidos = []
                                 st.session_state.historico_pedidos.append({
                                     "nome": p['nome'],
-                                    "contrato": p.get('plano', 'N/A'),
+                                    "contrato": p.get('plano', p.get('contrato', 'N/A')),
                                     "estado": "Recusado",
                                     "reforco": p.get('reforco', 'N/A'),
                                     "data": p["data_pedido"]
@@ -158,7 +168,7 @@ def render():
                                 st.rerun()
 
         with aba3:
-            st.subheader(f"🟢 Prestadores Ativos / Online ({qtd_ativos})")
+            st.subheader(f"🟢 Prestadores Activos ({qtd_ativos})")
             
             if not ativos:
                 st.info("Nenhum prestador ativo no momento.")
@@ -171,7 +181,7 @@ def render():
                     dados_tabela.append({
                         "Nome": p['nome'],
                         "Estabelecimento": p.get('estabelecimento', 'N/A'),
-                        "Contrato": p.get('plano', 'N/A'),
+                        "Contrato": p.get('plano', p.get('contrato', 'N/A')),
                         "Reforço": p.get('reforco', 'N/A'),
                         "Tempo restante": tempo_formatado
                     })
@@ -183,17 +193,25 @@ def render():
                 for p in ativos:
                     col_info, col_btn = st.columns([4, 1])
                     with col_info:
-                        st.text(f"{p['nome']} | {p.get('estabelecimento', 'N/A')} | Contrato: {p.get('plano', 'N/A')}")
+                        st.text(f"{p['nome']} | {p.get('estabelecimento', 'N/A')} | Contrato: {p.get('plano', p.get('contrato', 'N/A'))}")
                     with col_btn:
                         if st.button("Suspender", key=f"susp_{p['token']}"):
                             p["approved"] = False
                             p["status_str"] = "suspenso"
                             guardar_prestador(p)
                             st.rerun()
+                
+                # Relógio a decrementar segundos em tempo real
+                time.sleep(1)
+                for p in ativos:
+                    if p.get("segundos_restantes", 3600) > 0:
+                        p["segundos_restantes"] = p.get("segundos_restantes", 3600) - 1
+                        guardar_prestador(p)
+                st.rerun()
 
         with aba4:
             st.subheader("📈 Relatórios e Estatísticas Gerais")
-            st.write("Registo completo de todas as solicitações e submissões de prestadores:")
+            st.write("Registo completo de todas as solicitações, histórico de contratos e estados:")
             
             historico = st.session_state.get("historico_pedidos", [])
             
@@ -202,11 +220,11 @@ def render():
                 for p in prestadores_atuais:
                     estado_reg = "Aprovado" if p.get("status_str") == "aprovado" else ("Recusado" if p.get("status_str") == "recusado" else "Pendente")
                     historico.append({
-                        "Nome": p['nome'],
-                        "Contrato": p.get('plano', 'N/A'),
-                        "Estado": estado_reg,
-                        "Reforço": p.get('reforco', 'N/A'),
-                        "Data do contrato": p.get("data_pedido", "Hoje")
+                        "nome": p['nome'],
+                        "contrato": p.get('plano', p.get('contrato', 'N/A')),
+                        "estado": estado_reg,
+                        "reforco": p.get('reforco', 'N/A'),
+                        "data": p.get("data_pedido", datetime.now().strftime("%d/%m/%Y %H:%M"))
                     })
             
             if historico:
@@ -218,7 +236,7 @@ def render():
                             "Contrato": h.get("contrato", h.get("plano", "N/A")),
                             "Estado": h.get("estado", "N/A"),
                             "Reforço": h.get("reforco", "N/A"),
-                            "Data do contrato": h.get("data", "Hoje")
+                            "Data do contrato": h.get("data", "N/A")
                         })
                 st.dataframe(dados_historico_tabela, use_container_width=True)
             else:
