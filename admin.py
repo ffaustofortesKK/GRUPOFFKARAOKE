@@ -2,7 +2,7 @@ import streamlit as st
 import urllib.parse
 from datetime import datetime
 from collections import defaultdict
-from modulos.db import obter_prestadores, guardar_prestador
+from db import obter_prestadores, guardar_prestador
 
 def formatarTempoDecrescente(segundos: int) -> str:
     if segundos <= 0:
