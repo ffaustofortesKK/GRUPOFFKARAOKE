@@ -1,9 +1,3 @@
-import sys
-import os
-
-# Adiciona o diretório atual ao path do Python para evitar erros de importação
-sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-
 import streamlit as st
 
 st.set_page_config(
@@ -43,8 +37,6 @@ st.markdown("""
 if "logged" not in st.session_state:
     st.session_state.logged = False
 
-# CORREÇÃO CRUCIAL: 'setdefault' garante que a lista só é criada UMA VEZ.
-# Assim, quando o prestador se regista e o app faz rerun, os dados NÃO SE APAGAM.
 if "prestadores" not in st.session_state:
     st.session_state.prestadores = [
         {"token": "demo-111", "nome": "João Silva", "telefone": "921000000", "estabelecimento": "Bar Central", "plano": "1 Hora - 12 Mil Kwanzas", "approved": True, "segundos_restantes": 3600},
