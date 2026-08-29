@@ -12,6 +12,7 @@ def _carregar_dados():
         _guardar_dados(dados_iniciais)
         return dados_iniciais
     try:
+        # Abre o ficheiro ignorando qualquer cache do sistema operativo
         with open(FICHEIRO_DB, "r", encoding="utf-8") as f:
             content = f.read().strip()
             if not content:
@@ -32,7 +33,6 @@ def obter_prestadores():
 
 def guardar_prestador(prestador_dict):
     prestadores = _carregar_dados()
-    # Remove qualquer registo duplicado com o mesmo token antes de inserir/atualizar
     prestadores = [p for p in prestadores if str(p["token"]) != str(prestador_dict["token"])]
     prestadores.append(prestador_dict)
     _guardar_dados(prestadores)
