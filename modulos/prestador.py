@@ -4,13 +4,15 @@ from datetime import datetime
 from modulos.db import guardar_prestador, obter_prestadores
 
 def render():
-    # Inicializar estado de sessão se não existir
+    # Inicializar estados de sessão se não existirem
     if "pedido_submetido" not in st.session_state:
         st.session_state.pedido_submetido = False
         st.session_state.token_prestador = None
         st.session_state.estado_pedido = "pendente"
+    if "aprovado" not in st.session_state:
+        st.session_state.aprovado = False
 
-    # Se já submetido, verifica o estado atual na base de dados em cada ciclo
+    # Se já submetido e com token, verifica em tempo real o estado na base de dados
     if st.session_state.pedido_submetido and st.session_state.token_prestador:
         prestadores = obter_prestadores()
         prestador_atual = next((p for p in prestadores if p.get("token") == st.session_state.token_prestador), None)
@@ -21,9 +23,21 @@ def render():
             
             if status_atual == "aprovado":
                 st.session_state.aprovado = True
-                st.rerun()
 
-    # Se o pedido foi recusado pelo administrador
+    # SE JÁ ESTIVER APROVADO: Abre o painel do prestador
+    if st.session_state.get("aprovado", False) or st.session_state.get("estado_pedido") == "aprovado":
+        st.markdown("<h2 style='text-align: center; color: #22c55e;'>🎉 Acesso Aprovado!</h2>", unsafe_allow_html=True)
+        st.success("O seu acesso foi validado com sucesso pelo Administrador.")
+        
+        # Aqui pode chamar a função do painel do prestador ou a interface operacional dele
+        st.info("Bem-vindo ao painel operacional do prestador. O sistema está pronto para gerir as filas e o karaoke.")
+        
+        # Exemplo de botão para reiniciar ou atualizar se necessário
+        if st.button("Atualizar Painel"):
+            st.rerun()
+        return
+
+    # SE FOI RECUSADO PELO ADMINISTRADOR
     if st.session_state.pedido_submetido and st.session_state.estado_pedido == "recusado":
         st.markdown("""
             <div style="background-color: #0f0f11; border: 2px solid #ef4444; padding: 40px 20px; text-align: center; border-radius: 12px; margin-top: 20px;">
@@ -42,9 +56,10 @@ def render():
                 st.session_state.pedido_submetido = False
                 st.session_state.token_prestador = None
                 st.session_state.estado_pedido = "pendente"
+                st.session_state.aprovado = False
                 st.rerun()
 
-    # Se o pedido continua pendente (aguardando aprovação com animação)
+    # SE AINDA ESTIVER PENDENTE: Mostra os círculos em rotação oposta e faz auto-refresh
     elif st.session_state.pedido_submetido:
         st.markdown("""
             <style>
@@ -92,17 +107,17 @@ def render():
                     O seu registo foi enviado com sucesso e está a aguardar a validação do Administrador.
                 </p>
                 <p style="color: #a1a1aa; font-size: 14px;">
-                    Esta página atualizar-se-á automaticamente assim que houver uma decisão.
+                    Esta página abrirá automaticamente assim que o Administrador aprovar o acesso.
                 </p>
             </div>
         """, unsafe_allow_html=True)
         
-        # Intervalo de verificação automática a cada 3 segundos
+        # Verifica a base de dados a cada 3 segundos
         time.sleep(3)
         st.rerun()
                 
     else:
-        # Título e formulário com os 3 contratos atualizados
+        # Formulário de Registo Inicial com os 3 contratos solicitados
         st.markdown("<h2 style='text-align: center; color: #eab308;'>Cadastramento</h2>", unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; color: #a1a1aa; margin-bottom: 30px;'>Preencha os dados abaixo para submeter o seu pedido de acesso ao sistema.</p>", unsafe_allow_html=True)
 
@@ -111,7 +126,6 @@ def render():
             telefone = st.text_input("Telefone")
             estabelecimento = st.text_input("Estabelecimento (Local onde vai prestar o serviço)")
             
-            # Atualizado com os 3 contratos solicitados
             contrato = st.selectbox("Escolha o Contrato", [
                 "1 Hora - 12 Mil Kwanzaas", 
                 "2 Horas - 17 Mil Kwanzaas",
@@ -124,7 +138,6 @@ def render():
                 if nome.strip() and telefone.strip():
                     token_gerado = f"token_{int(time.time())}"
                     
-                    # Definir o tempo em segundos com base no contrato escolhido
                     if "1 Hora" in contrato:
                         segundos_contrato = 3600
                     elif "2 Horas" in contrato:
@@ -145,13 +158,12 @@ def render():
                         "data_pedido": datetime.now().strftime("%d/%m/%Y %H:%M")
                     }
                     
-                    # Guarda na base de dados
                     guardar_prestador(novo_prestador)
                     
-                    # Atualiza o estado da sessão local para exibir a tela de espera
                     st.session_state.pedido_submetido = True
                     st.session_state.token_prestador = token_gerado
                     st.session_state.estado_pedido = "pendente"
+                    st.session_state.aprovado = False
                     st.rerun()
                 else:
                     st.error("Por favor, preencha pelo menos o Nome Completo e o Telefone.")
