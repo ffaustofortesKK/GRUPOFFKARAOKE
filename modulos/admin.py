@@ -41,7 +41,7 @@ def render():
                 st.session_state.logged = False
                 st.rerun()
 
-        # Lê os dados mais recentes do ficheiro a cada ciclo
+        # Lê os dados em tempo real a cada carregamento da página do Admin
         prestadores_atuais = obter_prestadores()
 
         aba1, aba2, aba3 = st.tabs(["1º Pedidos e Aprovação", "2º Gestão Online", "3º Controle de Gestão"])
