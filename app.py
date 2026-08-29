@@ -6,7 +6,7 @@ st.set_page_config(
     layout="wide",
 )
 
-# --- CSS PARA ESCONDER A BARRA LATERAL (SIDEBAR) E ESTILIZAR ---
+# --- CSS PARA ESCONDER A BARRA LATERAL (SIDEBAR) ---
 st.markdown("""
     <style>
     [data-testid="stSidebar"] {
@@ -33,9 +33,18 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- INICIALIZAÇÃO DO ESTADO GLOBAL ---
+# --- INICIALIZAÇÃO DA BASE DE DADOS GLOBAL EM SESSÃO ---
 if "logged" not in st.session_state:
     st.session_state.logged = False
+
+if "prestadores" not in st.session_state:
+    st.session_state.prestadores = [
+        {"token": "demo-111", "nome": "João Silva", "telefone": "921000000", "estabelecimento": "Bar Central", "plano": "1 Hora - 12 Mil Kwanzas", "approved": True, "segundos_restantes": 3600},
+        {"token": "pend-222", "nome": "Carlos Mendes", "telefone": "923111222", "estabelecimento": "Restaurante O Kubico", "plano": "2 Horas - 17 Mil Kwanzas", "approved": False, "segundos_restantes": 7200}
+    ]
+
+if "reforcos" not in st.session_state:
+    st.session_state.reforcos = []
 
 if "historico" not in st.session_state:
     st.session_state.historico = [
