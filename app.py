@@ -1,7 +1,10 @@
 import sys
 import os
 
-sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+# Garante que a pasta raiz do projeto está no caminho do sistema para o Python encontrar os módulos
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
 
 import streamlit as st
 from modulos.db import obter_prestadores
