@@ -1,6 +1,5 @@
 import streamlit as st
 import urllib.parse
-import time
 from datetime import datetime
 from collections import defaultdict
 from modulos.db import obter_prestadores, guardar_prestador
@@ -145,7 +144,7 @@ def render():
                         col_a, col_b = st.columns(2)
                         
                         with col_a:
-                            if st.button("✅ Aprovar", key=f"aprov_{p.get('token', time.time())}"):
+                            if st.button("✅ Aprovar", key=f"aprov_{p.get('token', 't')}"):
                                 p["approved"] = True
                                 p["status_str"] = "aprovado"
                                 p["data_pedido"] = p.get("data_pedido", datetime.now().strftime("%d/%m/%Y %H:%M"))
@@ -153,7 +152,7 @@ def render():
                                 st.rerun()
                                 
                         with col_b:
-                            if st.button("❌ Recusar", key=f"rec_{p.get('token', time.time())}"):
+                            if st.button("❌ Recusar", key=f"rec_{p.get('token', 't')}"):
                                 p["approved"] = False
                                 p["status_str"] = "recusado"
                                 p["data_pedido"] = p.get("data_pedido", datetime.now().strftime("%d/%m/%Y %H:%M"))
@@ -180,9 +179,6 @@ def render():
                     })
                 
                 st.dataframe(dados_tabela, use_container_width=True)
-                
-                time.sleep(1)
-                st.rerun()
 
         with aba4:
             st.subheader("📈 Relatórios e Estatísticas Gerais")
