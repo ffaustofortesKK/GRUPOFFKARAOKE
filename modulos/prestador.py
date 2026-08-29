@@ -3,11 +3,19 @@ import uuid
 from modulos.db import guardar_prestador, obter_prestadores
 
 def render():
-    # Injetar CSS específico para o efeito do círculo tracejado e moldura dourada
     st.markdown("""
         <style>
         .card-container {
             border: 2px solid #eab308;
+            border-radius: 12px;
+            padding: 40px;
+            background-color: #09090b;
+            text-align: center;
+            color: #fafafa;
+            margin-top: 20px;
+        }
+        .card-container-recusado {
+            border: 2px solid #ef4444;
             border-radius: 12px;
             padding: 40px;
             background-color: #09090b;
@@ -42,10 +50,9 @@ def render():
         </style>
     """, unsafe_allow_html=True)
 
-    # Atualiza a lista global de prestadores na sessão a partir da base de dados
+    # Sincroniza sempre com a base de dados em tempo real
     st.session_state.prestadores = obter_prestadores()
 
-    # Verifica se já existe um identificador guardado na sessão
     prestador_id = st.session_state.get("prestador_id_sessao", None)
 
     if prestador_id:
@@ -55,8 +62,30 @@ def render():
             st.session_state.prestador_id_sessao = None
             st.rerun()
         
-        if not prestador["approved"]:
-            # ESTADO DE ESPERA COM O BOTÃO INTEGRADO DENTRO DO BLOCO
+        status = prestador.get("status_str", "pendente")
+
+        if status == "recusado":
+            # MENSAGEM DE RECUSA AUTOMÁTICA
+            st.markdown("""
+                <div class="card-container-recusado">
+                    <h1 style="color: #ef4444; font-size: 28px; margin-bottom: 10px;">Pedido Recusado</h1>
+                    <p style="color: #d4d4d8; font-size: 16px; margin-top: 15px;">
+                        Lamentamos informar que o seu pedido de registo foi recusado pelo Administrador.
+                    </p>
+                    <p style="color: #a1a1aa; font-size: 13px; margin-top: 10px;">
+                        Entre em contacto com o suporte para mais informações ou tente efetuar um novo registo.
+                    </p>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            st.write("")
+            col_r1, col_r2, col_r3 = st.columns([3, 2, 3])
+            with col_r2:
+                if st.button("🔄 Tentar Novo Registo", use_container_width=True):
+                    st.session_state.prestador_id_sessao = None
+                    st.rerun()
+
+        elif status == "pendente":
             st.markdown("""
                 <div class="card-container">
                     <h1 style="color: #eab308; font-size: 28px; margin-bottom: 10px;">Cadastramento do Prestador</h1>
@@ -73,19 +102,21 @@ def render():
                         O seu registo foi enviado com sucesso e está a aguardar a validação do Administrador.
                     </p>
                     <p style="color: #71717a; font-size: 13px; margin-top: 5px; margin-bottom: 25px;">
-                        Assim que for aprovado, esta página atualizar-se-á automaticamente.
+                        Assim que o administrador aprovar, esta página mudará automaticamente.
                     </p>
                 </div>
             """, unsafe_allow_html=True)
             
+            # Recarregamento automático leve a cada segundo usando componentes nativos se necessário, 
+            # ou botão de verificação limpo. (Para atualizar sem intervenção manual pesada, o Streamlit reexecuta com interações)
             st.write("")
             col_v1, col_v2, col_v3 = st.columns([3, 2, 3])
             with col_v2:
-                if st.button("🔄 Verificar Aprovação", use_container_width=True):
+                if st.button("🔄 Atualizar Estado", use_container_width=True):
                     st.rerun()
                 
         else:
-            # APROVADO: Painel de trabalho
+            # APROVADO AUTOMATICAMENTE
             st.success(f"🎉 Pedido Aprovado! Bem-vindo ao painel, {prestador['nome']}.")
             st.markdown("---")
             st.subheader("🔗 Os seus Links de Trabalho")
@@ -141,13 +172,11 @@ def render():
                         "estabelecimento": estabelecimento_p,
                         "plano": contrato_escolhido,
                         "approved": False,
+                        "status_str": "pendente",
                         "segundos_restantes": segundos_atribuidos
                     }
                     
-                    # Guarda na base de dados persistente
                     guardar_prestador(novo_registo)
-                    
-                    # Atualiza a sessão e redireciona para o estado de espera
                     st.session_state.prestadores = obter_prestadores()
                     st.session_state.prestador_id_sessao = novo_id
                     st.rerun()
