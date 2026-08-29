@@ -2,6 +2,7 @@ import streamlit as st
 import urllib.parse
 import time
 from datetime import datetime
+from collections import defaultdict
 from modulos.db import obter_prestadores, guardar_prestador
 
 def formatarTempoDecrescente(segundos: int) -> str:
@@ -37,25 +38,24 @@ def render():
         # Processa a expiração automática de tempo antes de filtrar
         houve_alteracao = False
         for p in prestadores_atuais:
-            if p.get("status_str") == "aprovado":
+            status_str = p.get("status_str", "pendente")
+            if status_str == "aprovado":
                 segundos = p.get("segundos_restantes", 0)
                 if segundos > 0:
                     segundos -= 1
                     p["segundos_restantes"] = segundos
                     if segundos <= 0:
-                        p["status_str"] = "expirado"  # Transita automaticamente para histórico/relatório
+                        p["status_str"] = "expirado"
+                        p["approved"] = False
                     guardar_prestador(p)
                     houve_alteracao = True
 
-        # Filtros atualizados: Activos são apenas os aprovados com tempo restante > 0
-        ativos = [p for p in prestadores_atuais if p.get("status_str") == "aprovado" and p.get("segundos_restantes", 0) > 0]
+        ativos = [p for p in prestadores_atuais if (p.get("status_str") == "aprovado" or p.get("approved") is True) and p.get("segundos_restantes", 0) > 0]
         qtd_ativos = len(ativos)
         
-        # Apenas exibe na lista de pendentes se o status for exatamente "pendente"
-        pendentes_lista = [p for p in prestadores_atuais if p.get("status_str") == "pendente"]
+        pendentes_lista = [p for p in prestadores_atuais if p.get("status_str") == "pendente" or (p.get("status_str") not in ["aprovado", "expirado", "recusado", "suspenso"] and not p.get("approved"))]
         qtd_pendentes = len(pendentes_lista)
 
-        # Indicador de Activos com o tamanho correto baseado estritamente nos online
         col_topo_esq, col_topo_dir = st.columns([8, 3])
         with col_topo_dir:
             st.markdown(f"""
@@ -67,18 +67,13 @@ def render():
 
         st.divider()
 
-        # Linha do botão Terminar sessão por baixo da linha divisoria
         col_l1, col_l2 = st.columns([9, 2])
         with col_l2:
             if st.button("Terminar sessão", use_container_width=True):
                 st.session_state.logged = False
                 st.rerun()
 
-        # Alerta numérico por cima do título da Aba Pedidos e Aprovação
-        if qtd_pendentes > 0:
-            titulo_aba_pendentes = f"⏳ Pedidos ({qtd_pendentes})"
-        else:
-            titulo_aba_pendentes = "⏳ Pedidos e Aprovação"
+        titulo_aba_pendentes = f"⏳ Pedidos ({qtd_pendentes})" if qtd_pendentes > 0 else "⏳ Pedidos e Aprovação"
 
         aba1, aba2, aba3, aba4 = st.tabs([
             "🔗 Link e QR Registo", 
@@ -140,12 +135,12 @@ def render():
             else:
                 for p in pendentes_lista:
                     with st.container(border=True):
-                        st.markdown(f"**{p['nome']}**")
-                        st.caption(f"Telefone: {p['telefone']} · Estabelecimento: {p.get('estabelecimento', 'N/A')} · Contrato: {p.get('plano', p.get('contrato', 'N/A'))} · Token: {p['token']}")
+                        st.markdown(f"**{p.get('nome', 'Sem Nome')}**")
+                        st.caption(f"Telefone: {p.get('telefone', 'N/A')} · Estabelecimento: {p.get('estabelecimento', 'N/A')} · Contrato: {p.get('plano', p.get('contrato', 'N/A'))} · Token: {p.get('token', 'N/A')}")
                         col_a, col_b = st.columns(2)
                         
                         with col_a:
-                            if st.button("✅ Aprovar", key=f"aprov_{p['token']}"):
+                            if st.button("✅ Aprovar", key=f"aprov_{p.get('token')}"):
                                 p["approved"] = True
                                 p["status_str"] = "aprovado"
                                 p["data_pedido"] = p.get("data_pedido", datetime.now().strftime("%d/%m/%Y %H:%M"))
@@ -153,7 +148,7 @@ def render():
                                 st.rerun()
                                 
                         with col_b:
-                            if st.button("❌ Recusar", key=f"rec_{p['token']}"):
+                            if st.button("❌ Recusar", key=f"rec_{p.get('token')}"):
                                 p["approved"] = False
                                 p["status_str"] = "recusado"
                                 p["data_pedido"] = p.get("data_pedido", datetime.now().strftime("%d/%m/%Y %H:%M"))
@@ -172,7 +167,7 @@ def render():
                     tempo_formatado = formatarTempoDecrescente(segundos_restantes)
                     
                     dados_tabela.append({
-                        "Nome": p['nome'],
+                        "Nome": p.get('nome', 'N/A'),
                         "Estabelecimento": p.get('estabelecimento', 'N/A'),
                         "Contrato": p.get('plano', p.get('contrato', 'N/A')),
                         "Reforço": p.get('reforco', 'N/A'),
@@ -186,16 +181,58 @@ def render():
 
         with aba4:
             st.subheader("📈 Relatórios e Estatísticas Gerais")
-            st.write("Registo completo de todas as solicitações, submissões e contratos concluídos/expirados:")
             
-            # Atualiza lista direto da base de dados para garantir todos os históricos
             todos_registos = obter_prestadores()
-            dados_historico_tabela = []
             
+            # --- SECÇÃO 1: RESUMO DIÁRIO (TOTAL DE CLIENTES E VALOR POR DIA) ---
+            st.markdown("### 📅 Resumo Agregado por Dia")
+            st.write("Estatísticas consolidadas de prestadores e valores cobrados por dia:")
+            
+            resumo_diario_dict = defaultdict(lambda: {"total_clientes": 0, "valor_total": 0})
+            
+            for p in todos_registos:
+                data_completa = p.get('data_pedido', datetime.now().strftime("%d/%m/%Y %H:%M"))
+                # Extrai apenas a parte da data (DD/MM/YYYY)
+                data_dia = data_completa.split(" ")[0] if " " in data_completa else data_completa
+                
+                contrato_str = p.get('plano', p.get('contrato', 'N/A'))
+                
+                # Identifica o valor numérico com base no contrato para somar corretamente
+                valor_numerico = 0
+                if "1 Hora" in contrato_str or "12" in contrato_str:
+                    valor_numerico = 12000
+                elif "2 Horas" in contrato_str or "17" in contrato_str:
+                    valor_numerico = 17000
+                elif "3 Horas" in contrato_str or "20" in contrato_str:
+                    valor_numerico = 20000
+                
+                resumo_diario_dict[data_dia]["total_clientes"] += 1
+                resumo_diario_dict[data_dia]["valor_total"] += valor_numerico
+            
+            tabela_resumo_dados = []
+            for dia, valores in sorted(resumo_diario_dict.items(), reverse=True):
+                tabela_resumo_dados.append({
+                    "Dia": dia,
+                    "Total de Clientes": valores["total_clientes"],
+                    "Valor Total": f"{valores['valor_total']:,.2f} Kwanzaas".replace(",", "X").replace(".", ",").replace("X", ".")
+                })
+            
+            if tabela_resumo_dados:
+                st.dataframe(tabela_resumo_dados, use_container_width=True)
+            else:
+                st.info("Nenhum resumo diário disponível.")
+
+            st.divider()
+
+            # --- SECÇÃO 2: HISTÓRICO DETALHADO COMPLETO ---
+            st.markdown("### 📋 Registo Detalhado de Solicitações")
+            st.write("Lista individual de todas as submissões e contratos:")
+            
+            dados_historico_tabela = []
             for p in todos_registos:
                 status_atual = p.get("status_str", "pendente")
                 
-                if status_atual == "aprovado":
+                if status_atual == "aprovado" or p.get("approved") is True:
                     if p.get("segundos_restantes", 0) <= 0:
                         estado_formatado = "Concluído / Expirado"
                     else:
@@ -211,7 +248,6 @@ def render():
                 
                 contrato_str = p.get('plano', p.get('contrato', 'N/A'))
                 
-                # Identificação precisa do valor em Kwanzaas para qualquer formato de contrato
                 if "1 Hora" in contrato_str or "12" in contrato_str:
                     valor_str = "12.000,00 Kwanzaas"
                 elif "2 Horas" in contrato_str or "17" in contrato_str:
