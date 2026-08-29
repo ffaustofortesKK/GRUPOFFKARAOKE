@@ -1,8 +1,8 @@
 import streamlit as st
 import uuid
-from modulos.db import obter_prestadores, guardar_prestador
 
 def render():
+    # Injetar CSS específico para o efeito do círculo tracejado e moldura dourada
     st.markdown("""
         <style>
         .card-container {
@@ -41,18 +41,18 @@ def render():
         </style>
     """, unsafe_allow_html=True)
 
+    # Verifica se já existe um identificador guardado na sessão
     prestador_id = st.session_state.get("prestador_id_sessao", None)
 
     if prestador_id:
-        prestadores = obter_prestadores()
-        prestador = next((p for p in prestadores if p["token"] == prestador_id), None)
+        prestador = next((p for p in st.session_state.prestadores if p["token"] == prestador_id), None)
         
         if not prestador:
             st.session_state.prestador_id_sessao = None
             st.rerun()
         
-        if not prestador.get("approved", False):
-            # Ecrã de espera com o design idêntico à imagem solicitada
+        if not prestador["approved"]:
+            # ESTADO DE ESPERA COM O BOTÃO INTEGRADO DENTRO DO BLOCO
             st.markdown("""
                 <div class="card-container">
                     <h1 style="color: #eab308; font-size: 28px; margin-bottom: 10px;">Cadastramento do Prestador</h1>
@@ -74,6 +74,7 @@ def render():
                 </div>
             """, unsafe_allow_html=True)
             
+            # Espaço e botão de verificação centralizado logo abaixo do bloco
             st.write("")
             col_v1, col_v2, col_v3 = st.columns([3, 2, 3])
             with col_v2:
@@ -81,6 +82,7 @@ def render():
                     st.rerun()
                 
         else:
+            # APROVADO: Painel de trabalho
             st.success(f"🎉 Pedido Aprovado! Bem-vindo ao painel, {prestador['nome']}.")
             st.markdown("---")
             st.subheader("🔗 Os seus Links de Trabalho")
@@ -100,6 +102,7 @@ def render():
                 st.rerun()
                 
     else:
+        # FORMULÁRIO DE REGISTO
         st.markdown("""
             <div style="text-align: center; margin-bottom: 25px;">
                 <h1 style="color: #eab308; font-size: 28px;">Cadastramento do Prestador</h1>
@@ -109,26 +112,26 @@ def render():
             </div>
         """, unsafe_allow_html=True)
         
-        # Substituído st.form por inputs normais para garantir feedback e reatividade imediata
-        nome_p = st.text_input("Nome Completo")
-        tel_p = st.text_input("Telefone")
-        estabelecimento_p = st.text_input("Estabelecimento (Local onde vai prestar o serviço)")
-        
-        contrato_opcoes = {
-            "1 Hora - 12 Mil Kwanzas": 3600,
-            "2 Horas - 17 Mil Kwanzas": 7200,
-            "3 Horas - 20 Mil Kwanzas": 10800
-        }
-        contrato_escolhido = st.selectbox("Escolha o Contrato", list(contrato_opcoes.keys()))
-        
-        st.write("")
-        if st.button("Submeter Pedido", type="primary", use_container_width=True):
-            if nome_p and tel_p and estabelecimento_p:
-                try:
+        with st.form("form_registo_prestador"):
+            nome_p = st.text_input("Nome Completo")
+            tel_p = st.text_input("Telefone")
+            estabelecimento_p = st.text_input("Estabelecimento (Local onde vai prestar o serviço)")
+            
+            contrato_opcoes = {
+                "1 Hora - 12 Mil Kwanzas": 3600,
+                "2 Horas - 17 Mil Kwanzas": 7200,
+                "3 Horas - 20 Mil Kwanzas": 10800
+            }
+            contrato_escolhido = st.selectbox("Escolha o Contrato", list(contrato_opcoes.keys()))
+            
+            submit_reg = st.form_submit_button("Submeter Pedido")
+            
+            if submit_reg:
+                if nome_p and tel_p and estabelecimento_p:
                     novo_id = str(uuid.uuid4())[:8]
                     segundos_atribuidos = contrato_opcoes[contrato_escolhido]
                     
-                    novo_prestador = {
+                    st.session_state.prestadores.append({
                         "token": novo_id,
                         "nome": nome_p,
                         "telefone": tel_p,
@@ -136,14 +139,9 @@ def render():
                         "plano": contrato_escolhido,
                         "approved": False,
                         "segundos_restantes": segundos_atribuidos
-                    }
+                    })
                     
-                    guardar_prestador(novo_prestador)
                     st.session_state.prestador_id_sessao = novo_id
-                    st.success("Pedido submetido com sucesso! A carregar painel de espera...")
                     st.rerun()
-                    
-                except Exception as e:
-                    st.error(f"Erro ao submeter o pedido para a base de dados: {e}")
-            else:
-                st.warning("Por favor, preencha todos os campos obrigatórios antes de submeter.")
+                else:
+                    st.error("Por favor, preencha todos os campos obrigatórios.")
