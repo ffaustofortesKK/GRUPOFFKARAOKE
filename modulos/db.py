@@ -2,6 +2,7 @@ import firebase_admin
 from firebase_admin import credentials, db
 import streamlit as st
 import os
+import json
 
 def _inicializar_firebase():
     if not firebase_admin._apps:
@@ -10,7 +11,15 @@ def _inicializar_firebase():
             if not os.path.exists(json_path):
                 json_path = os.path.join(os.getcwd(), "serviceAccountKey.json")
                 
-            cred = credentials.Certificate(json_path)
+            # Lê o JSON manualmente e corrige as quebras de linha da chave privada
+            with open(json_path, "r", encoding="utf-8") as f:
+                cred_dict = json.load(f)
+            
+            if "private_key" in cred_dict:
+                # Garante que as quebras de linha literais "\n" são interpretadas corretamente
+                cred_dict["private_key"] = cred_dict["private_key"].replace("\\n", "\n")
+
+            cred = credentials.Certificate(cred_dict)
 
             firebase_admin.initialize_app(cred, {
                 'databaseURL': 'https://grupoffkaraoke-default-rtdb.firebaseio.com/'
