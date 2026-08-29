@@ -1,22 +1,16 @@
 import firebase_admin
 from firebase_admin import credentials, db
 import streamlit as st
-import base64
-import json
+import os
 
 def _inicializar_firebase():
     if not firebase_admin._apps:
         try:
-            if "firebase" in st.secrets:
-                cred_dict = dict(st.secrets["firebase"])
+            json_path = "serviceAccountKey.json"
+            if not os.path.exists(json_path):
+                json_path = os.path.join(os.getcwd(), "serviceAccountKey.json")
                 
-                # Se a chave estiver em Base64, descodifica-a perfeitamente
-                if "private_key_b64" in cred_dict:
-                    cred_dict["private_key"] = base64.b64decode(cred_dict["private_key_b64"]).decode('utf-8')
-                
-                cred = credentials.Certificate(cred_dict)
-            else:
-                cred = credentials.Certificate("serviceAccountKey.json")
+            cred = credentials.Certificate(json_path)
 
             firebase_admin.initialize_app(cred, {
                 'databaseURL': 'https://grupoffkaraoke-default-rtdb.firebaseio.com/'
