@@ -6,16 +6,15 @@ FICHEIRO_DB = "prestadores.json"
 
 def _carregar_dados():
     if not os.path.exists(FICHEIRO_DB):
-        # Dados iniciais de demonstração caso o ficheiro não exista
-        dados_iniciais = [
-            {"token": "demo-111", "nome": "João Silva", "telefone": "921000000", "estabelecimento": "Bar Central", "plano": "1 Hora - 12 Mil Kwanzas", "approved": True, "segundos_restantes": 3600},
-            {"token": "pend-222", "nome": "Carlos Mendes", "telefone": "923111222", "estabelecimento": "Restaurante O Kubico", "plano": "2 Horas - 17 Mil Kwanzas", "approved": False, "segundos_restantes": 7200}
-        ]
+        dados_iniciais = []
         _guardar_dados(dados_iniciais)
         return dados_iniciais
     try:
         with open(FICHEIRO_DB, "r", encoding="utf-8") as f:
-            return json.load(f)
+            content = f.read().strip()
+            if not content:
+                return []
+            return json.loads(content)
     except Exception:
         return []
 
@@ -31,7 +30,7 @@ def obter_prestadores():
 
 def guardar_prestador(prestador_dict):
     prestadores = _carregar_dados()
-    # Evita duplicados pelo token
+    # Remove se já existir o token para atualizar com os novos dados
     prestadores = [p for p in prestadores if p["token"] != prestador_dict["token"]]
     prestadores.append(prestador_dict)
     _guardar_dados(prestadores)
@@ -39,11 +38,11 @@ def guardar_prestador(prestador_dict):
 def atualizar_estado_prestador(token, approved):
     prestadores = _carregar_dados()
     for p in prestadores:
-        if p["token"] == token:
+        if str(p["token"]) == str(token):
             p["approved"] = approved
     _guardar_dados(prestadores)
 
 def remover_prestador(token):
     prestadores = _carregar_dados()
-    prestadores = [p for p in prestadores if p["token"] != token]
+    prestadores = [p for p in prestadores if str(p["token"]) != str(token)]
     _guardar_dados(prestadores)
