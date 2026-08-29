@@ -1,17 +1,21 @@
 import firebase_admin
 from firebase_admin import credentials, db
 import streamlit as st
+import base64
 import json
 
 def _inicializar_firebase():
     if not firebase_admin._apps:
         try:
-            # Verifica se os segredos estão configurados no painel do Streamlit Cloud
             if "firebase" in st.secrets:
                 cred_dict = dict(st.secrets["firebase"])
+                
+                # Se a chave estiver em Base64, descodifica-a perfeitamente
+                if "private_key_b64" in cred_dict:
+                    cred_dict["private_key"] = base64.b64decode(cred_dict["private_key_b64"]).decode('utf-8')
+                
                 cred = credentials.Certificate(cred_dict)
             else:
-                # Fallback para ambiente local se tiver o ficheiro json na máquina
                 cred = credentials.Certificate("serviceAccountKey.json")
 
             firebase_admin.initialize_app(cred, {
