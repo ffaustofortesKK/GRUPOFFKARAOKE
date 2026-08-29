@@ -33,11 +33,17 @@ def render():
                 else:
                     st.error("Palavra-passe incorreta.")
     else:
-        prestadores_atuais = obter_prestadores()
+        try:
+            prestadores_atuais = obter_prestadores()
+            if not isinstance(prestadores_atuais, list):
+                prestadores_atuais = []
+        except Exception:
+            prestadores_atuais = []
         
         # Processa a expiração automática de tempo antes de filtrar
-        houve_alteracao = False
         for p in prestadores_atuais:
+            if not isinstance(p, dict):
+                continue
             status_str = p.get("status_str", "pendente")
             if status_str == "aprovado":
                 segundos = p.get("segundos_restantes", 0)
@@ -48,12 +54,11 @@ def render():
                         p["status_str"] = "expirado"
                         p["approved"] = False
                     guardar_prestador(p)
-                    houve_alteracao = True
 
-        ativos = [p for p in prestadores_atuais if (p.get("status_str") == "aprovado" or p.get("approved") is True) and p.get("segundos_restantes", 0) > 0]
+        ativos = [p for p in prestadores_atuais if isinstance(p, dict) and (p.get("status_str") == "aprovado" or p.get("approved") is True) and p.get("segundos_restantes", 0) > 0]
         qtd_ativos = len(ativos)
         
-        pendentes_lista = [p for p in prestadores_atuais if p.get("status_str") == "pendente" or (p.get("status_str") not in ["aprovado", "expirado", "recusado", "suspenso"] and not p.get("approved"))]
+        pendentes_lista = [p for p in prestadores_atuais if isinstance(p, dict) and (p.get("status_str") == "pendente" or (p.get("status_str") not in ["aprovado", "expirado", "recusado", "suspenso"] and not p.get("approved")))]
         qtd_pendentes = len(pendentes_lista)
 
         col_topo_esq, col_topo_dir = st.columns([8, 3])
@@ -140,7 +145,7 @@ def render():
                         col_a, col_b = st.columns(2)
                         
                         with col_a:
-                            if st.button("✅ Aprovar", key=f"aprov_{p.get('token')}"):
+                            if st.button("✅ Aprovar", key=f"aprov_{p.get('token', time.time())}"):
                                 p["approved"] = True
                                 p["status_str"] = "aprovado"
                                 p["data_pedido"] = p.get("data_pedido", datetime.now().strftime("%d/%m/%Y %H:%M"))
@@ -148,7 +153,7 @@ def render():
                                 st.rerun()
                                 
                         with col_b:
-                            if st.button("❌ Recusar", key=f"rec_{p.get('token')}"):
+                            if st.button("❌ Recusar", key=f"rec_{p.get('token', time.time())}"):
                                 p["approved"] = False
                                 p["status_str"] = "recusado"
                                 p["data_pedido"] = p.get("data_pedido", datetime.now().strftime("%d/%m/%Y %H:%M"))
@@ -183,6 +188,8 @@ def render():
             st.subheader("📈 Relatórios e Estatísticas Gerais")
             
             todos_registos = obter_prestadores()
+            if not isinstance(todos_registos, list):
+                todos_registos = []
             
             # --- SECÇÃO 1: RESUMO DIÁRIO (TOTAL DE CLIENTES E VALOR POR DIA) ---
             st.markdown("### 📅 Resumo Agregado por Dia")
@@ -191,13 +198,13 @@ def render():
             resumo_diario_dict = defaultdict(lambda: {"total_clientes": 0, "valor_total": 0})
             
             for p in todos_registos:
+                if not isinstance(p, dict):
+                    continue
                 data_completa = p.get('data_pedido', datetime.now().strftime("%d/%m/%Y %H:%M"))
-                # Extrai apenas a parte da data (DD/MM/YYYY)
                 data_dia = data_completa.split(" ")[0] if " " in data_completa else data_completa
                 
                 contrato_str = p.get('plano', p.get('contrato', 'N/A'))
                 
-                # Identifica o valor numérico com base no contrato para somar corretamente
                 valor_numerico = 0
                 if "1 Hora" in contrato_str or "12" in contrato_str:
                     valor_numerico = 12000
@@ -230,6 +237,8 @@ def render():
             
             dados_historico_tabela = []
             for p in todos_registos:
+                if not isinstance(p, dict):
+                    continue
                 status_atual = p.get("status_str", "pendente")
                 
                 if status_atual == "aprovado" or p.get("approved") is True:
