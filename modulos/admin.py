@@ -14,9 +14,6 @@ def render():
     st.caption("Gestão de acessos e controlos do programa FFK")
     st.divider()
 
-    # Sincroniza dados com a base de dados em cada ciclo
-    st.session_state.prestadores = obter_prestadores()
-
     col_at1, col_at2 = st.columns([3, 7])
     with col_at1:
         if st.button("🎤 Ir para o Registo de Prestador"):
@@ -44,11 +41,13 @@ def render():
                 st.session_state.logged = False
                 st.rerun()
 
+        # Lê os dados mais recentes do ficheiro a cada ciclo
+        prestadores_atuais = obter_prestadores()
+
         aba1, aba2, aba3 = st.tabs(["1º Pedidos e Aprovação", "2º Gestão Online", "3º Controle de Gestão"])
 
         with aba1:
-            # Filtra apenas os pendentes reais
-            pendentes = [p for p in st.session_state.prestadores if p.get("status_str", "pendente") == "pendente"]
+            pendentes = [p for p in prestadores_atuais if p.get("status_str", "pendente") == "pendente"]
             st.subheader(f"⏳ Registos pendentes ({len(pendentes)})")
             
             if not pendentes:
@@ -65,6 +64,8 @@ def render():
                                 p["approved"] = True
                                 p["status_str"] = "aprovado"
                                 guardar_prestador(p)
+                                if "historico" not in st.session_state:
+                                    st.session_state.historico = []
                                 st.session_state.historico.append({"acao": "Aprovação", "detalhe": f"Prestador {p['nome']} aprovado.", "data": "Hoje"})
                                 st.rerun()
                                 
@@ -73,11 +74,13 @@ def render():
                                 p["approved"] = False
                                 p["status_str"] = "recusado"
                                 guardar_prestador(p)
+                                if "historico" not in st.session_state:
+                                    st.session_state.historico = []
                                 st.session_state.historico.append({"acao": "Recusa", "detalhe": f"Prestador {p['nome']} foi recusado.", "data": "Hoje"})
                                 st.rerun()
 
         with aba2:
-            ativos = [p for p in st.session_state.prestadores if p.get("status_str") == "aprovado"]
+            ativos = [p for p in prestadores_atuais if p.get("status_str") == "aprovado"]
             st.subheader(f"🟢 Prestadores Ativos / Online ({len(ativos)})")
             if not ativos:
                 st.info("Nenhum prestador ativo no momento.")
@@ -95,5 +98,6 @@ def render():
 
         with aba3:
             st.subheader("📊 Histórico e Informações Gerais")
-            for h in st.session_state.historico:
-                st.markdown(f"- **[{h['data']}] {h['acao']}**: {h['detalhe']}")
+            if "historico" in st.session_state:
+                for h in st.session_state.historico:
+                    st.markdown(f"- **[{h['data']}] {h['acao']}**: {h['detalhe']}")
