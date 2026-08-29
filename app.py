@@ -55,9 +55,13 @@ if "historico" not in st.session_state:
         {"acao": "Sistema Iniciado", "detalhe": "Plataforma FFKaraoke carregada com sucesso.", "data": "Hoje"}
     ]
 
-# --- SISTEMA DE ROTAS POR PARÂMETRO DE URL ---
-query_params = st.query_params
-view = query_params.get("view", "admin")
+# --- SISTEMA DE ROTAS POR PARÂMETRO DE URL CORRIGIDO ---
+# Lê diretamente o parâmetro 'view' da URL
+view = st.query_params.get("view")
+
+# Se nenhum parâmetro for fornecido, força a abertura na página de administração
+if not view:
+    view = "admin"
 
 # Carrega o módulo correspondente executando a respetiva função render()
 if view == "admin":
