@@ -1,3 +1,8 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+import streamlit as st
+from modulos.db import obter_prestadores
 import streamlit as st
 from modulos.db import obter_prestadores
 
