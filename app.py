@@ -1,13 +1,16 @@
 import sys
 import os
 
-# Garante que a pasta raiz do projeto está no caminho do sistema para o Python encontrar os módulos
+# Garante que a pasta raiz do projeto está no caminho do sistema
 current_dir = os.path.dirname(os.path.abspath(__file__))
 if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
 
 import streamlit as st
 from modulos.db import obter_prestadores
+
+# Importações de módulos no topo para evitar erros de caminho no Streamlit Cloud
+from modulos import admin, prestador, cliente, tela
 
 st.set_page_config(
     page_title="FFKaraoke — Sistema Principal",
@@ -61,18 +64,14 @@ if "historico" not in st.session_state:
 query_params = st.query_params
 view = query_params.get("view", "admin")
 
-# Carrega o módulo correspondente executando a respetiva função render()
+# Executa a função render() correspondente à rota escolhida
 if view == "admin":
-    from modulos import admin
     admin.render()
 elif view == "prestador":
-    from modulos import prestador
     prestador.render()
 elif view == "cliente":
-    from modulos import cliente
     cliente.render()
 elif view == "tela":
-    from modulos import tela
     tela.render()
 else:
     st.error("Página não encontrada.")
