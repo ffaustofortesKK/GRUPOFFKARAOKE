@@ -1,19 +1,17 @@
 import firebase_admin
 from firebase_admin import credentials, db
 import streamlit as st
-import base64
-import json
 import os
 
 def _inicializar_firebase():
     if not firebase_admin._apps:
         try:
-            if "firebase" in st.secrets and "b64_json" in st.secrets["firebase"]:
-                b64_str = st.secrets["firebase"]["b64_json"]
-                # Descodifica ignorando eventuais caracteres de byte inválidos marginais
-                json_bytes = base64.b64decode(b64_str)
-                json_str = json_bytes.decode('utf-8', errors='ignore')
-                cred_dict = json.loads(json_str)
+            if "firebase" in st.secrets:
+                cred_dict = dict(st.secrets["firebase"])
+                # Corrige as quebras de linha na chave privada se vierem em formato literal
+                if "private_key" in cred_dict:
+                    cred_dict["private_key"] = cred_dict["private_key"].replace("\\n", "\n")
+                
                 cred = credentials.Certificate(cred_dict)
             else:
                 json_path = "serviceAccountKey.json"
