@@ -4,7 +4,6 @@ from datetime import datetime
 from db import guardar_prestador, obter_prestadores
 
 def render():
-    # Inicializar estado de sessão se não existir
     if "pedido_submetido" not in st.session_state:
         st.session_state.pedido_submetido = False
         st.session_state.token_prestador = None
@@ -12,7 +11,6 @@ def render():
     if "aprovado" not in st.session_state:
         st.session_state.aprovado = False
 
-    # Se já submetido, verifica o estado atual na base de dados em cada ciclo
     if st.session_state.pedido_submetido and st.session_state.token_prestador:
         prestadores = obter_prestadores()
         prestador_atual = next((p for p in prestadores if p.get("token") == st.session_state.token_prestador), None)
@@ -24,10 +22,7 @@ def render():
             if status_atual == "aprovado":
                 st.session_state.aprovado = True
 
-    # SE JÁ ESTIVER APROVADO: Entra logo no painel operacional completo do prestador
     if st.session_state.get("aprovado", False) or st.session_state.get("estado_pedido") == "aprovado":
-        
-        # Cabeçalho do Painel do Prestador
         st.markdown("""
             <div style="border: 2px solid #eab308; background-color: #0f0f11; padding: 25px; border-radius: 12px; margin-bottom: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -39,13 +34,11 @@ def render():
             </div>
         """, unsafe_allow_html=True)
         
-        # Abas principais do painel do prestador
         tab_fila, tab_definicoes = st.tabs(["🎵 Fila de Reprodução & Leitor", "⚙️ Definições / Terminar Sessão"])
         
         with tab_fila:
             st.info("O sistema está ativo e a escutar novos pedidos de música dos clientes.")
             
-            # Layout simétrico com Links e QR Code à direita
             col_links, col_qr = st.columns([2, 1])
             with col_links:
                 st.markdown("##### 🔗 Links de Acesso")
@@ -84,7 +77,6 @@ def render():
                 st.rerun()
         return
 
-    # Se o pedido foi recusado pelo administrador
     if st.session_state.pedido_submetido and st.session_state.estado_pedido == "recusado":
         st.markdown("""
             <div style="background-color: #0f0f11; border: 2px solid #ef4444; padding: 40px 20px; text-align: center; border-radius: 12px; margin-top: 20px;">
@@ -106,7 +98,6 @@ def render():
                 st.session_state.aprovado = False
                 st.rerun()
 
-    # Se o pedido continua pendente (aguardando aprovação com animação)
     elif st.session_state.pedido_submetido:
         st.markdown("""
             <style>
@@ -163,7 +154,6 @@ def render():
         st.rerun()
                 
     else:
-        # Título e formulário com os contratos e valores atualizados
         st.markdown("<h2 style='text-align: center; color: #eab308;'>Cadastramento</h2>", unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; color: #a1a1aa; margin-bottom: 30px;'>Preencha os dados abaixo para submeter o seu pedido de acesso ao sistema.</p>", unsafe_allow_html=True)
 
@@ -172,7 +162,6 @@ def render():
             telefone = st.text_input("Telemóvel / Telefone")
             estabelecimento = st.text_input("Estabelecimento (Local onde vai prestar o serviço)")
             
-            # Contratos com os valores exatos pedidos
             contrato = st.selectbox("Escolha o Contrato", [
                 "1 Hora - 12.000,00 Kwanzaas", 
                 "2 Horas - 17.000,00 Kwanzaas",
@@ -185,7 +174,6 @@ def render():
                 if nome.strip() and telefone.strip():
                     token_gerado = f"token_{int(time.time())}"
                     
-                    # Definir o tempo em segundos correspondente ao contrato selecionado
                     if "1 Hora" in contrato:
                         segundos_contrato = 3600
                     elif "2 Horas" in contrato:
