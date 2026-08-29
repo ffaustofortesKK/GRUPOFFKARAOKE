@@ -8,19 +8,48 @@ def render():
     if "pedido_submetido" not in st.session_state:
         st.session_state.pedido_submetido = False
         st.session_state.token_prestador = None
+        st.session_state.estado_pedido = "pendente"
 
     # Se já submetido, verifica automaticamente o estado na base de dados (Auto-refresh)
     if st.session_state.pedido_submetido and st.session_state.token_prestador:
         prestadores = obter_prestadores()
         prestador_atual = next((p for p in prestadores if p.get("token") == st.session_state.token_prestador), None)
         
-        # Se foi aprovado pelo administrador, muda o estado para liberar a interface do painel
-        if prestador_atual and prestador_atual.get("status_str") == "aprovado":
-            st.session_state.aprovado = True
-            st.rerun()
+        if prestador_atual:
+            status_atual = prestador_atual.get("status_str", "pendente")
+            
+            # Se foi aprovado pelo administrador
+            if status_atual == "aprovado":
+                st.session_state.aprovado = True
+                st.rerun()
+                
+            # Se foi recusado pelo administrador, guarda o estado para mostrar o aviso
+            elif status_atual == "recusado":
+                st.session_state.estado_pedido = "recusado"
 
-    # Se o pedido foi submetido, mostra a tela de espera com os círculos animados em rotações opostas
-    if st.session_state.pedido_submetido:
+    # Se o pedido foi recusado pelo administrador
+    if st.session_state.pedido_submetido and st.session_state.estado_pedido == "recusado":
+        st.markdown("""
+            <div style="background-color: #0f0f11; border: 2px solid #ef4444; padding: 40px 20px; text-align: center; border-radius: 12px; margin-top: 20px;">
+                <div style="font-size: 50px; margin-bottom: 15px;">❌</div>
+                <h2 style="color: #ef4444; font-weight: bold; margin-bottom: 15px;">Pedido Recusado</h2>
+                <p style="color: #d4d4d8; font-size: 16px; max-width: 500px; margin: 0 auto 20px auto;">
+                    Infelizmente o seu pedido de acesso foi recusado pelo Administrador.
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.button("Tentar Novamente / Novo Registo", use_container_width=True):
+                st.session_state.pedido_submetido = False
+                st.session_state.token_prestador = None
+                st.session_state.estado_pedido = "pendente"
+                st.rerun()
+
+    # Se o pedido continua pendente (aguardando aprovação)
+    elif st.session_state.pedido_submetido:
         st.markdown("""
             <style>
                 @keyframes girarHorario {
@@ -72,7 +101,7 @@ def render():
             </div>
         """, unsafe_allow_html=True)
         
-        # Faz o refresh automático a cada 5 segundos para detetar a aprovação
+        # Faz o refresh automático a cada 5 segundos para detetar alterações (aprovação ou recusa)
         time.sleep(5)
         st.rerun()
                 
@@ -115,6 +144,7 @@ def render():
                     # Atualiza o estado para exibir a tela de espera animada
                     st.session_state.pedido_submetido = True
                     st.session_state.token_prestador = token_gerado
+                    st.session_state.estado_pedido = "pendente"
                     st.rerun()
                 else:
                     st.error("Por favor, preencha pelo menos o Nome Completo e o Telefone.")
