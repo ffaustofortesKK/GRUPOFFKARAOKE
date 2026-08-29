@@ -5,26 +5,33 @@ import streamlit as st
 def _inicializar_firebase():
     if not firebase_admin._apps:
         try:
-            # Lê as credenciais diretamente do painel seguro do Streamlit Secrets
-            firebase_secrets = st.secrets["Firebase"]
+            # Lê os valores individuais configurados no painel do Streamlit Secrets
+            sec = st.secrets["Firebase"]
             
+            # Reconstrói a chave privada garantindo que as quebras de linha "\n" funcionam perfeitamente
+            private_key_raw = sec["private_key"]
+            if "\\n" in private_key_raw:
+                private_key_formatted = private_key_raw.replace("\\n", "\n")
+            else:
+                private_key_formatted = private_key_raw
+
             cred_dict = {
-                "type": firebase_secrets["type"],
-                "project_id": firebase_secrets["project_id"],
-                "private_key_id": firebase_secrets["private_key_id"],
-                "private_key": firebase_secrets["private_key"],
-                "client_email": firebase_secrets["client_email"],
-                "client_id": firebase_secrets["client_id"],
-                "auth_uri": firebase_secrets["auth_uri"],
-                "token_uri": firebase_secrets["token_uri"],
-                "auth_provider_x509_cert_url": firebase_secrets["auth_provider_x509_cert_url"],
-                "client_x509_cert_url": firebase_secrets["client_x509_cert_url"],
-                "universe_domain": firebase_secrets["universe_domain"]
+                "type": sec["type"],
+                "project_id": sec["project_id"],
+                "private_key_id": sec["private_key_id"],
+                "private_key": private_key_formatted,
+                "client_email": sec["client_email"],
+                "client_id": sec["client_id"],
+                "auth_uri": sec["auth_uri"],
+                "token_uri": sec["token_uri"],
+                "auth_provider_x509_cert_url": sec["auth_provider_x509_cert_url"],
+                "client_x509_cert_url": sec["client_x509_cert_url"],
+                "universe_domain": sec.get("universe_domain", "googleapis.com")
             }
 
             cred = credentials.Certificate(cred_dict)
             firebase_admin.initialize_app(cred, {
-                'databaseURL': 'https://grupoffkaraoke-default-rtdb.firebaseio.com/'
+                'databaseURL': sec["databaseURL"]
             })
         except Exception as e:
             st.error(f"Erro ao inicializar o Firebase. Detalhe: {e}")
