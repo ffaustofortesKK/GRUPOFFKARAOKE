@@ -57,7 +57,6 @@ def render():
         ativos = [p for p in prestadores_atuais if isinstance(p, dict) and (p.get("status_str") == "aprovado" or p.get("approved") is True) and p.get("segundos_restantes", 0) > 0]
         qtd_ativos = len(ativos)
         
-        # Filtro corrigido e mais abrangente para apanhar todos os pendentes reais
         pendentes_lista = []
         for p in prestadores_atuais:
             if not isinstance(p, dict):
@@ -65,7 +64,6 @@ def render():
             status_str = str(p.get("status_str", "")).lower()
             approved_val = p.get("approved")
             
-            # É considerado pendente se não estiver explicitamente aprovado, recusado, expirado ou suspenso
             if status_str in ["pendente", ""] and approved_val is not True:
                 pendentes_lista.append(p)
             elif approved_val is False and status_str not in ["recusado", "expirado", "suspenso"]:
@@ -138,14 +136,19 @@ def render():
                 """, unsafe_allow_html=True)
 
         with aba2:
+            col_ p_top1, col_p_top2 = st.columns([8, 2])
+            with col_p_top1:
+                st.subheader(f"⏳ Registos pendentes ({qtd_pendentes})")
+            with col_p_top2:
+                if st.button("🔄 Atualizar Lista", use_container_width=True):
+                    st.rerun()
+
             if qtd_pendentes > 0:
                 st.markdown(f"""
                     <div style="background-color: #fef08a; color: #713f12; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 15px; display: inline-block;">
                         ⚠️ Atenção: Existem {qtd_pendentes} pedido(s) pendente(s) a aguardar aprovação!
                     </div>
                 """, unsafe_allow_html=True)
-            
-            st.subheader(f"⏳ Registos pendentes ({qtd_pendentes})")
             
             if not pendentes_lista:
                 st.info("Nenhum pedido pendente de momento.")
