@@ -51,10 +51,11 @@ def render():
         </style>
     """, unsafe_allow_html=True)
 
-    todos_prestadores = obter_prestadores()
     prestador_id = st.session_state.get("prestador_id_sessao", None)
 
     if prestador_id:
+        # Busca sempre os dados atualizados do servidor/base de dados
+        todos_prestadores = obter_prestadores()
         prestador = next((p for p in todos_prestadores if str(p["token"]) == str(prestador_id)), None)
         
         if not prestador:
@@ -73,9 +74,6 @@ def render():
                     <p style="color: #d4d4d8; font-size: 16px; margin-top: 15px;">
                         Lamentamos informar que o seu pedido de registo foi recusado pelo Administrador.
                     </p>
-                    <p style="color: #a1a1aa; font-size: 13px; margin-top: 10px;">
-                        Pode submeter um novo pedido preenchendo os dados abaixo.
-                    </p>
                 </div>
             """, unsafe_allow_html=True)
             
@@ -90,26 +88,25 @@ def render():
             st.markdown("""
                 <div class="card-container">
                     <h1 style="color: #eab308; font-size: 28px; margin-bottom: 10px;">Cadastramento do Prestador</h1>
-                    <p style="color: #a1a1aa; font-size: 14px; margin-bottom: 30px;">
-                        Preencha os seus dados, indique o estabelecimento e escolha o tempo pretendido para solicitar o seu acesso.
+                    <p style="color: #a1a1aa; font-size: 14px; margin-bottom: 20px;">
+                        O seu pedido foi enviado com sucesso. Aguarde enquanto o Administrador valida o seu acesso.
                     </p>
                     <div class="loader-container">
                         <div class="dashed-circle">
                             <div class="mic-icon">🎤</div>
                         </div>
                     </div>
-                    <h3 style="color: #fafafa; font-size: 20px; margin-top: 20px;">Aguardando Aprovação</h3>
-                    <p style="color: #d4d4d8; font-size: 14px; margin-top: 10px;">
-                        O seu registo foi enviado com sucesso e está a aguardar a validação do Administrador.
-                    </p>
+                    <h3 style="color: #fafafa; font-size: 18px; margin-top: 10px;">Aguardando Aprovação...</h3>
                 </div>
             """, unsafe_allow_html=True)
             
-            time.sleep(4)
+            # Atualiza automaticamente a cada 3 segundos para detetar se o ADM aprovou
+            time.sleep(3)
             st.rerun()
                 
         else:
-            st.success(f"🎉 Pedido Aprovado! Bem-vindo ao painel, {prestador['nome']}.")
+            # Se o status mudou para aprovado, abre automaticamente o painel do prestador
+            st.success(f"🎉 Pedido Aprovado! Bem-vindo, {prestador['nome']}.")
             st.markdown("---")
             st.subheader("🔗 Os seus Links de Trabalho")
             
