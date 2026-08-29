@@ -1,7 +1,7 @@
 import sys
 import os
 
-# Garante que a pasta raiz do projeto está no caminho do sistema
+# Garante que a raiz do projeto está no caminho do sistema
 current_dir = os.path.dirname(os.path.abspath(__file__))
 if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
@@ -9,7 +9,7 @@ if current_dir not in sys.path:
 import streamlit as st
 from modulos.db import obter_prestadores
 
-# Importações de módulos no topo para evitar erros de caminho no Streamlit Cloud
+# Importa os módulos corretamente a partir da pasta 'modulos'
 from modulos import admin, prestador, cliente, tela
 
 st.set_page_config(
