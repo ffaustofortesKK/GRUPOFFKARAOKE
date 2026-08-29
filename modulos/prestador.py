@@ -19,19 +19,51 @@ def render():
             st.session_state.aprovado = True
             st.rerun()
 
-    # Se o pedido foi submetido, mostra a tela de espera idêntica à Imagem 2
+    # Se o pedido foi submetido, mostra a tela de espera com os círculos animados em rotações opostas
     if st.session_state.pedido_submetido:
         st.markdown("""
+            <style>
+                @keyframes girarHorario {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+                @keyframes girarAntiHorario {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(-360deg); }
+                }
+                .circulo-externo {
+                    width: 140px;
+                    height: 140px;
+                    border-radius: 50%;
+                    border: 2px dashed #ef4444;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    position: relative;
+                    animation: girarHorario 10s linear infinite;
+                }
+                .circulo-interno {
+                    width: 100px;
+                    height: 100px;
+                    border-radius: 50%;
+                    border: 2px dashed #eab308;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    animation: girarAntiHorario 8s linear infinite;
+                }
+            </style>
+            
             <div style="background-color: #0f0f11; padding: 40px 20px; text-align: center; border-radius: 12px; margin-top: 20px;">
                 <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 25px;">
-                    <div style="width: 140px; height: 140px; border-radius: 50%; border: 2px dashed #ef4444; display: flex; justify-content: center; align-items: center; position: relative;">
-                        <div style="width: 100px; height: 100px; border-radius: 50%; border: 2px dashed #eab308; display: flex; justify-content: center; align-items: center;">
+                    <div class="circulo-externo">
+                        <div class="circulo-interno">
                             <span style="font-size: 42px;">🎤</span>
                         </div>
                     </div>
                 </div>
                 <h2 style="color: #ffffff; font-weight: bold; margin-bottom: 15px;">Aguardando Aprovação</h2>
-                <p style="color: #d4d4d8; font-size: 16px; max-id: 500px; margin: 0 auto 10px auto;">
+                <p style="color: #d4d4d8; font-size: 16px; max-width: 500px; margin: 0 auto 10px auto;">
                     O seu registo foi enviado com sucesso e está a aguardar a validação do Administrador.
                 </p>
                 <p style="color: #a1a1aa; font-size: 14px;">
@@ -80,7 +112,7 @@ def render():
                     # Guarda na base de dados
                     guardar_prestador(novo_prestador)
                     
-                    # Atualiza o estado para exibir a tela de espera da Imagem 2
+                    # Atualiza o estado para exibir a tela de espera animada
                     st.session_state.pedido_submetido = True
                     st.session_state.token_prestador = token_gerado
                     st.rerun()
