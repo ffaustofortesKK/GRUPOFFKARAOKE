@@ -32,18 +32,23 @@ def render():
                 else:
                     st.error("Palavra-passe incorreta.")
     else:
-        col_l1, col_l2 = st.columns([8, 2])
-        with col_l2:
-            if st.button("Terminar sessão"):
+        prestadores_atuais = obter_prestadores()
+        
+        # Contagem de ativos e pendentes
+        ativos = [p for p in prestadores_atuais if p.get("status_str") == "aprovado"]
+        qtd_ativos = len(ativos)
+        
+        pendentes_lista = [p for p in prestadores_atuais if p.get("status_str", "pendente") == "pendente"]
+        qtd_pendentes = len(pendentes_lista)
+
+        # Cabeçalho superior direito com o indicador de Activos por cima do botão Terminar sessão
+        col_top_1, col_top_2 = st.columns([9, 2])
+        with col_top_2:
+            st.markdown(f"<p style='text-align: right; color: #eab308; font-weight: bold; margin-bottom: 2px;'>Activos: {qtd_ativos}</p>", unsafe_allow_html=True)
+            if st.button("Terminar sessão", use_container_width=True):
                 st.session_state.logged = False
                 st.rerun()
 
-        prestadores_atuais = obter_prestadores()
-
-        # Calcula o número de pendentes para mostrar o alerta diretamente na aba
-        pendentes_lista = [p for p in prestadores_atuais if p.get("status_str", "pendente") == "pendente"]
-        qtd_pendentes = len(pendentes_lista)
-        
         titulo_aba_pendentes = f"⏳ Pedidos e Aprovação ({qtd_pendentes})" if qtd_pendentes > 0 else "⏳ Pedidos e Aprovação"
 
         aba1, aba2, aba3, aba4 = st.tabs([
@@ -142,16 +147,13 @@ def render():
                                 st.rerun()
 
         with aba3:
-            ativos = [p for p in prestadores_atuais if p.get("status_str") == "aprovado"]
-            st.subheader(f"🟢 Prestadores Ativos / Online ({len(ativos)})")
+            st.subheader(f"🟢 Prestadores Ativos / Online ({qtd_ativos})")
             
             if not ativos:
                 st.info("Nenhum prestador ativo no momento.")
             else:
-                # Criação da tabela organizada com colunas exigidas
                 dados_tabela = []
                 for p in ativos:
-                    # Controlo dinâmico de segundos restantes
                     segundos_restantes = p.get("segundos_restantes", 3600)
                     tempo_formatado = formatarTempoDecrescente(segundos_restantes)
                     
@@ -190,10 +192,8 @@ def render():
             st.subheader("📈 Relatórios e Estatísticas Gerais")
             st.write("Registo completo de todas as solicitações e submissões de prestadores:")
             
-            # Histórico em formato de tabela estruturada
             historico = st.session_state.get("historico_pedidos", [])
             
-            # Se já existirem prestadores gravados, garante que aparecem na tabela de histórico caso não haja sessão gravada
             if not historico:
                 historico = []
                 for p in prestadores_atuais:
