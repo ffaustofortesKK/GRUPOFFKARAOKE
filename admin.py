@@ -119,63 +119,12 @@ def render():
                     
             qtd_pendentes = len(pendentes_lista)
 
-            # --- CÁLCULO PRÉVIO DA DATA SELECIONADA PARA OS TOTAIS DO TOPO ---
-            # Verificamos se há uma data escolhida na sessão do calendário, senão usamos hoje
-            data_selecionada_obj = st.session_state.get("calendario_detalhado", date.today())
-            if data_selecionada_obj is None:
-                data_selecionada_obj = date.today()
-            data_selecionada_str = data_selecionada_obj.strftime("%d/%m/%Y")
-
-            total_prestadores_filtro = 0
-            valor_total_filtro = 0
-            total_aprovados_filtro = 0
-            total_recusados_filtro = 0
-
-            for p in prestadores_atuais:
-                if not isinstance(p, dict):
-                    continue
-                data_completa = p.get('data_pedido', datetime.now().strftime("%d/%m/%Y %H:%M"))
-                data_dia = data_completa.split(" ")[0] if " " in data_completa else data_completa
-                
-                if data_dia == data_selecionada_str:
-                    status_atual = p.get("status_str", "pendente")
-                    expira_ts = p.get("expira_timestamp", 0)
-                    
-                    if status_atual == "aprovado" or p.get("approved") is True:
-                        total_aprovados_filtro += 1
-                    elif status_atual == "expirado":
-                        total_aprovados_filtro += 1
-                    elif status_atual == "recusado":
-                        total_recusados_filtro += 1
-                    
-                    contrato_str = p.get('plano', p.get('contrato', 'N/A'))
-                    valor_numerico = 0
-                    if "1 Hora" in contrato_str or "12" in contrato_str:
-                        valor_numerico = 12000
-                    elif "2 Horas" in contrato_str or "17" in contrato_str:
-                        valor_numerico = 17000
-                    elif "3 Horas" in contrato_str or "20" in contrato_str:
-                        valor_numerico = 20000
-                    
-                    valor_total_filtro += valor_numerico
-                    total_prestadores_filtro += 1
-
-            # --- TOPO COM OS 4 TOTAIS E O CONTADOR DE ATIVOS ALINHADOS À DIREITA ---
-            col_tot1, col_tot2, col_tot3, col_tot4, col_tot_ativo = st.columns([2, 3, 2, 2, 3])
-            with col_tot1:
-                st.metric("Total de Prestadores", total_prestadores_filtro)
-            with col_tot2:
-                valor_total_fmt = f"{valor_total_filtro:,.2f} Kwanzaas".replace(",", "X").replace(".", ",").replace("X", ".")
-                st.metric("Total em Kwanzas", valor_total_fmt)
-            with col_tot3:
-                st.metric("Total Aprovados", total_aprovados_filtro)
-            with col_tot4:
-                st.metric("Total Recusados", total_recusados_filtro)
-            with col_tot_ativo:
+            col_topo_esq, col_topo_dir = st.columns([8, 3])
+            with col_topo_dir:
                 st.markdown(f"""
-                    <div style="text-align: right; padding-top: 5px;">
-                        <span style="color: #eab308; font-weight: bold; font-size: 26px;">Activos:</span> 
-                        <span style="color: #22c55e; font-weight: bold; font-size: 42px;">{qtd_ativos}</span>
+                    <div style="text-align: right; padding-bottom: 5px;">
+                        <span style="color: #eab308; font-weight: bold; font-size: 30px;">Activos:</span> 
+                        <span style="color: #22c55e; font-weight: bold; font-size: 52px;">{qtd_ativos}</span>
                     </div>
                 """, unsafe_allow_html=True)
 
@@ -307,6 +256,102 @@ def render():
             with aba4:
                 st.subheader("📈 Relatórios e Estatísticas Gerais")
                 
+                # --- CALENDÁRIO NO TOPO DA ABA RELATÓRIOS PARA CONTROLAR OS TOTAIS SUPERIORES ---
+                st.markdown("### 📅 Filtro por Data para os Indicadores")
+                
+                data_calendario = st.date_input(
+                    "📅 Selecione a Data do Contrato para ver os clientes e atualizar os totais:",
+                    value=date.today(),
+                    format="DD/MM/YYYY",
+                    key="calendario_detalhado"
+                )
+                
+                data_selecionada_str = data_calendario.strftime("%d/%m/%Y")
+                
+                dados_filtrados = []
+                total_aprovados_filtro = 0
+                total_recusados_filtro = 0
+                valor_total_filtro = 0
+                
+                for p in prestadores_atuais:
+                    if not isinstance(p, dict):
+                        continue
+                    
+                    data_completa = p.get('data_pedido', datetime.now().strftime("%d/%m/%Y %H:%M"))
+                    data_dia = data_completa.split(" ")[0] if " " in data_completa else data_completa
+                    
+                    if data_dia == data_selecionada_str:
+                        status_atual = p.get("status_str", "pendente")
+                        expira_ts = p.get("expira_timestamp", 0)
+                        
+                        if status_atual == "aprovado" or p.get("approved") is True:
+                            if expira_ts > 0 and agora_ts >= expira_ts:
+                                estado_formatado = "Concluído / Expirado"
+                            else:
+                                estado_formatado = "Ativo / Em curso"
+                            total_aprovados_filtro += 1
+                        elif status_atual == "expirado":
+                            estado_formatado = "Concluído / Expirado"
+                            total_aprovados_filtro += 1
+                        elif status_atual == "recusado":
+                            estado_formatado = "Recusado"
+                            total_recusados_filtro += 1
+                        elif status_atual == "suspenso":
+                            estado_formatado = "Suspenso"
+                        else:
+                            estado_formatado = "Pendente"
+                        
+                        contrato_str = p.get('plano', p.get('contrato', 'N/A'))
+                        
+                        valor_numerico = 0
+                        if "1 Hora" in contrato_str or "12" in contrato_str:
+                            valor_str = "12.000,00 Kwanzaas"
+                            valor_numerico = 12000
+                        elif "2 Horas" in contrato_str or "17" in contrato_str:
+                            valor_str = "17.000,00 Kwanzaas"
+                            valor_numerico = 17000
+                        elif "3 Horas" in contrato_str or "20" in contrato_str:
+                            valor_str = "20.000,00 Kwanzaas"
+                            valor_numerico = 20000
+                        else:
+                            valor_str = "N/A"
+                        
+                        valor_total_filtro += valor_numerico
+                        
+                        dados_filtrados.append({
+                            "Nome": p.get('nome', 'N/A'),
+                            "Estabelecimento": p.get('estabelecimento', 'N/A'),
+                            "Contrato": contrato_str,
+                            "Valor": valor_str,
+                            "Estado": estado_formatado,
+                            "Reforço": p.get('reforco', 'N/A'),
+                            "Data do contrato": data_completa
+                        })
+                
+                # --- BOTÃO DE OCULTAR / MOSTRAR SALDO ---
+                col_btn_ocultar, col_vazio = st.columns([2, 8])
+                with col_btn_ocultar:
+                    ocultar_saldo = st.toggle("🔒 Ocultar Saldo / Valores", value=False, key="toggle_ocultar_saldo")
+
+                st.divider()
+                
+                # --- CARTÕES DE TOTAIS SUPERIORES (REFLETEM O DIA SELECIONADO NO CALENDÁRIO) ---
+                col_m1, col_m2, col_m3, col_m4 = st.columns(4)
+                with col_m1:
+                    st.metric("Total de Prestadores", len(dados_filtrados))
+                with col_m2:
+                    if ocultar_saldo:
+                        valor_total_fmt = "******** Kwanzaas"
+                    else:
+                        valor_total_fmt = f"{valor_total_filtro:,.2f} Kwanzaas".replace(",", "X").replace(".", ",").replace("X", ".")
+                    st.metric("Total em Kwanzas", valor_total_fmt)
+                with col_m3:
+                    st.metric("Total Aprovados", total_aprovados_filtro)
+                with col_m4:
+                    st.metric("Total Recusados", total_recusados_filtro)
+
+                st.divider()
+
                 st.markdown("### 📅 Resumo Agregado por Dia")
                 resumo_diario_dict = defaultdict(lambda: {"total_clientes": 0, "valor_total": 0, "aprovados": 0, "recusados": 0})
                 
@@ -342,12 +387,17 @@ def render():
                 
                 tabela_resumo_dados = []
                 for dia, valores in sorted(resumo_diario_dict.items(), reverse=True):
+                    if ocultar_saldo:
+                        val_fmt = "******** Kwanzaas"
+                    else:
+                        val_fmt = f"{valores['valor_total']:,.2f} Kwanzaas".replace(",", "X").replace(".", ",").replace("X", ".")
+                        
                     tabela_resumo_dados.append({
                         "Dia": dia,
                         "Total de Clientes": valores["total_clientes"],
                         "Aprovados": valores["aprovados"],
                         "Recusados": valores["recusados"],
-                        "Valor Total": f"{valores['valor_total']:,.2f} Kwanzaas".replace(",", "X").replace(".", ",").replace("X", ".")
+                        "Valor Total": val_fmt
                     })
                 
                 if tabela_resumo_dados:
@@ -357,68 +407,21 @@ def render():
 
                 st.divider()
 
-                # --- SEÇÃO DE REGISTO DETALHADO COM CALENDÁRIO INTERATIVO ---
+                # --- SEÇÃO DE REGISTO DETALHADO DE SOLICITAÇÕES ---
                 st.markdown("### 📋 Registo Detalhado de Solicitações")
                 
-                data_calendario = st.date_input(
-                    "📅 Selecione a Data do Contrato para ver os clientes:",
-                    value=date.today(),
-                    format="DD/MM/YYYY",
-                    key="calendario_detalhado"
-                )
-                
-                # Recolhe os dados detalhados para a tabela desta data
-                dados_filtrados = []
-                for p in prestadores_atuais:
-                    if not isinstance(p, dict):
-                        continue
-                    data_completa = p.get('data_pedido', datetime.now().strftime("%d/%m/%Y %H:%M"))
-                    data_dia = data_completa.split(" ")[0] if " " in data_completa else data_completa
-                    
-                    if data_dia == data_selecionada_str:
-                        status_atual = p.get("status_str", "pendente")
-                        expira_ts = p.get("expira_timestamp", 0)
-                        
-                        if status_atual == "aprovado" or p.get("approved") is True:
-                            if expira_ts > 0 and agora_ts >= expira_ts:
-                                estado_formatado = "Concluído / Expirado"
-                            else:
-                                estado_formatado = "Ativo / Em curso"
-                        elif status_atual == "expirado":
-                            estado_formatado = "Concluído / Expirado"
-                        elif status_atual == "recusado":
-                            estado_formatado = "Recusado"
-                        elif status_atual == "suspenso":
-                            estado_formatado = "Suspenso"
-                        else:
-                            estado_formatado = "Pendente"
-                        
-                        contrato_str = p.get('plano', p.get('contrato', 'N/A'))
-                        
-                        valor_numerico = 0
-                        if "1 Hora" in contrato_str or "12" in contrato_str:
-                            valor_str = "12.000,00 Kwanzaas"
-                        elif "2 Horas" in contrato_str or "17" in contrato_str:
-                            valor_str = "17.000,00 Kwanzaas"
-                        elif "3 Horas" in contrato_str or "20" in contrato_str:
-                            valor_str = "20.000,00 Kwanzaas"
-                        else:
-                            valor_str = "N/A"
-                        
-                        dados_filtrados.append({
-                            "Nome": p.get('nome', 'N/A'),
-                            "Estabelecimento": p.get('estabelecimento', 'N/A'),
-                            "Contrato": contrato_str,
-                            "Valor": valor_str,
-                            "Estado": estado_formatado,
-                            "Reforço": p.get('reforco', 'N/A'),
-                            "Data do contrato": data_completa
-                        })
-                
-                st.markdown("<br>", unsafe_allow_html=True)
+                st.markdown(f"<p style='color: #a1a1aa;'>A exibir os registos para a data: <b>{data_selecionada_str}</b></p>", unsafe_allow_html=True)
                 
                 if dados_filtrados:
-                    st.dataframe(dados_filtrados, use_container_width=True)
+                    # Aplica ocultação de saldo na tabela de detalhe se o botão estiver ativo
+                    dados_tabela_exibicao = []
+                    for item in dados_filtrados:
+                        item_copy = item.copy()
+                        if ocultar_saldo:
+                            item_copy["Valor"] = "********"
+                        dados_tabela_exibicao.append(item_copy)
+                        
+                    st.dataframe(dados_tabela_exibicao, use_container_width=True)
                 else:
                     st.info(f"Nenhum registo encontrado para a data {data_selecionada_str}.")
 
