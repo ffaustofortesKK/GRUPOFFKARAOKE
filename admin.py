@@ -296,53 +296,82 @@ def render():
 
                 st.divider()
 
+                # --- SEÇÃO DE REGISTO DETALHADO COM FILTRO DE DATA EXPANSÍVEL ---
                 st.markdown("### 📋 Registo Detalhado de Solicitações")
                 
-                dados_historico_tabela = []
+                # Mapeia todas as datas disponíveis nos registos para preencher o seletor
+                datas_disponiveis = set()
                 for p in prestadores_atuais:
-                    if not isinstance(p, dict):
-                        continue
-                    status_atual = p.get("status_str", "pendente")
-                    expira_ts = p.get("expira_timestamp", 0)
-                    
-                    if status_atual == "aprovado" or p.get("approved") is True:
-                        if expira_ts > 0 and agora_ts >= expira_ts:
-                            estado_formatado = "Concluído / Expirado"
-                        else:
-                            estado_formatado = "Ativo / Em curso"
-                    elif status_atual == "expirado":
-                        estado_formatado = "Concluído / Expirado"
-                    elif status_atual == "recusado":
-                        estado_formatado = "Recusado"
-                    elif status_atual == "suspenso":
-                        estado_formatado = "Suspenso"
-                    else:
-                        estado_formatado = "Pendente"
-                    
-                    contrato_str = p.get('plano', p.get('contrato', 'N/A'))
-                    
-                    if "1 Hora" in contrato_str or "12" in contrato_str:
-                        valor_str = "12.000,00 Kwanzaas"
-                    elif "2 Horas" in contrato_str or "17" in contrato_str:
-                        valor_str = "17.000,00 Kwanzaas"
-                    elif "3 Horas" in contrato_str or "20" in contrato_str:
-                        valor_str = "20.000,00 Kwanzaas"
-                    else:
-                        valor_str = "N/A"
-                    
-                    dados_historico_tabela.append({
-                        "Nome": p.get('nome', 'N/A'),
-                        "Estabelecimento": p.get('estabelecimento', 'N/A'),
-                        "Contrato": contrato_str,
-                        "Valor": valor_str,
-                        "Estado": estado_formatado,
-                        "Reforço": p.get('reforco', 'N/A'),
-                        "Data do contrato": p.get('data_pedido', datetime.now().strftime("%d/%m/%Y %H:%M"))
-                    })
+                    if isinstance(p, dict):
+                        data_completa = p.get('data_pedido', '')
+                        if " " in data_completa:
+                            datas_disponiveis.add(data_completa.split(" ")[0])
+                        elif data_completa:
+                            datas_disponiveis.add(data_completa)
                 
-                if dados_historico_tabela:
-                    st.dataframe(dados_historico_tabela, use_container_width=True)
+                lista_datas_ordenadas = sorted(list(datas_disponiveis), reverse=True)
+                
+                if not lista_datas_ordenadas:
+                    st.info("Nenhum registo detalhado disponível.")
                 else:
-                    st.info("Nenhum registo estatístico disponível.")
+                    # Caixa de seleção para escolher a data específica do contrato
+                    data_selecionada = st.selectbox(
+                        "📅 Selecione a Data do Contrato para ver os clientes:", 
+                        options=lista_datas_ordenadas,
+                        key="filtro_data_detalhado"
+                    )
+                    
+                    dados_historico_tabela = []
+                    for p in prestadores_atuais:
+                        if not isinstance(p, dict):
+                            continue
+                        
+                        data_completa = p.get('data_pedido', datetime.now().strftime("%d/%m/%Y %H:%M"))
+                        data_dia = data_completa.split(" ")[0] if " " in data_completa else data_completa
+                        
+                        # Filtra apenas os clientes correspondentes à data escolhida no selectbox
+                        if data_dia == data_selecionada:
+                            status_atual = p.get("status_str", "pendente")
+                            expira_ts = p.get("expira_timestamp", 0)
+                            
+                            if status_atual == "aprovado" or p.get("approved") is True:
+                                if expira_ts > 0 and agora_ts >= expira_ts:
+                                    estado_formatado = "Concluído / Expirado"
+                                else:
+                                    estado_formatado = "Ativo / Em curso"
+                            elif status_atual == "expirado":
+                                estado_formatado = "Concluído / Expirado"
+                            elif status_atual == "recusado":
+                                estado_formatado = "Recusado"
+                            elif status_atual == "suspenso":
+                                estado_formatado = "Suspenso"
+                            else:
+                                estado_formatado = "Pendente"
+                            
+                            contrato_str = p.get('plano', p.get('contrato', 'N/A'))
+                            
+                            if "1 Hora" in contrato_str or "12" in contrato_str:
+                                valor_str = "12.000,00 Kwanzaas"
+                            elif "2 Horas" in contrato_str or "17" in contrato_str:
+                                valor_str = "17.000,00 Kwanzaas"
+                            elif "3 Horas" in contrato_str or "20" in contrato_str:
+                                valor_str = "20.000,00 Kwanzaas"
+                            else:
+                                valor_str = "N/A"
+                            
+                            dados_historico_tabela.append({
+                                "Nome": p.get('nome', 'N/A'),
+                                "Estabelecimento": p.get('estabelecimento', 'N/A'),
+                                "Contrato": contrato_str,
+                                "Valor": valor_str,
+                                "Estado": estado_formatado,
+                                "Reforço": p.get('reforco', 'N/A'),
+                                "Data do contrato": data_completa
+                            })
+                    
+                    if dados_historico_tabela:
+                        st.dataframe(dados_historico_tabela, use_container_width=True)
+                    else:
+                        st.info(f"Nenhum registo encontrado para a data {data_selecionada}.")
 
         painel_admin_automatico()
