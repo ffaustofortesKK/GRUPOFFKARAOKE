@@ -15,7 +15,7 @@ def formatarTempoDecrescente(segundos: int) -> str:
     return f"{minutos:02d}m {secs:02d}s"
 
 def render():
-    # --- CSS CUSTOMIZADO PARA ABAS COMPACTAS E CABEÇALHOS DE TABELAS PRETOS ---
+    # --- CSS CUSTOMIZADO PARA ABAS E CABEÇALHOS DE TABELAS AMARELOS COM TEXTO PRETO ---
     st.markdown("""
         <style>
         /* Estilização e compactação das abas de navegação */
@@ -38,12 +38,12 @@ def render():
             border-color: #eab308 !important;
         }
 
-        /* Estilização dos cabeçalhos das tabelas (fundo preto e letras brancas) */
+        /* Estilização dos cabeçalhos das tabelas (fundo amarelo e texto preto, conforme solicitado) */
         div[data-testid="stDataFrame"] th, 
         div[data-testid="stTable"] th,
         thead tr th {
-            background-color: #000000 !important;
-            color: #ffffff !important;
+            background-color: #eab308 !important;
+            color: #000000 !important;
             font-weight: bold !important;
         }
         </style>
