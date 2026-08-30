@@ -15,26 +15,36 @@ def formatarTempoDecrescente(segundos: int) -> str:
     return f"{minutos:02d}m {secs:02d}s"
 
 def render():
-    # --- CSS CUSTOMIZADO PARA AS ABAS (FUNDO PRETO, LETRAS BRANCAS E TAMANHO COMPACTO) ---
+    # --- CSS CUSTOMIZADO PARA ABAS COMPACTAS E CABEÇALHOS DE TABELAS PRETOS ---
     st.markdown("""
         <style>
         /* Estilização e compactação das abas de navegação */
         .stTabs [data-baseweb="tab-list"] {
-            gap: 8px;
+            gap: 4px;
             background-color: transparent;
         }
         .stTabs [data-baseweb="tab"] {
             background-color: #000000 !important;
             color: #ffffff !important;
             border-radius: 6px 6px 0px 0px;
-            padding: 10px 16px;
+            padding: 6px 12px;
             font-weight: bold;
+            font-size: 13px;
             border: 1px solid #3f3f46;
         }
         .stTabs [aria-selected="true"] {
             background-color: #18181b !important;
             color: #eab308 !important;
             border-color: #eab308 !important;
+        }
+
+        /* Estilização dos cabeçalhos das tabelas (fundo preto e letras brancas) */
+        div[data-testid="stDataFrame"] th, 
+        div[data-testid="stTable"] th,
+        thead tr th {
+            background-color: #000000 !important;
+            color: #ffffff !important;
+            font-weight: bold !important;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -179,7 +189,7 @@ def render():
                 if qtd_pendentes > 0:
                     st.markdown(f"""
                         <div style="background-color: #fef08a; color: #713f12; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 15px; display: inline-block;">
-                            ⚠️ Atenção: Existen {qtd_pendentes} pedido(s) pendente(s) a aguardar aprovação!
+                            ⚠️ Atenção: Existem {qtd_pendentes} pedido(s) pendente(s) a aguardar aprovação!
                         </div>
                     """, unsafe_allow_html=True)
                 
@@ -299,7 +309,6 @@ def render():
                 # --- SEÇÃO DE REGISTO DETALHADO COM CALENDÁRIO INTERATIVO ---
                 st.markdown("### 📋 Registo Detalhado de Solicitações")
                 
-                # Utiliza o componente de calendário nativo st.date_input
                 data_calendario = st.date_input(
                     "📅 Selecione a Data do Contrato para ver os clientes:",
                     value=None,  # Começa sem nenhuma data selecionada (fechado)
@@ -307,7 +316,6 @@ def render():
                     key="calendario_detalhado"
                 )
                 
-                # Se nenhuma data foi selecionada no calendário, exibe apenas a mensagem de aviso (estado fechado)
                 if data_calendario is None:
                     st.info("👆 Selecione uma data acima para visualizar o detalhe dos clientes e as métricas correspondentes.")
                 else:
@@ -375,7 +383,6 @@ def render():
                     
                     st.divider()
                     
-                    # Métricas referentes à data selecionada no calendário
                     col_m1, col_m2, col_m3, col_m4 = st.columns(4)
                     with col_m1:
                         st.metric("Total de Prestadores", len(dados_filtrados))
