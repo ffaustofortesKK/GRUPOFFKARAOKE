@@ -38,7 +38,7 @@ def render():
             border-color: #eab308 !important;
         }
 
-        /* Estilização dos cabeçalhos das tabelas (fundo amarelo e texto preto, conforme solicitado) */
+        /* Estilização dos cabeçalhos das tabelas (fundo amarelo e texto preto) */
         div[data-testid="stDataFrame"] th, 
         div[data-testid="stTable"] th,
         thead tr th {
@@ -306,7 +306,7 @@ def render():
 
                 st.divider()
 
-                # --- SEÇÃO DE REGISTO DETALHADO COM CALENDÁRIO INTERATIVO ---
+                # --- SEÇÃO DE REGISTO DETALHADO COM CALENDÁRIO INTERATIVO E MÉTRICAS POR DIA ---
                 st.markdown("### 📋 Registo Detalhado de Solicitações")
                 
                 data_calendario = st.date_input(
@@ -383,6 +383,7 @@ def render():
                     
                     st.divider()
                     
+                    # Exibição exata das métricas por dia selecionado tal como na imagem
                     col_m1, col_m2, col_m3, col_m4 = st.columns(4)
                     with col_m1:
                         st.metric("Total de Prestadores", len(dados_filtrados))
