@@ -1,6 +1,6 @@
 import streamlit as st
 import urllib.parse
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from collections import defaultdict
 from db import obter_prestadores, guardar_prestador
 
@@ -179,7 +179,7 @@ def render():
                 if qtd_pendentes > 0:
                     st.markdown(f"""
                         <div style="background-color: #fef08a; color: #713f12; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 15px; display: inline-block;">
-                            ⚠️ Atenção: Existem {qtd_pendentes} pedido(s) pendente(s) a aguardar aprovação!
+                            ⚠️ Atenção: Existen {qtd_pendentes} pedido(s) pendente(s) a aguardar aprovação!
                         </div>
                     """, unsafe_allow_html=True)
                 
@@ -296,115 +296,102 @@ def render():
 
                 st.divider()
 
-                # --- SEÇÃO DE REGISTO DETALHADO COM FILTRO EXPANSÍVEL POR SELEÇÃO ---
+                # --- SEÇÃO DE REGISTO DETALHADO COM CALENDÁRIO INTERATIVO ---
                 st.markdown("### 📋 Registo Detalhado de Solicitações")
                 
-                datas_disponiveis = set()
-                for p in prestadores_atuais:
-                    if isinstance(p, dict):
-                        data_completa = p.get('data_pedido', '')
-                        if " " in data_completa:
-                            datas_disponiveis.add(data_completa.split(" ")[0])
-                        elif data_completa:
-                            datas_disponiveis.add(data_completa)
+                # Utiliza o componente de calendário nativo st.date_input
+                data_calendario = st.date_input(
+                    "📅 Selecione a Data do Contrato para ver os clientes:",
+                    value=None,  # Começa sem nenhuma data selecionada (fechado)
+                    format="DD/MM/YYYY",
+                    key="calendario_detalhado"
+                )
                 
-                lista_datas_ordenadas = sorted(list(datas_disponiveis), reverse=True)
-                
-                if not lista_datas_ordenadas:
-                    st.info("Nenhum registo detalhado disponível.")
+                # Se nenhuma data foi selecionada no calendário, exibe apenas a mensagem de aviso (estado fechado)
+                if data_calendario is None:
+                    st.info("👆 Selecione uma data acima para visualizar o detalhe dos clientes e as métricas correspondentes.")
                 else:
-                    # Adiciona uma opção vazia inicial para garantir que fica fechado/sem seleção prévia
-                    opcoes_select = ["-- Selecione uma data no calendário --"] + lista_datas_ordenadas
+                    data_selecionada_str = data_calendario.strftime("%d/%m/%Y")
                     
-                    data_selecionada = st.selectbox(
-                        "📅 Selecione a Data do Contrato para ver os clientes:", 
-                        options=opcoes_select,
-                        key="filtro_data_detalhado"
-                    )
+                    dados_filtrados = []
+                    total_aprovados_filtro = 0
+                    total_recusados_filtro = 0
+                    valor_total_filtro = 0
                     
-                    # Só exibe as colunas e métricas se uma data real for selecionada
-                    if data_selecionada != "-- Selecione uma data no calendário --":
-                        dados_filtrados = []
-                        total_aprovados_filtro = 0
-                        total_recusados_filtro = 0
-                        valor_total_filtro = 0
+                    for p in prestadores_atuais:
+                        if not isinstance(p, dict):
+                            continue
                         
-                        for p in prestadores_atuais:
-                            if not isinstance(p, dict):
-                                continue
+                        data_completa = p.get('data_pedido', datetime.now().strftime("%d/%m/%Y %H:%M"))
+                        data_dia = data_completa.split(" ")[0] if " " in data_completa else data_completa
+                        
+                        if data_dia == data_selecionada_str:
+                            status_atual = p.get("status_str", "pendente")
+                            expira_ts = p.get("expira_timestamp", 0)
                             
-                            data_completa = p.get('data_pedido', datetime.now().strftime("%d/%m/%Y %H:%M"))
-                            data_dia = data_completa.split(" ")[0] if " " in data_completa else data_completa
-                            
-                            if data_dia == data_selecionada:
-                                status_atual = p.get("status_str", "pendente")
-                                expira_ts = p.get("expira_timestamp", 0)
-                                
-                                if status_atual == "aprovado" or p.get("approved") is True:
-                                    if expira_ts > 0 and agora_ts >= expira_ts:
-                                        estado_formatado = "Concluído / Expirado"
-                                    else:
-                                        estado_formatado = "Ativo / Em curso"
-                                    total_aprovados_filtro += 1
-                                elif status_atual == "expirado":
+                            if status_atual == "aprovado" or p.get("approved") is True:
+                                if expira_ts > 0 and agora_ts >= expira_ts:
                                     estado_formatado = "Concluído / Expirado"
-                                    total_aprovados_filtro += 1
-                                elif status_atual == "recusado":
-                                    estado_formatado = "Recusado"
-                                    total_recusados_filtro += 1
-                                elif status_atual == "suspenso":
-                                    estado_formatado = "Suspenso"
                                 else:
-                                    estado_formatado = "Pendente"
-                                
-                                contrato_str = p.get('plano', p.get('contrato', 'N/A'))
-                                
-                                valor_numerico = 0
-                                if "1 Hora" in contrato_str or "12" in contrato_str:
-                                    valor_str = "12.000,00 Kwanzaas"
-                                    valor_numerico = 12000
-                                elif "2 Horas" in contrato_str or "17" in contrato_str:
-                                    valor_str = "17.000,00 Kwanzaas"
-                                    valor_numerico = 17000
-                                elif "3 Horas" in contrato_str or "20" in contrato_str:
-                                    valor_str = "20.000,00 Kwanzaas"
-                                    valor_numerico = 20000
-                                else:
-                                    valor_str = "N/A"
-                                
-                                valor_total_filtro += valor_numerico
-                                
-                                dados_filtrados.append({
-                                    "Nome": p.get('nome', 'N/A'),
-                                    "Estabelecimento": p.get('estabelecimento', 'N/A'),
-                                    "Contrato": contrato_str,
-                                    "Valor": valor_str,
-                                    "Estado": estado_formatado,
-                                    "Reforço": p.get('reforco', 'N/A'),
-                                    "Data do contrato": data_completa
-                                })
-                        
-                        st.divider()
-                        
-                        # Exibição das métricas solicitadas referentes à data escolhida
-                        col_m1, col_m2, col_m3, col_m4 = st.columns(4)
-                        with col_m1:
-                            st.metric("Total de Prestadores", len(dados_filtrados))
-                        with col_m2:
-                            valor_total_fmt = f"{valor_total_filtro:,.2f} Kwanzaas".replace(",", "X").replace(".", ",").replace("X", ".")
-                            st.metric("Total em Kwanzas", valor_total_fmt)
-                        with col_m3:
-                            st.metric("Total Aprovados", total_aprovados_filtro)
-                        with col_m4:
-                            st.metric("Total Recusados", total_recusados_filtro)
-                        
-                        st.markdown("<br>", unsafe_allow_html=True)
-                        
-                        if dados_filtrados:
-                            st.dataframe(dados_filtrados, use_container_width=True)
-                        else:
-                            st.info(f"Nenhum registo encontrado para a data {data_selecionada}.")
+                                    estado_formatado = "Ativo / Em curso"
+                                total_aprovados_filtro += 1
+                            elif status_atual == "expirado":
+                                estado_formatado = "Concluído / Expirado"
+                                total_aprovados_filtro += 1
+                            elif status_atual == "recusado":
+                                estado_formatado = "Recusado"
+                                total_recusados_filtro += 1
+                            elif status_atual == "suspenso":
+                                estado_formatado = "Suspenso"
+                            else:
+                                estado_formatado = "Pendente"
+                            
+                            contrato_str = p.get('plano', p.get('contrato', 'N/A'))
+                            
+                            valor_numerico = 0
+                            if "1 Hora" in contrato_str or "12" in contrato_str:
+                                valor_str = "12.000,00 Kwanzaas"
+                                valor_numerico = 12000
+                            elif "2 Horas" in contrato_str or "17" in contrato_str:
+                                valor_str = "17.000,00 Kwanzaas"
+                                valor_numerico = 17000
+                            elif "3 Horas" in contrato_str or "20" in contrato_str:
+                                valor_str = "20.000,00 Kwanzaas"
+                                valor_numerico = 20000
+                            else:
+                                valor_str = "N/A"
+                            
+                            valor_total_filtro += valor_numerico
+                            
+                            dados_filtrados.append({
+                                "Nome": p.get('nome', 'N/A'),
+                                "Estabelecimento": p.get('estabelecimento', 'N/A'),
+                                "Contrato": contrato_str,
+                                "Valor": valor_str,
+                                "Estado": estado_formatado,
+                                "Reforço": p.get('reforco', 'N/A'),
+                                "Data do contrato": data_completa
+                            })
+                    
+                    st.divider()
+                    
+                    # Métricas referentes à data selecionada no calendário
+                    col_m1, col_m2, col_m3, col_m4 = st.columns(4)
+                    with col_m1:
+                        st.metric("Total de Prestadores", len(dados_filtrados))
+                    with col_m2:
+                        valor_total_fmt = f"{valor_total_filtro:,.2f} Kwanzaas".replace(",", "X").replace(".", ",").replace("X", ".")
+                        st.metric("Total em Kwanzas", valor_total_fmt)
+                    with col_m3:
+                        st.metric("Total Aprovados", total_aprovados_filtro)
+                    with col_m4:
+                        st.metric("Total Recusados", total_recusados_filtro)
+                    
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    
+                    if dados_filtrados:
+                        st.dataframe(dados_filtrados, use_container_width=True)
                     else:
-                        st.info("👆 Selecione uma data acima para visualizar o detalhe dos clientes e as métricas correspondentes.")
+                        st.info(f"Nenhum registo encontrado para a data {data_selecionada_str}.")
 
         painel_admin_automatico()
