@@ -15,30 +15,27 @@ def formatarTempoDecrescente(segundos: int) -> str:
     return f"{minutos:02d}m {secs:02d}s"
 
 def render():
-    # --- CSS PERSONALIZADO PARA AS ABAS (Fundo preto, texto branco e ajuste de largura compacta) ---
+    # --- CSS CUSTOMIZADO PARA AS ABAS (FUNDO PRETO, LETRAS BRANCAS E TAMANHO COMPACTO) ---
     st.markdown("""
         <style>
-            /* Estilo geral para os botões das abas */
-            .stTabs [data-baseweb="tab-list"] {
-                gap: 8px;
-                background-color: transparent;
-            }
-            .stTabs [data-baseweb="tab"] {
-                background-color: #18181b !important;
-                color: #ffffff !important;
-                border-radius: 6px 6px 0px 0px;
-                padding: 10px 16px;
-                font-weight: 500;
-                border: 1px solid #3f3f46;
-                flex-grow: 0 !important; /* Impede que a aba estique por todo o ecrã */
-            }
-            /* Aba selecionada */
-            .stTabs [aria-selected="true"] {
-                background-color: #27272a !important;
-                color: #facc15 !important;
-                border-color: #eab308 !important;
-                font-weight: bold;
-            }
+        /* Estilização e compactação das abas de navegação */
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 8px;
+            background-color: transparent;
+        }
+        .stTabs [data-baseweb="tab"] {
+            background-color: #000000 !important;
+            color: #ffffff !important;
+            border-radius: 6px 6px 0px 0px;
+            padding: 10px 16px;
+            font-weight: bold;
+            border: 1px solid #3f3f46;
+        }
+        .stTabs [aria-selected="true"] {
+            background-color: #18181b !important;
+            color: #eab308 !important;
+            border-color: #eab308 !important;
+        }
         </style>
     """, unsafe_allow_html=True)
 
@@ -129,10 +126,10 @@ def render():
                     st.session_state.logged = False
                     st.rerun()
 
-            titulo_aba_pendentes = f"⏳ Pedidos ({qtd_pendentes})" if qtd_pendentes > 0 else "⏳ Pedidos"
+            titulo_aba_pendentes = f"⏳ Pedidos ({qtd_pendentes})" if qtd_pendentes > 0 else "⏳ Pedidos e Aprovação"
 
             aba1, aba2, aba3, aba4 = st.tabs([
-                "🔗 Registo", 
+                "🔗 Link e QR", 
                 titulo_aba_pendentes, 
                 "🟢 Activos", 
                 "📈 Relatórios"
@@ -204,11 +201,11 @@ def render():
                                     contrato_str = str(p.get('plano', p.get('contrato', ''))).lower()
                                     
                                     if "3 hora" in contrato_str or "20.000" in contrato_str:
-                                        segundos_contrato = 10800
+                                        segundos_contrato = 10800  # 3 Horas
                                     elif "2 hora" in contrato_str or "17.000" in contrato_str:
-                                        segundos_contrato = 7200
+                                        segundos_contrato = 7200   # 2 Horas
                                     else:
-                                        segundos_contrato = 3600
+                                        segundos_contrato = 3600   # 1 Hora / Padrão
                                     
                                     p["expira_timestamp"] = datetime.now().timestamp() + segundos_contrato
                                     p["segundos_restantes"] = segundos_contrato
@@ -258,29 +255,29 @@ def render():
                     data_completa = p.get('data_pedido', datetime.now().strftime("%d/%m/%Y %H:%M"))
                     data_dia = data_completa.split(" ")[0] if " " in data_completa else data_completa
                     
-                    contrato_str = p.get('plano', p.get('contrato', 'N/A'))
                     status_atual = str(p.get('status_str', '')).lower()
                     approved_val = p.get('approved')
                     
-                    # Contagem de Aprovados e Recusados
                     is_aprovado = (status_atual == "aprovado" or approved_val is True or status_atual == "expirado")
                     is_recusado = (status_atual == "recusado")
                     
-                    valor_numerico = 0
-                    if is_aprovado:
-                        if "1 Hora" in contrato_str or "12" in contrato_str:
-                            valor_numerico = 12000
-                        elif "2 Horas" in contrato_str or "17" in contrato_str:
-                            valor_numerico = 17000
-                        elif "3 Horas" in contrato_str or "20" in contrato_str:
-                            valor_numerico = 20000
-                        resumo_diario_dict[data_dia]["aprovados"] += 1
+                    contrato_str = p.get('plano', p.get('contrato', 'N/A'))
                     
-                    if is_recusado:
-                        resumo_diario_dict[data_dia]["recusados"] += 1
+                    valor_numerico = 0
+                    if "1 Hora" in contrato_str or "12" in contrato_str:
+                        valor_numerico = 12000
+                    elif "2 Horas" in contrato_str or "17" in contrato_str:
+                        valor_numerico = 17000
+                    elif "3 Horas" in contrato_str or "20" in contrato_str:
+                        valor_numerico = 20000
                     
                     resumo_diario_dict[data_dia]["total_clientes"] += 1
                     resumo_diario_dict[data_dia]["valor_total"] += valor_numerico
+                    
+                    if is_aprovado:
+                        resumo_diario_dict[data_dia]["aprovados"] += 1
+                    elif is_recusado:
+                        resumo_diario_dict[data_dia]["recusados"] += 1
                 
                 tabela_resumo_dados = []
                 for dia, valores in sorted(resumo_diario_dict.items(), reverse=True):
