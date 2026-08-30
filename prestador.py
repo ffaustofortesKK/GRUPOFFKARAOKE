@@ -23,91 +23,139 @@ def render():
             if status_atual == "aprovado":
                 st.session_state.aprovado = True
 
-    # 1. SE ESTIVER APROVADO: Mostra o painel operacional completo
+    # 1. SE ESTIVER APROVADO: Mostra o painel operacional idêntico à imagem de referência
     if st.session_state.get("aprovado", False) or st.session_state.get("estado_pedido") == "aprovado":
+        
+        # --- GERAR URLS BASE AUTOMÁTICAS ---
+        try:
+            base_url = st.context.headers.get("Host", "")
+            if base_url:
+                if "localhost" in base_url or "127.0.0.1" in base_url:
+                    url_cliente = f"http://{base_url}/?view=client_register"
+                    url_tela = f"http://{base_url}/?view=client_screen"
+                else:
+                    url_cliente = f"https://{base_url}/?view=client_register"
+                    url_tela = f"https://{base_url}/?view=client_screen"
+            else:
+                raise Exception()
+        except Exception:
+            url_cliente = "https://grupoffkaraoke.streamlit.app/?view=client_register"
+            url_tela = "https://grupoffkaraoke.streamlit.app/?view=client_screen"
+
+        # CSS personalizado para o estilo exato (fundo escuro, caixas com borda dourada/amarela brilhante)
         st.markdown("""
-            <div style="border: 2px solid #eab308; background-color: #0f0f11; padding: 25px; border-radius: 12px; margin-bottom: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <h2 style="color: #eab308; margin: 0;">Painel Operacional — FF Karaoke</h2>
-                        <p style="color: #a1a1aa; margin: 5px 0 0 0;">Gestão de sala, fila de reprodução e links dedicados em tempo real.</p>
+            <style>
+                .box-container {
+                    background-color: #0c0c0e;
+                    border: 2px solid #eab308;
+                    border-radius: 8px;
+                    padding: 16px;
+                    margin-bottom: 16px;
+                    box-shadow: 0 0 10px rgba(234, 179, 8, 0.15);
+                }
+                .box-title {
+                    color: #eab308;
+                    font-weight: bold;
+                    font-size: 15px;
+                    margin-bottom: 10px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+                .box-content {
+                    color: #d4d4d8;
+                    font-size: 14px;
+                }
+            </style>
+        """, unsafe_allow_html=True)
+
+        # Botão discreto para terminar sessão no topo
+        col_top_info, col_top_btn = st.columns([4, 1])
+        with col_top_info:
+            st.markdown(f"<span style='color: #a1a1aa; font-size: 13px;'>Sessão Ativa | Token: {st.session_state.token_prestador}</span>", unsafe_allow_html=True)
+        with col_top_btn:
+            if st.button("Sair / Terminar", use_container_width=True):
+                st.session_state.pedido_submetido = False
+                st.session_state.token_prestador = None
+                st.session_state.estado_pedido = "pendente"
+                st.session_state.aprovado = False
+                st.rerun()
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # Layout de 2 colunas principais (Esquerda: Controlo/Fila | Direita: Links/QR e Vídeo de Fundo)
+        col_esq, col_dir = st.columns([1.3, 1])
+
+        with col_esq:
+            # --- CAIXA 1: A TOCAR AGORA ---
+            st.markdown("""
+                <div class="box-container">
+                    <div class="box-title">
+                        <span>▶ A TOCAR AGORA</span>
+                        <span style="color: #eab308; font-family: monospace; font-size: 16px;">⏳ 01:59:27</span>
+                    </div>
+                    <div class="box-content">
+                        <p style="margin-bottom: 6px; font-weight: 500;">Nada em reprodução.</p>
+                        <p style="color: #a1a1aa; font-size: 13px; margin-bottom: 15px;">A música é reproduzida apenas no ecrã de TV.</p>
                     </div>
                 </div>
-            </div>
-        """, unsafe_allow_html=True)
-        
-        tab_fila, tab_definicoes = st.tabs(["🎵 Fila de Reprodução & Links", "⚙️ Definições / Vídeo de Fundo"])
-        
-        with tab_fila:
-            st.success("O seu sistema está ativo e a escutar novos pedidos de música dos clientes.")
+            """, unsafe_allow_html=True)
             
-            # --- GERAR URLS BASE AUTOMÁTICAS PARA OS CLIENTES E TELA ---
-            try:
-                base_url = st.context.headers.get("Host", "")
-                if base_url:
-                    if "localhost" in base_url or "127.0.0.1" in base_url:
-                        url_cliente = f"http://{base_url}/?view=client_register"
-                        url_tela = f"http://{base_url}/?view=client_screen"
-                    else:
-                        url_cliente = f"https://{base_url}/?view=client_register"
-                        url_tela = f"https://{base_url}/?view=client_screen"
-                else:
-                    raise Exception()
-            except Exception:
-                url_cliente = "https://grupoffkaraoke.streamlit.app/?view=client_register"
-                url_tela = "https://grupoffkaraoke.streamlit.app/?view=client_screen"
-
-            # --- CAIXAS DE DESTAQUE PARA OS LINKS ---
-            st.markdown("### 🔗 Links Dedicados de Acesso")
-            st.write("Copie e disponibilize estes links para os seus clientes ou abra a tela de projeção:")
-
-            col_link1, col_link2 = st.columns(2)
-            with col_link1:
-                st.markdown("""
-                    <div style="background-color: #18181b; border: 1px solid #eab308; padding: 15px; border-radius: 8px;">
-                        <h4 style="color: #eab308; margin-top: 0;">📱 Link do Cliente</h4>
-                        <p style="color: #a1a1aa; font-size: 13px;">Onde o cliente faz o registo inicial com o nome e pesquisa as músicas.</p>
-                    </div>
-                """, unsafe_allow_html=True)
-                st.text_input("Copiar Link do Cliente:", value=url_cliente, key="input_url_cli")
-
-            with col_link2:
-                st.markdown("""
-                    <div style="background-color: #18181b; border: 1px solid #3b82f6; padding: 15px; border-radius: 8px;">
-                        <h4 style="color: #3b82f6; margin-top: 0;">🖥️ Link da Tela de TV</h4>
-                        <p style="color: #a1a1aa; font-size: 13px;">Onde rodam os videoclipes em loop e a fila de karaoke em tempo real.</p>
-                    </div>
-                """, unsafe_allow_html=True)
-                st.text_input("Copiar Link da Tela de TV:", value=url_tela, key="input_url_tela")
+            # Botões de ação alinhados debaixo da caixa "A Tocar Agora"
+            b1, b2, b3 = st.columns(3)
+            with b1:
+                if st.button("▶ Tocar primeiro da fila", use_container_width=True):
+                    st.toast("A tocar o primeiro da fila...")
+            with b2:
+                if st.button("⏸ Parar", use_container_width=True):
+                    st.toast("Reprodução parada.")
+            with b3:
+                if st.button("⏭ Próxima", use_container_width=True):
+                    st.toast("A avançar para a próxima música...")
 
             st.markdown("<br>", unsafe_allow_html=True)
-            col_qr_box, col_empty = st.columns([1, 2])
-            with col_qr_box:
-                st.markdown("##### 📌 QR Code para Mesas / Clientes")
-                st.image(f"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={url_cliente}", width=150)
 
-            st.markdown("---")
-            st.markdown("#### 📋 Estado da Fila e Controlo de Reprodução")
-            
+            # --- CAIXA 2: FILA DE PEDIDOS ---
             st.markdown("""
-                <div style="background-color: #18181b; border: 1px solid #eab308; padding: 20px; text-align: center; border-radius: 8px; margin-bottom: 20px;">
-                    <p style="color: #d4d4d8; font-weight: bold; margin: 0;">NENHUM PEDIDO NA LISTA NESTE MOMENTO.<br>À ESPERA DE NOVOS PEDIDOS...</p>
+                <div class="box-container">
+                    <div class="box-title">
+                        <span>📄 FILA DE PEDIDOS (0)</span>
+                    </div>
+                    <div class="box-content">
+                        <p style="color: #a1a1aa; margin: 0;">Sem pedidos em espera.</p>
+                    </div>
                 </div>
             """, unsafe_allow_html=True)
 
-            col_ctrl1, col_ctrl2 = st.columns(2)
-            with col_ctrl1:
-                if st.button("▶ Play", use_container_width=True):
-                    st.toast("A reproduzir...")
-            with col_ctrl2:
-                if st.button("⏹ Stop", use_container_width=True):
-                    st.toast("Reprodução parada.")
+        with col_dir:
+            # --- CAIXA 3: LINKS E QR CODE ---
+            st.markdown(f"""
+                <div class="box-container">
+                    <div class="box-title">
+                        <span>🔗 LINKS E QR CODE</span>
+                    </div>
+                    <div class="box-content" style="font-size: 12px; word-break: break-all; margin-bottom: 12px;">
+                        <span style="color: #eab308; font-weight: bold;">Cliente:</span> {url_cliente}<br><br>
+                        <span style="color: #3b82f6; font-weight: bold;">TV:</span> {url_tela}
+                    </div>
+                    <div style="text-align: center; background: #ffffff; padding: 10px; border-radius: 6px; margin-bottom: 12px;">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=170x170&data={url_cliente}" width="170" />
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
 
-        with tab_definicoes:
-            st.markdown("#### 🎬 Configuração de Vídeo Clipe de Fundo para a Tela")
-            st.write("Selecione o vídeo que ficará a passar no fundo da tela de projeção do seu karaoke:")
+            # Botões de abertura rápida na direita
+            col_bt_tv, col_bt_cli = st.columns(2)
+            with col_bt_tv:
+                st.markdown(f'<a href="{url_tela}" target="_blank"><button style="width: 100%; background-color: #18181b; color: #ffffff; border: 1px solid #eab308; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 13px;">🖥️ Abrir TV</button></a>', unsafe_allow_html=True)
+            with col_bt_cli:
+                st.markdown(f'<a href="{url_cliente}" target="_blank"><button style="width: 100%; background-color: #18181b; color: #ffffff; border: 1px solid #eab308; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 13px;">📱 Abrir cliente</button></a>', unsafe_allow_html=True)
 
+            st.markdown("<br>", unsafe_allow_html=True)
+
+            # --- CAIXA 4: VÍDEO DE FUNDO DA TV ---
             videos_disponiveis = {
+                "- Sem vídeo de fundo -": "",
                 "Vídeo 1 (Oficial)": "https://youtu.be/cQ4MD7gOBmc?si=5wzaxysiHSEwn9QT",
                 "Vídeo 2": "https://youtu.be/H_aniWehIYY?si=e9WzMGyFSy7PdrAj",
                 "Vídeo 3": "https://youtu.be/sGGlQ9yJQNg?si=LVeN5zjZ153uksLW",
@@ -115,28 +163,25 @@ def render():
                 "Vídeo 5": "https://youtu.be/TmayKMV0bJY?si=Zb99BwXuFyDDJ-tN"
             }
 
-            video_escolhido = st.selectbox("Escolha o Vídeo Clipe de Fundo:", list(videos_disponiveis.keys()))
+            st.markdown("""
+                <div class="box-container" style="margin-bottom: 0;">
+                    <div class="box-title">
+                        <span>🎬 VÍDEO DE FUNDO DA TV</span>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            video_escolhido = st.selectbox("Selecione o vídeo de fundo:", list(videos_disponiveis.keys()), label_visibility="collapsed")
             url_video_selecionado = videos_disponiveis[video_escolhido]
 
-            if st.button("Guardar Vídeo de Fundo", type="primary"):
+            if st.button("Guardar Vídeo de Fundo", use_container_width=True, type="primary"):
                 if st.session_state.token_prestador:
                     prestadores = obter_prestadores()
                     for p in prestadores:
                         if p.get("token") == st.session_state.token_prestador:
                             p["video_fundo"] = url_video_selecionado
                             guardar_prestador(p)
-                    st.success("Vídeo de fundo atualizado com sucesso para a sua tela!")
-
-            st.divider()
-            st.markdown("#### Gestão de Sessão")
-            st.write("Pode encerrar a sua sessão de atendimento a qualquer momento.")
-            
-            if st.button("Terminar Sessão / Sair do Painel", use_container_width=True):
-                st.session_state.pedido_submetido = False
-                st.session_state.token_prestador = None
-                st.session_state.estado_pedido = "pendente"
-                st.session_state.aprovado = False
-                st.rerun()
+                    st.success("Vídeo de fundo guardado com sucesso!")
         return
 
     # 2. SE ESTIVER RECUSADO
@@ -202,7 +247,7 @@ def render():
         st.rerun()
         return
 
-    # 4. TELA INICIAL: ESCOLHA ENTRE REGISTO OU ENTRAR (LOGIN COM NOME E TELEFONE)
+    # 4. TELA INICIAL: ESCOLHA ENTRE NOVO REGISTO OU ENTRAR COM SESSÃO ATIVA
     st.markdown("<h2 style='text-align: center; color: #eab308;'>Área do Prestador</h2>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center; color: #a1a1aa; margin-bottom: 25px;'>Faça o seu registo de acesso ou entre com os seus dados se já tiver uma sessão ativa.</p>", unsafe_allow_html=True)
 
@@ -244,7 +289,7 @@ def render():
                         "token": token_gerado,
                         "segundos_restantes": segundos_contrato,
                         "data_pedido": datetime.now().strftime("%d/%m/%Y %H:%M"),
-                        "video_fundo": "https://youtu.be/cQ4MD7gOBmc?si=5wzaxysiHSEwn9QT"
+                        "video_fundo": ""
                     }
                     
                     guardar_prestador(novo_prestador)
@@ -267,7 +312,6 @@ def render():
             if btn_entrar:
                 if login_nome.strip() and login_telefone.strip():
                     prestadores = obter_prestadores()
-                    # Procura um prestador correspondente pelo nome e telefone
                     prestador_encontrado = next(
                         (p for p in prestadores if p.get("nome", "").strip().lower() == login_nome.strip().lower() and p.get("telefone", "").strip() == login_telefone.strip()), 
                         None
