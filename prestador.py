@@ -29,25 +29,41 @@ def render():
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <h2 style="color: #eab308; margin: 0;">Painel Operacional — FF Karaoke</h2>
-                        <p style="color: #a1a1aa; margin: 5px 0 0 0;">Gestão de sala, fila de reprodução e leitor em tempo real.</p>
+                        <p style="color: #a1a1aa; margin: 5px 0 0 0;">Gestão de sala, fila de reprodução e links dedicados em tempo real.</p>
                     </div>
                 </div>
             </div>
         """, unsafe_allow_html=True)
         
-        tab_fila, tab_definicoes = st.tabs(["🎵 Fila de Reprodução & Leitor", "⚙️ Definições / Terminar Sessão"])
+        tab_fila, tab_definicoes = st.tabs(["🎵 Fila de Reprodução & Links", "⚙️ Definições / Vídeo de Fundo"])
         
         with tab_fila:
-            st.info("O sistema está ativo e a escutar novos pedidos de música dos clientes.")
+            st.info("O seu sistema está ativo e a escutar novos pedidos de música dos clientes.")
             
+            # --- GERAR URLS BASE AUTOMÁTICAS PARA OS CLIENTES E TELA ---
+            try:
+                base_url = st.context.headers.get("Host", "")
+                if base_url:
+                    if "localhost" in base_url or "127.0.0.1" in base_url:
+                        url_cliente = f"http://{base_url}/?view=client_register"
+                        url_tela = f"http://{base_url}/?view=client_screen"
+                    else:
+                        url_cliente = f"https://{base_url}/?view=client_register"
+                        url_tela = f"https://{base_url}/?view=client_screen"
+                else:
+                    raise Exception()
+            except Exception:
+                url_cliente = "https://grupoffkaraoke.streamlit.app/?view=client_register"
+                url_tela = "https://grupoffkaraoke.streamlit.app/?view=client_screen"
+
             col_links, col_qr = st.columns([2, 1])
             with col_links:
-                st.markdown("##### 🔗 Links de Acesso")
-                st.text_input("LINK DO CLIENTE (REGISTO DE MÚSICA)", value="https://appadm.streamlit.app/?page=client_register", disabled=True)
-                st.text_input("LINK DA TELA DE TV / REPRODUÇÃO", value="https://appadm.streamlit.app/?page=client_screen", disabled=True)
+                st.markdown("##### 🔗 Links Dedicados de Acesso")
+                st.text_input("1. LINK DO CLIENTE (Registo e Pedido de Música)", value=url_cliente, disabled=True)
+                st.text_input("2. LINK DA TELA DE TV / REPRODUÇÃO (Fundo e Videoclipes)", value=url_tela, disabled=True)
             with col_qr:
-                st.markdown("##### 📱 QR Code Cliente")
-                st.image("https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https://grupoffkaraoke.streamlit.app", width=140)
+                st.markdown("##### 📱 QR Code Clientes")
+                st.image(f"https://api.qrserver.com/v1/create-qr-code/?size=140x140&data={url_cliente}", width=140)
 
             st.markdown("---")
             st.markdown("#### 📋 Estado da Fila e Controlo de Reprodução")
@@ -67,10 +83,35 @@ def render():
                     st.toast("Reprodução parada.")
 
         with tab_definicoes:
+            st.markdown("#### 🎬 Configuração de Vídeo Clipe de Fundo para a Tela")
+            st.write("Selecione o vídeo que ficará a passar no fundo da tela de projeção do seu karaoke:")
+
+            videos_disponiveis = {
+                "Vídeo 1 (Oficial)": "https://youtu.be/cQ4MD7gOBmc?si=5wzaxysiHSEwn9QT",
+                "Vídeo 2": "https://youtu.be/H_aniWehIYY?si=e9WzMGyFSy7PdrAj",
+                "Vídeo 3": "https://youtu.be/sGGlQ9yJQNg?si=LVeN5zjZ153uksLW",
+                "Vídeo 4": "https://youtu.be/sGGlQ9yJQNg?si=ZxjJ34_4Z13MUL-g",
+                "Vídeo 5": "https://youtu.be/TmayKMV0bJY?si=Zb99BwXuFyDDJ-tN"
+            }
+
+            video_escolhido = st.selectbox("Escolha o Vídeo Clipe de Fundo:", list(videos_disponiveis.keys()))
+            url_video_selecionado = videos_disponiveis[video_escolhido]
+
+            if st.button("Guardar Vídeo de Fundo", type="primary"):
+                # Atualiza no registo do prestador atual
+                if st.session_state.token_prestador:
+                    prestadores = obter_prestadores()
+                    for p in prestadores:
+                        if p.get("token") == st.session_state.token_prestador:
+                            p["video_fundo"] = url_video_selecionado
+                            guardar_prestador(p)
+                    st.success("Vídeo de fundo atualizado com sucesso para a sua tela!")
+
+            st.divider()
             st.markdown("#### Gestão de Sessão")
             st.write("Pode encerrar a sua sessão de atendimento a qualquer momento.")
             
-            if st.button("Terminar Sessão / Sair do Painel", use_container_width=True, type="primary"):
+            if st.button("Terminar Sessão / Sair do Painel", use_container_width=True):
                 st.session_state.pedido_submetido = False
                 st.session_state.token_prestador = None
                 st.session_state.estado_pedido = "pendente"
@@ -101,7 +142,7 @@ def render():
                 st.rerun()
         return
 
-    # 3. SE ESTIVER PENDENTE / À ESPERA: Mostra apenas o radar e o aviso, sem desenhar o formulário abaixo
+    # 3. SE ESTIVER PENDENTE / À ESPERA: Mostra apenas o radar e o aviso
     if st.session_state.pedido_submetido:
         st.markdown("""
             <style>
@@ -196,7 +237,8 @@ def render():
                     "approved": False,
                     "token": token_gerado,
                     "segundos_restantes": segundos_contrato,
-                    "data_pedido": datetime.now().strftime("%d/%m/%Y %H:%M")
+                    "data_pedido": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                    "video_fundo": "https://youtu.be/cQ4MD7gOBmc?si=5wzaxysiHSEwn9QT"
                 }
                 
                 guardar_prestador(novo_prestador)
