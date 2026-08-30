@@ -229,7 +229,7 @@ def render():
                     dados_tabela = []
                     for p in ativos:
                         expira_ts = p.get("expira_timestamp", 0)
-                        segundos_restantes = max(0, int(expira_ts - ag_ts := agora_ts))
+                        segundos_restantes = max(0, int(expira_ts - agora_ts))
                         tempo_formatado = formatarTempoDecrescente(segundos_restantes)
                         
                         dados_tabela.append({
@@ -280,7 +280,6 @@ def render():
                 
                 tabela_resumo_dados = []
                 for dia, valores in sorted(resumo_diario_dict.items(), reverse=True):
-                    # ORDEM CORRIGIDA DAS COLUNAS: Dia, Total de Clientes, Aprovados, Recusados, Valor Total
                     tabela_resumo_dados.append({
                         "Dia": dia,
                         "Total de Clientes": valores["total_clientes"],
@@ -335,7 +334,6 @@ def render():
                         
                         token_id = p.get('token', f'reg_{i}')
                         
-                        # Cada linha apresenta os detalhes e um botão para excluir individualmente
                         with st.container(border=True):
                             cols_det = st.columns([5, 1])
                             with cols_det[0]:
@@ -343,15 +341,11 @@ def render():
                                 st.caption(f"Contrato: {contrato_str} | Valor: {valor_str} | Estado: **{estado_formatado}** | Data: {p.get('data_pedido', 'N/A')}")
                             with cols_det[1]:
                                 if st.button("🗑️ Excluir", key=f"del_{token_id}_{i}"):
-                                    # Remove o registo da lista global e guarda
                                     prestadores_atuais.pop(i)
-                                    # Atualiza na base de dados ou re-guarda a lista se a tua função permitir
-                                    # Como o db.py guarda individualmente, tentamos atualizar/remover
                                     try:
                                         from db import remover_prestador
                                         remover_prestador(token_id)
                                     except Exception:
-                                        # Caso a função de apagar direta não exista, reescrevemos com lista vazia ou marcamos como apagado
                                         p["status_str"] = "apagado"
                                         guardar_prestador(p)
                                     st.success("Registo excluído com sucesso!")
