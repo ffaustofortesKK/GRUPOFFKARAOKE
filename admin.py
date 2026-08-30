@@ -178,15 +178,15 @@ def render():
                                     p["status_str"] = "aprovado"
                                     p["data_pedido"] = datetime.now().strftime("%d/%m/%Y %H:%M")
                                     
-                                    # Calcula os segundos com base no contrato escolhido
+                                    # Lê rigorosamente o contrato escolhido para definir o tempo correto em segundos
                                     contrato_str = str(p.get('plano', p.get('contrato', ''))).lower()
-                                    segundos_contrato = 3600  # Padrão 1 hora
-                                    if "2" in contrato_str:
-                                        segundos_contrato = 7200
-                                    elif "3" in contrato_str:
-                                        segundos_contrato = 10800
-                                    elif "12" in contrato_str:
-                                        segundos_contrato = 43200 # Exemplo se for horas personalizadas
+                                    
+                                    if "3 hora" in contrato_str or "20.000" in contrato_str:
+                                        segundos_contrato = 10800  # Exatamente 3 Horas (03h 00m 00s)
+                                    elif "2 hora" in contrato_str or "17.000" in contrato_str:
+                                        segundos_contrato = 7200   # Exatamente 2 Horas (02h 00m 00s)
+                                    else:
+                                        segundos_contrato = 3600   # Exatamente 1 Hora / Padrão (01h 00m 00s)
                                     
                                     # Define o Timestamp exato de expiração no relógio real
                                     p["expira_timestamp"] = datetime.now().timestamp() + segundos_contrato
