@@ -24,40 +24,35 @@ def render():
             if status_atual == "aprovado":
                 st.session_state.aprovado = True
 
-    # 1. SE ESTIVER APROVADO: Mostra o painel operacional completo com o temporizador real
+    # 1. SE ESTIVER APROVADO: Mostra o painel operacional completo
     if st.session_state.get("aprovado", False) or st.session_state.get("estado_pedido") == "aprovado":
         
-        # --- GERAR URLS BASE AUTOMÁTICAS ---
+        # --- GERAR URLS BASE ROBUSTAS (Evita página não encontrada) ---
         try:
             base_url = st.context.headers.get("Host", "")
             if base_url:
-                if "localhost" in base_url or "127.0.0.1" in base_url:
-                    url_cliente = f"http://{base_url}/?view=client_register"
-                    url_tela = f"http://{base_url}/?view=client_screen"
-                else:
-                    url_cliente = f"https://{base_url}/?view=client_register"
-                    url_tela = f"https://{base_url}/?view=client_screen"
+                protocol = "http" if "localhost" in base_url or "127.0.0.1" in base_url else "https"
+                url_cliente = f"{protocol}://{base_url}/cliente"
+                url_tela = f"{protocol}://{base_url}/tv"
             else:
                 raise Exception()
         except Exception:
-            url_cliente = "https://grupoffkaraoke.streamlit.app/?view=client_register"
-            url_tela = "https://grupoffkaraoke.streamlit.app/?view=client_screen"
+            url_cliente = "https://grupoffkaraoke.streamlit.app/cliente"
+            url_tela = "https://grupoffkaraoke.streamlit.app/tv"
 
         # --- CÁLCULO DO TEMPO RESTANTE DO CONTRATO ---
-        segundos_restantes = 7200  # Valor predefinido por defeito (2 horas)
+        segundos_restantes = 7200  
         if prestador_atual:
             segundos_contrato_inicial = prestador_atual.get("segundos_restantes", 7200)
             data_pedido_str = prestador_atual.get("data_pedido", "")
             
             try:
-                # Tenta calcular o tempo decorrido desde a data do pedido/entrada
                 dt_pedido = datetime.strptime(data_pedido_str, "%d/%m/%Y %H:%M")
                 decorrido = int((datetime.now() - dt_pedido).total_seconds())
                 segundos_restantes = max(0, segundos_contrato_inicial - decorrido)
             except Exception:
                 segundos_restantes = segundos_contrato_inicial
 
-        # Formatar em HH:MM:SS
         horas = segundos_restantes // 3600
         minutos = (segundos_restantes % 3600) // 60
         segundos = segundos_restantes % 60
@@ -108,7 +103,7 @@ def render():
         col_esq, col_dir = st.columns([1.3, 1])
 
         with col_esq:
-            # --- CAIXA 1: A TOCAR AGORA (Com o cronômetro real do contrato) ---
+            # --- CAIXA 1: A TOCAR AGORA ---
             st.markdown(f"""
                 <div class="box-container">
                     <div class="box-title">
@@ -149,7 +144,7 @@ def render():
             """, unsafe_allow_html=True)
 
         with col_dir:
-            # --- CAIXA 3: LINKS E QR CODE (QR Code aponta para o link do cliente) ---
+            # --- CAIXA 3: LINKS E QR CODE ---
             st.markdown(f"""
                 <div class="box-container">
                     <div class="box-title">
@@ -194,16 +189,15 @@ def render():
             video_escolhido = st.selectbox("Selecione o vídeo de fundo:", list(videos_disponiveis.keys()), label_visibility="collapsed")
             url_video_selecionado = videos_disponiveis[video_escolhido]
 
-            if st.button("Guardar Vídeo de Fundo", use_container_width=True, type="primary"):
+            if st.button("Iniciar Vídeo Clipe Tela", use_container_width=True, type="primary"):
                 if st.session_state.token_prestador:
                     prestadores = obter_prestadores()
                     for p in prestadores:
                         if p.get("token") == st.session_state.token_prestador:
                             p["video_fundo"] = url_video_selecionado
                             guardar_prestador(p)
-                    st.success("Vídeo de fundo guardado com sucesso!")
+                    st.success("Vídeo clipe de tela iniciado/guardado com sucesso!")
         
-        # Atualiza o cronômetro a cada 1 segundo automaticamente na tela
         time.sleep(1)
         st.rerun()
         return
