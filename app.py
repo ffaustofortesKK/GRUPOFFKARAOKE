@@ -70,7 +70,9 @@ def carregar_modulo(nome_ficheiro):
 
 # --- SISTEMA DE ROTAS POR PARÂMETRO DE URL ---
 query_params = st.query_params
-view = query_params.get("view", "admin")
+
+# Suporta tanto ?view=... quanto ?page=... e define "prestador" como padrão inicial
+view = query_params.get("view", query_params.get("page", "prestador"))
 
 # Executa o módulo correspondente carregando-o diretamente pelo nome do ficheiro
 try:
