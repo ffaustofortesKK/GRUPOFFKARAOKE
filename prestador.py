@@ -22,6 +22,7 @@ def render():
             if status_atual == "aprovado":
                 st.session_state.aprovado = True
 
+    # 1. SE ESTIVER APROVADO: Mostra o painel operacional e interrompe o fluxo com return
     if st.session_state.get("aprovado", False) or st.session_state.get("estado_pedido") == "aprovado":
         st.markdown("""
             <div style="border: 2px solid #eab308; background-color: #0f0f11; padding: 25px; border-radius: 12px; margin-bottom: 20px;">
@@ -77,6 +78,7 @@ def render():
                 st.rerun()
         return
 
+    # 2. SE ESTIVER RECUSADO: Mostra o aviso de recusa e interrompe o fluxo com return
     if st.session_state.pedido_submetido and st.session_state.estado_pedido == "recusado":
         st.markdown("""
             <div style="background-color: #0f0f11; border: 2px solid #ef4444; padding: 40px 20px; text-align: center; border-radius: 12px; margin-top: 20px;">
@@ -97,8 +99,10 @@ def render():
                 st.session_state.estado_pedido = "pendente"
                 st.session_state.aprovado = False
                 st.rerun()
+        return
 
-    elif st.session_state.pedido_submetido:
+    # 3. SE ESTIVER PENDENTE / À ESPERA: Mostra apenas o radar e o aviso, sem desenhar o formulário abaixo
+    if st.session_state.pedido_submetido:
         st.markdown("""
             <style>
                 @keyframes girarHorario {
@@ -152,54 +156,55 @@ def render():
         
         time.sleep(3)
         st.rerun()
+        return
+
+    # 4. CASO CONTRÁRIO (Nenhum pedido submetido ainda): Mostra o formulário de registo limpo
+    st.markdown("<h2 style='text-align: center; color: #eab308;'>Cadastramento</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #a1a1aa; margin-bottom: 30px;'>Preencha os dados abaixo para submeter o seu pedido de acesso ao sistema.</p>", unsafe_allow_html=True)
+
+    with st.form("form_registo_prestador"):
+        nome = st.text_input("Nome Completo")
+        telefone = st.text_input("Telemóvel / Telefone")
+        estabelecimento = st.text_input("Estabelecimento (Local onde vai prestar o serviço)")
+        
+        contrato = st.selectbox("Escolha o Contrato", [
+            "1 Hora - 12.000,00 Kwanzaas", 
+            "2 Horas - 17.000,00 Kwanzaas",
+            "3 Horas - 20.000,00 Kwanzaas"
+        ])
+        
+        submitted = st.form_submit_button("Submeter Pedido", use_container_width=True)
+        
+        if submitted:
+            if nome.strip() and telefone.strip():
+                token_gerado = f"token_{int(time.time())}"
                 
-    else:
-        st.markdown("<h2 style='text-align: center; color: #eab308;'>Cadastramento</h2>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: #a1a1aa; margin-bottom: 30px;'>Preencha os dados abaixo para submeter o seu pedido de acesso ao sistema.</p>", unsafe_allow_html=True)
-
-        with st.form("form_registo_prestador"):
-            nome = st.text_input("Nome Completo")
-            telefone = st.text_input("Telemóvel / Telefone")
-            estabelecimento = st.text_input("Estabelecimento (Local onde vai prestar o serviço)")
-            
-            contrato = st.selectbox("Escolha o Contrato", [
-                "1 Hora - 12.000,00 Kwanzaas", 
-                "2 Horas - 17.000,00 Kwanzaas",
-                "3 Horas - 20.000,00 Kwanzaas"
-            ])
-            
-            submitted = st.form_submit_button("Submeter Pedido", use_container_width=True)
-            
-            if submitted:
-                if nome.strip() and telefone.strip():
-                    token_gerado = f"token_{int(time.time())}"
-                    
-                    if "1 Hora" in contrato:
-                        segundos_contrato = 3600
-                    elif "2 Horas" in contrato:
-                        segundos_contrato = 7200
-                    else:
-                        segundos_contrato = 10800
-
-                    novo_prestador = {
-                        "nome": nome.strip(),
-                        "telefone": telefone.strip(),
-                        "estabelecimento": estabelecimento.strip(),
-                        "plano": contrato,
-                        "contrato": contrato,
-                        "status_str": "pendente",
-                        "approved": False,
-                        "token": token_gerado,
-                        "segundos_restantes": segundos_contrato,
-                        "data_pedido": datetime.now().strftime("%d/%m/%Y %H:%M")
-                    }
-                    
-                    guardar_prestador(novo_prestador)
-                    
-                    st.session_state.pedido_submetido = True
-                    st.session_state.token_prestador = token_gerado
-                    st.session_state.estado_pedido = "pendente"
-                    st.session_state.aprovado = False
-                    st.rerun()
+                if "1 Hora" in contrato:
+                    segundos_contrato = 3600
+                elif "2 Horas" in contrato:
+                    segundos_contrato = 7200
                 else:
-                    st.error("Por favor, preencha pelo menos o Nome Completo e o Telefone.")
+                    segundos_contrato = 10800
+
+                novo_prestador = {
+                    "nome": nome.strip(),
+                    "telefone": telefone.strip(),
+                    "estabelecimento": estabelecimento.strip(),
+                    "plano": contrato,
+                    "contrato": contrato,
+                    "status_str": "pendente",
+                    "approved": False,
+                    "token": token_gerado,
+                    "segundos_restantes": segundos_contrato,
+                    "data_pedido": datetime.now().strftime("%d/%m/%Y %H:%M")
+                }
+                
+                guardar_prestador(novo_prestador)
+                
+                st.session_state.pedido_submetido = True
+                st.session_state.token_prestador = token_gerado
+                st.session_state.estado_pedido = "pendente"
+                st.session_state.aprovado = False
+                st.rerun()
+            else:
+                st.error("Por favor, preencha pelo menos o Nome Completo e o Telefone.")
