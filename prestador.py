@@ -27,18 +27,18 @@ def render():
     # 1. SE ESTIVER APROVADO: Mostra o painel operacional completo
     if st.session_state.get("aprovado", False) or st.session_state.get("estado_pedido") == "aprovado":
         
-        # --- GERAR URLS BASE ROBUSTAS (Evita página não encontrada) ---
+        # --- GERAR URLS BASE ROBUSTAS (Apontando corretamente para as páginas do app) ---
         try:
             base_url = st.context.headers.get("Host", "")
             if base_url:
                 protocol = "http" if "localhost" in base_url or "127.0.0.1" in base_url else "https"
-                url_cliente = f"{protocol}://{base_url}/cliente"
-                url_tela = f"{protocol}://{base_url}/tv"
+                url_cliente = f"{protocol}://{base_url}/?page=cliente"
+                url_tela = f"{protocol}://{base_url}/?page=tela"
             else:
                 raise Exception()
         except Exception:
-            url_cliente = "https://grupoffkaraoke.streamlit.app/cliente"
-            url_tela = "https://grupoffkaraoke.streamlit.app/tv"
+            url_cliente = "https://grupoffkaraoke.streamlit.app/?page=cliente"
+            url_tela = "https://grupoffkaraoke.streamlit.app/?page=tela"
 
         # --- CÁLCULO DO TEMPO RESTANTE DO CONTRATO ---
         segundos_restantes = 7200  
