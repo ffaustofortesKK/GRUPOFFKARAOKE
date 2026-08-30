@@ -38,7 +38,7 @@ def render():
             border-color: #eab308 !important;
         }
 
-        /* Estilização dos cabeçalhos das tabelas (fundo amarelo e texto preto) */
+        /* Estilização dos cabeçalhos das tabelas (fundo amarelo e texto/números em preto negritado) */
         div[data-testid="stDataFrame"] th, 
         div[data-testid="stTable"] th,
         thead tr th {
@@ -50,7 +50,6 @@ def render():
     """, unsafe_allow_html=True)
 
     st.title("Painel de Administração — FF Karaoke")
-    st.caption("Gestão de acessos e controlos do programa FFK (Baseado em Tempo Real)")
 
     if not st.session_state.get("logged", False):
         st.divider()
@@ -256,15 +255,20 @@ def render():
             with aba4:
                 st.subheader("📈 Relatórios e Estatísticas Gerais")
                 
-                # --- CALENDÁRIO NO TOPO DA ABA RELATÓRIOS PARA CONTROLAR OS TOTAIS SUPERIORES ---
-                st.markdown("### 📅 Filtro por Data para os Indicadores")
+                # --- LAYOUT EXATO CONFORME A IMAGEM: CALENDÁRIO À ESQUERDA E MÉTRICAS À DIREITA ---
+                col_esq_filt, col_dir_met = st.columns([5, 6])
                 
-                data_calendario = st.date_input(
-                    "📅 Selecione a Data do Contrato para ver os clientes e atualizar os totais:",
-                    value=date.today(),
-                    format="DD/MM/YYYY",
-                    key="calendario_detalhado"
-                )
+                with col_esq_filt:
+                    st.markdown("### 📅 Filtro por Data para os Indicadores")
+                    data_calendario = st.date_input(
+                        "📅 Selecione a Data do Contrato para ver os clientes e atualizar os totais:",
+                        value=date.today(),
+                        format="DD/MM/YYYY",
+                        key="calendario_detalhado"
+                    )
+                    
+                    # Botão de ocultar saldo alinhado logo abaixo do calendário
+                    ocultar_saldo = st.toggle("🔒 Ocultar Saldo / Valores", value=False, key="toggle_ocultar_saldo")
                 
                 data_selecionada_str = data_calendario.strftime("%d/%m/%Y")
                 
@@ -328,27 +332,21 @@ def render():
                             "Data do contrato": data_completa
                         })
                 
-                # --- BOTÃO DE OCULTAR / MOSTRAR SALDO ---
-                col_btn_ocultar, col_vazio = st.columns([2, 8])
-                with col_btn_ocultar:
-                    ocultar_saldo = st.toggle("🔒 Ocultar Saldo / Valores", value=False, key="toggle_ocultar_saldo")
-
-                st.divider()
-                
-                # --- CARTÕES DE TOTAIS SUPERIORES (REFLETEM O DIA SELECIONADO NO CALENDÁRIO) ---
-                col_m1, col_m2, col_m3, col_m4 = st.columns(4)
-                with col_m1:
-                    st.metric("Total de Prestadores", len(dados_filtrados))
-                with col_m2:
-                    if ocultar_saldo:
-                        valor_total_fmt = "******** Kwanzaas"
-                    else:
-                        valor_total_fmt = f"{valor_total_filtro:,.2f} Kwanzaas".replace(",", "X").replace(".", ",").replace("X", ".")
-                    st.metric("Total em Kwanzas", valor_total_fmt)
-                with col_m3:
-                    st.metric("Total Aprovados", total_aprovados_filtro)
-                with col_m4:
-                    st.metric("Total Recusados", total_recusados_filtro)
+                with col_dir_met:
+                    # Exibição dos totais superiores refletindo a data selecionada
+                    col_m1, col_m2, col_m3, col_m4 = st.columns(4)
+                    with col_m1:
+                        st.metric("Total de Prestadores", len(dados_filtrados))
+                    with col_m2:
+                        if ocultar_saldo:
+                            valor_total_fmt = "******** Kwanzaas"
+                        else:
+                            valor_total_fmt = f"{valor_total_filtro:,.2f} Kwanzaas".replace(",", "X").replace(".", ",").replace("X", ".")
+                        st.metric("Total em Kwanzas", valor_total_fmt)
+                    with col_m3:
+                        st.metric("Total Aprovados", total_aprovados_filtro)
+                    with col_m4:
+                        st.metric("Total Recusados", total_recusados_filtro)
 
                 st.divider()
 
@@ -413,7 +411,6 @@ def render():
                 st.markdown(f"<p style='color: #a1a1aa;'>A exibir os registos para a data: <b>{data_selecionada_str}</b></p>", unsafe_allow_html=True)
                 
                 if dados_filtrados:
-                    # Aplica ocultação de saldo na tabela de detalhe se o botão estiver ativo
                     dados_tabela_exibicao = []
                     for item in dados_filtrados:
                         item_copy = item.copy()
