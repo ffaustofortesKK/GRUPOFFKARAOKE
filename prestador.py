@@ -40,21 +40,19 @@ def render():
         with tab_fila:
             st.info("O seu sistema está ativo e a escutar novos pedidos de música dos clientes.")
             
-            # --- GERAR URLS BASE AUTOMÁTICAS PARA OS CLIENTES E TELA ---
+            # --- GERAR URLS BASE ROBUSTAS ---
             try:
-                base_url = st.context.headers.get("Host", "")
-                if base_url:
-                    if "localhost" in base_url or "127.0.0.1" in base_url:
-                        url_cliente = f"http://{base_url}/?view=client_register"
-                        url_tela = f"http://{base_url}/?view=client_screen"
-                    else:
-                        url_cliente = f"https://{base_url}/?view=client_register"
-                        url_tela = f"https://{base_url}/?view=client_screen"
+                host = st.context.headers.get("Host", "")
+                if host:
+                    protocol = "http" if "localhost" in host or "127.0.0.1" in host else "https"
+                    url_cliente = f"{protocol}://{host}/?view=client_register"
+                    url_tela = f"{protocol}://{host}/?view=client_screen"
                 else:
-                    raise Exception()
+                    raise ValueError("Host vazio")
             except Exception:
-                url_cliente = "https://grupoffkaraoke.streamlit.app/?view=client_register"
-                url_tela = "https://grupoffkaraoke.streamlit.app/?view=client_screen"
+                # Fallback padrão caso o contexto de headers falhe
+                url_cliente = "http://localhost:8501/?view=client_register"
+                url_tela = "http://localhost:8501/?view=client_screen"
 
             col_links, col_qr = st.columns([2, 1])
             with col_links:
@@ -98,7 +96,6 @@ def render():
             url_video_selecionado = videos_disponiveis[video_escolhido]
 
             if st.button("Guardar Vídeo de Fundo", type="primary"):
-                # Atualiza no registo do prestador atual
                 if st.session_state.token_prestador:
                     prestadores = obter_prestadores()
                     for p in prestadores:
@@ -119,7 +116,7 @@ def render():
                 st.rerun()
         return
 
-    # 2. SE ESTIVER RECUSADO: Mostra o aviso de recusa e interrompe o fluxo com return
+    # 2. SE ESTIVER RECUSADO
     if st.session_state.pedido_submetido and st.session_state.estado_pedido == "recusado":
         st.markdown("""
             <div style="background-color: #0f0f11; border: 2px solid #ef4444; padding: 40px 20px; text-align: center; border-radius: 12px; margin-top: 20px;">
@@ -142,7 +139,7 @@ def render():
                 st.rerun()
         return
 
-    # 3. SE ESTIVER PENDENTE / À ESPERA: Mostra apenas o radar e o aviso
+    # 3. SE ESTIVER PENDENTE / À ESPERA
     if st.session_state.pedido_submetido:
         st.markdown("""
             <style>
@@ -199,7 +196,7 @@ def render():
         st.rerun()
         return
 
-    # 4. CASO CONTRÁRIO (Nenhum pedido submetido ainda): Mostra o formulário de registo limpo
+    # 4. CASO CONTRÁRIO (Formulário de Registo)
     st.markdown("<h2 style='text-align: center; color: #eab308;'>Cadastramento</h2>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center; color: #a1a1aa; margin-bottom: 30px;'>Preencha os dados abaixo para submeter o seu pedido de acesso ao sistema.</p>", unsafe_allow_html=True)
 
