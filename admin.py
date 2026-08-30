@@ -1,6 +1,6 @@
 import streamlit as st
 import urllib.parse
-from datetime import datetime
+from datetime import datetime, timedelta
 from collections import defaultdict
 from db import obter_prestadores, guardar_prestador
 
@@ -16,7 +16,7 @@ def formatarTempoDecrescente(segundos: int) -> str:
 
 def render():
     st.title("Painel de Administração — FF Karaoke")
-    st.caption("Gestão de acessos e controlos do programa FFK")
+    st.caption("Gestão de acessos e controlos do programa FFK (Baseado em Tempo Real)")
 
     if not st.session_state.get("logged", False):
         st.divider()
@@ -32,9 +32,11 @@ def render():
                 else:
                     st.error("Palavra-passe incorreta.")
     else:
-        # --- BLOCO NATIVO DE ATUALIZAÇÃO AUTOMÁTICA EM SEGUNDO PLANO (A CADA 5 SEGUNDOS) ---
+        # --- BLOCO NATIVO DE ATUALIZAÇÃO AUTOMÁTICA GLOBAL (A CADA 5 SEGUNDOS) ---
         @st.fragment(run_every=5)
         def painel_admin_automatico():
+            agora_ts = datetime.now().timestamp()
+            
             try:
                 prestadores_atuais = obter_prestadores()
                 if not isinstance(prestadores_atuais, list):
@@ -42,24 +44,37 @@ def render():
             except Exception:
                 prestadores_atuais = []
             
-            # Processa a expiração automática de tempo antes de filtrar
+            # Processa a expiração automática baseada no relógio real (Timestamp)
+            houve_alteracao = False
             for p in prestadores_atuais:
                 if not isinstance(p, dict):
                     continue
                 status_str = p.get("status_str", "pendente")
+                
                 if status_str == "aprovado":
-                    segundos = p.get("segundos_restantes", 0)
-                    if segundos > 0:
-                        segundos -= 1
-                        p["segundos_restantes"] = segundos
-                        if segundos <= 0:
-                            p["status_str"] = "expirado"
-                            p["approved"] = False
+                    expira_ts = p.get("expira_timestamp", 0)
+                    
+                    # Se o contrato já passou da hora atual do relógio
+                    if expira_ts > 0 and agora_ts >= expira_ts:
+                        p["status_str"] = "expirado"
+                        p["approved"] = False
+                        p["segundos_restantes"] = 0
                         guardar_prestador(p)
+                        houve_alteracao = True
+                    elif expira_ts > 0:
+                        # Atualiza os segundos restantes dinamicamente para mostrar na tabela
+                        p["segundos_restantes"] = int(expira_ts - agora_ts)
 
-            ativos = [p for p in prestadores_atuais if isinstance(p, dict) and (p.get("status_str") == "aprovado" or p.get("approved") is True) and p.get("segundos_restantes", 0) > 0]
+            # Filtra ativos com base no tempo real
+            ativos = [
+                p for p in prestadores_atuais 
+                if isinstance(p, dict) 
+                and (p.get("status_str") == "aprovado" or p.get("approved") is True) 
+                and p.get("expira_timestamp", 0) > agora_ts
+            ]
             qtd_ativos = len(ativos)
             
+            # Filtra pendentes dinamicamente
             pendentes_lista = []
             for p in prestadores_atuais:
                 if not isinstance(p, dict):
@@ -139,12 +154,7 @@ def render():
                     """, unsafe_allow_html=True)
 
             with aba2:
-                col_p_top1, col_p_top2 = st.columns([8, 2])
-                with col_p_top1:
-                    st.subheader(f"⏳ Registos pendentes ({qtd_pendentes})")
-                with col_p_top2:
-                    if st.button("🔄 Atualizar Lista", use_container_width=True):
-                        st.rerun()
+                st.subheader(f"⏳ Registos pendentes ({qtd_pendentes})")
 
                 if qtd_pendentes > 0:
                     st.markdown(f"""
@@ -154,7 +164,7 @@ def render():
                     """, unsafe_allow_html=True)
                 
                 if not pendentes_lista:
-                    st.info("Nenhum pedido pendente de momento.")
+                    st.info("Nenhum pedido pendente de momento. Os novos pedidos aparecerão aqui automaticamente.")
                 else:
                     for p in pendentes_lista:
                         with st.container(border=True):
@@ -166,7 +176,22 @@ def render():
                                 if st.button("✅ Aprovar", key=f"aprov_{p.get('token', 't')}"):
                                     p["approved"] = True
                                     p["status_str"] = "aprovado"
-                                    p["data_pedido"] = p.get("data_pedido", datetime.now().strftime("%d/%m/%Y %H:%M"))
+                                    p["data_pedido"] = datetime.now().strftime("%d/%m/%Y %H:%M")
+                                    
+                                    # Calcula os segundos com base no contrato escolhido
+                                    contrato_str = str(p.get('plano', p.get('contrato', ''))).lower()
+                                    segundos_contrato = 3600  # Padrão 1 hora
+                                    if "2" in contrato_str:
+                                        segundos_contrato = 7200
+                                    elif "3" in contrato_str:
+                                        segundos_contrato = 10800
+                                    elif "12" in contrato_str:
+                                        segundos_contrato = 43200 # Exemplo se for horas personalizadas
+                                    
+                                    # Define o Timestamp exato de expiração no relógio real
+                                    p["expira_timestamp"] = datetime.now().timestamp() + segundos_contrato
+                                    p["segundos_restantes"] = segundos_contrato
+                                    
                                     guardar_prestador(p)
                                     st.rerun()
                                     
@@ -174,7 +199,7 @@ def render():
                                 if st.button("❌ Recusar", key=f"rec_{p.get('token', 't')}"):
                                     p["approved"] = False
                                     p["status_str"] = "recusado"
-                                    p["data_pedido"] = p.get("data_pedido", datetime.now().strftime("%d/%m/%Y %H:%M"))
+                                    p["data_pedido"] = datetime.now().strftime("%d/%m/%Y %H:%M")
                                     guardar_prestador(p)
                                     st.rerun()
 
@@ -186,7 +211,8 @@ def render():
                 else:
                     dados_tabela = []
                     for p in ativos:
-                        segundos_restantes = p.get("segundos_restantes", 0)
+                        expira_ts = p.get("expira_timestamp", 0)
+                        segundos_restantes = max(0, int(expira_ts - agora_ts))
                         tempo_formatado = formatarTempoDecrescente(segundos_restantes)
                         
                         dados_tabela.append({
@@ -202,16 +228,10 @@ def render():
             with aba4:
                 st.subheader("📈 Relatórios e Estatísticas Gerais")
                 
-                todos_registos = obter_prestadores()
-                if not isinstance(todos_registos, list):
-                    todos_registos = []
-                
                 st.markdown("### 📅 Resumo Agregado por Dia")
-                st.write("Estatísticas consolidadas de prestadores e valores cobrados por dia:")
-                
                 resumo_diario_dict = defaultdict(lambda: {"total_clientes": 0, "valor_total": 0})
                 
-                for p in todos_registos:
+                for p in prestadores_atuais:
                     if not isinstance(p, dict):
                         continue
                     data_completa = p.get('data_pedido', datetime.now().strftime("%d/%m/%Y %H:%M"))
@@ -246,16 +266,16 @@ def render():
                 st.divider()
 
                 st.markdown("### 📋 Registo Detalhado de Solicitações")
-                st.write("Lista individual de todas as submissões e contratos:")
                 
                 dados_historico_tabela = []
-                for p in todos_registos:
+                for p in prestadores_atuais:
                     if not isinstance(p, dict):
                         continue
                     status_atual = p.get("status_str", "pendente")
+                    expira_ts = p.get("expira_timestamp", 0)
                     
                     if status_atual == "aprovado" or p.get("approved") is True:
-                        if p.get("segundos_restantes", 0) <= 0:
+                        if expira_ts > 0 and agora_ts >= expira_ts:
                             estado_formatado = "Concluído / Expirado"
                         else:
                             estado_formatado = "Ativo / Em curso"
@@ -294,5 +314,5 @@ def render():
                 else:
                     st.info("Nenhum registo estatístico disponível.")
 
-        # Executa a função fragmento
+        # Executa o painel automático
         painel_admin_automatico()
