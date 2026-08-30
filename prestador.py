@@ -12,6 +12,7 @@ def render():
         st.session_state.aprovado = False
 
     # Verificação periódica do estado do prestador se houver token ativo
+    prestador_atual = None
     if st.session_state.pedido_submetido and st.session_state.token_prestador:
         prestadores = obter_prestadores()
         prestador_atual = next((p for p in prestadores if p.get("token") == st.session_state.token_prestador), None)
@@ -23,7 +24,7 @@ def render():
             if status_atual == "aprovado":
                 st.session_state.aprovado = True
 
-    # 1. SE ESTIVER APROVADO: Mostra o painel operacional idêntico à imagem de referência
+    # 1. SE ESTIVER APROVADO: Mostra o painel operacional completo com o temporizador real
     if st.session_state.get("aprovado", False) or st.session_state.get("estado_pedido") == "aprovado":
         
         # --- GERAR URLS BASE AUTOMÁTICAS ---
@@ -42,7 +43,27 @@ def render():
             url_cliente = "https://grupoffkaraoke.streamlit.app/?view=client_register"
             url_tela = "https://grupoffkaraoke.streamlit.app/?view=client_screen"
 
-        # CSS personalizado para o estilo exato (fundo escuro, caixas com borda dourada/amarela brilhante)
+        # --- CÁLCULO DO TEMPO RESTANTE DO CONTRATO ---
+        segundos_restantes = 7200  # Valor predefinido por defeito (2 horas)
+        if prestador_atual:
+            segundos_contrato_inicial = prestador_atual.get("segundos_restantes", 7200)
+            data_pedido_str = prestador_atual.get("data_pedido", "")
+            
+            try:
+                # Tenta calcular o tempo decorrido desde a data do pedido/entrada
+                dt_pedido = datetime.strptime(data_pedido_str, "%d/%m/%Y %H:%M")
+                decorrido = int((datetime.now() - dt_pedido).total_seconds())
+                segundos_restantes = max(0, segundos_contrato_inicial - decorrido)
+            except Exception:
+                segundos_restantes = segundos_contrato_inicial
+
+        # Formatar em HH:MM:SS
+        horas = segundos_restantes // 3600
+        minutos = (segundos_restantes % 3600) // 60
+        segundos = segundos_restantes % 60
+        tempo_formatado = f"{horas:02d}:{minutos:02d}:{segundos:02d}"
+
+        # CSS personalizado para o estilo escuro com bordas douradas
         st.markdown("""
             <style>
                 .box-container {
@@ -72,7 +93,7 @@ def render():
         # Botão discreto para terminar sessão no topo
         col_top_info, col_top_btn = st.columns([4, 1])
         with col_top_info:
-            st.markdown(f"<span style='color: #a1a1aa; font-size: 13px;'>Sessão Ativa | Token: {st.session_state.token_prestador}</span>", unsafe_allow_html=True)
+            st.markdown(f"<span style='color: #a1a1aa; font-size: 13px;'>Sessão Ativa | Prestador: {prestador_atual.get('nome', '') if prestador_atual else ''}</span>", unsafe_allow_html=True)
         with col_top_btn:
             if st.button("Sair / Terminar", use_container_width=True):
                 st.session_state.pedido_submetido = False
@@ -83,16 +104,16 @@ def render():
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # Layout de 2 colunas principais (Esquerda: Controlo/Fila | Direita: Links/QR e Vídeo de Fundo)
+        # Layout de 2 colunas principais
         col_esq, col_dir = st.columns([1.3, 1])
 
         with col_esq:
-            # --- CAIXA 1: A TOCAR AGORA ---
-            st.markdown("""
+            # --- CAIXA 1: A TOCAR AGORA (Com o cronômetro real do contrato) ---
+            st.markdown(f"""
                 <div class="box-container">
                     <div class="box-title">
                         <span>▶ A TOCAR AGORA</span>
-                        <span style="color: #eab308; font-family: monospace; font-size: 16px;">⏳ 01:59:27</span>
+                        <span style="color: #eab308; font-family: monospace; font-size: 16px;">⏳ {tempo_formatado}</span>
                     </div>
                     <div class="box-content">
                         <p style="margin-bottom: 6px; font-weight: 500;">Nada em reprodução.</p>
@@ -101,7 +122,7 @@ def render():
                 </div>
             """, unsafe_allow_html=True)
             
-            # Botões de ação alinhados debaixo da caixa "A Tocar Agora"
+            # Botões de ação
             b1, b2, b3 = st.columns(3)
             with b1:
                 if st.button("▶ Tocar primeiro da fila", use_container_width=True):
@@ -128,7 +149,7 @@ def render():
             """, unsafe_allow_html=True)
 
         with col_dir:
-            # --- CAIXA 3: LINKS E QR CODE ---
+            # --- CAIXA 3: LINKS E QR CODE (QR Code aponta para o link do cliente) ---
             st.markdown(f"""
                 <div class="box-container">
                     <div class="box-title">
@@ -144,7 +165,6 @@ def render():
                 </div>
             """, unsafe_allow_html=True)
 
-            # Botões de abertura rápida na direita
             col_bt_tv, col_bt_cli = st.columns(2)
             with col_bt_tv:
                 st.markdown(f'<a href="{url_tela}" target="_blank"><button style="width: 100%; background-color: #18181b; color: #ffffff; border: 1px solid #eab308; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 13px;">🖥️ Abrir TV</button></a>', unsafe_allow_html=True)
@@ -182,6 +202,10 @@ def render():
                             p["video_fundo"] = url_video_selecionado
                             guardar_prestador(p)
                     st.success("Vídeo de fundo guardado com sucesso!")
+        
+        # Atualiza o cronômetro a cada 1 segundo automaticamente na tela
+        time.sleep(1)
+        st.rerun()
         return
 
     # 2. SE ESTIVER RECUSADO
@@ -247,7 +271,7 @@ def render():
         st.rerun()
         return
 
-    # 4. TELA INICIAL: ESCOLHA ENTRE NOVO REGISTO OU ENTRAR COM SESSÃO ATIVA
+    # 4. TELA INICIAL: NOVO REGISTO OU ENTRAR COM SESSÃO ATIVA
     st.markdown("<h2 style='text-align: center; color: #eab308;'>Área do Prestador</h2>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center; color: #a1a1aa; margin-bottom: 25px;'>Faça o seu registo de acesso ou entre com os seus dados se já tiver uma sessão ativa.</p>", unsafe_allow_html=True)
 
