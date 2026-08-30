@@ -15,33 +15,6 @@ def formatarTempoDecrescente(segundos: int) -> str:
     return f"{minutos:02d}m {secs:02d}s"
 
 def render():
-    # --- CSS PERSONALIZADO PARA AS ABAS (Fundo preto, texto branco e ajuste de largura compacta) ---
-    st.markdown("""
-        <style>
-            /* Estilo geral para os botões das abas */
-            .stTabs [data-baseweb="tab-list"] {
-                gap: 8px;
-                background-color: transparent;
-            }
-            .stTabs [data-baseweb="tab"] {
-                background-color: #18181b !important;
-                color: #ffffff !important;
-                border-radius: 6px 6px 0px 0px;
-                padding: 10px 16px;
-                font-weight: 500;
-                border: 1px solid #3f3f46;
-                flex-grow: 0 !important; /* Impede que a aba estique por todo o ecrã */
-            }
-            /* Aba selecionada */
-            .stTabs [aria-selected="true"] {
-                background-color: #27272a !important;
-                color: #facc15 !important;
-                border-color: #eab308 !important;
-                font-weight: bold;
-            }
-        </style>
-    """, unsafe_allow_html=True)
-
     st.title("Painel de Administração — FF Karaoke")
     st.caption("Gestão de acessos e controlos do programa FFK (Baseado em Tempo Real)")
 
@@ -81,6 +54,7 @@ def render():
                 if status_str == "aprovado":
                     expira_ts = p.get("expira_timestamp", 0)
                     
+                    # Se o contrato já passou da hora atual do relógio
                     if expira_ts > 0 and agora_ts >= expira_ts:
                         p["status_str"] = "expirado"
                         p["approved"] = False
@@ -88,8 +62,10 @@ def render():
                         guardar_prestador(p)
                         houve_alteracao = True
                     elif expira_ts > 0:
+                        # Atualiza os segundos restantes dinamicamente para mostrar na tabela
                         p["segundos_restantes"] = int(expira_ts - agora_ts)
 
+            # Filtra ativos com base no tempo real
             ativos = [
                 p for p in prestadores_atuais 
                 if isinstance(p, dict) 
@@ -98,6 +74,7 @@ def render():
             ]
             qtd_ativos = len(ativos)
             
+            # Filtra pendentes dinamicamente
             pendentes_lista = []
             for p in prestadores_atuais:
                 if not isinstance(p, dict):
@@ -129,13 +106,13 @@ def render():
                     st.session_state.logged = False
                     st.rerun()
 
-            titulo_aba_pendentes = f"⏳ Pedidos ({qtd_pendentes})" if qtd_pendentes > 0 else "⏳ Pedidos"
+            titulo_aba_pendentes = f"⏳ Pedidos ({qtd_pendentes})" if qtd_pendentes > 0 else "⏳ Pedidos e Aprovação"
 
             aba1, aba2, aba3, aba4 = st.tabs([
-                "🔗 Registo", 
+                "🔗 Link e QR Registo", 
                 titulo_aba_pendentes, 
-                "🟢 Activos", 
-                "📈 Relatórios"
+                "🟢 Prestadores Activos", 
+                "📈 Relatórios e Estatísticas"
             ])
 
             with aba1:
@@ -201,15 +178,17 @@ def render():
                                     p["status_str"] = "aprovado"
                                     p["data_pedido"] = datetime.now().strftime("%d/%m/%Y %H:%M")
                                     
+                                    # Lê rigorosamente o contrato escolhido para definir o tempo correto em segundos
                                     contrato_str = str(p.get('plano', p.get('contrato', ''))).lower()
                                     
                                     if "3 hora" in contrato_str or "20.000" in contrato_str:
-                                        segundos_contrato = 10800
+                                        segundos_contrato = 10800  # Exatamente 3 Horas (03h 00m 00s)
                                     elif "2 hora" in contrato_str or "17.000" in contrato_str:
-                                        segundos_contrato = 7200
+                                        segundos_contrato = 7200   # Exatamente 2 Horas (02h 00m 00s)
                                     else:
-                                        segundos_contrato = 3600
+                                        segundos_contrato = 3600   # Exatamente 1 Hora / Padrão (01h 00m 00s)
                                     
+                                    # Define o Timestamp exato de expiração no relógio real
                                     p["expira_timestamp"] = datetime.now().timestamp() + segundos_contrato
                                     p["segundos_restantes"] = segundos_contrato
                                     
@@ -250,7 +229,7 @@ def render():
                 st.subheader("📈 Relatórios e Estatísticas Gerais")
                 
                 st.markdown("### 📅 Resumo Agregado por Dia")
-                resumo_diario_dict = defaultdict(lambda: {"total_clientes": 0, "valor_total": 0, "aprovados": 0, "recusados": 0})
+                resumo_diario_dict = defaultdict(lambda: {"total_clientes": 0, "valor_total": 0})
                 
                 for p in prestadores_atuais:
                     if not isinstance(p, dict):
@@ -259,25 +238,14 @@ def render():
                     data_dia = data_completa.split(" ")[0] if " " in data_completa else data_completa
                     
                     contrato_str = p.get('plano', p.get('contrato', 'N/A'))
-                    status_atual = str(p.get('status_str', '')).lower()
-                    approved_val = p.get('approved')
-                    
-                    # Contagem de Aprovados e Recusados
-                    is_aprovado = (status_atual == "aprovado" or approved_val is True or status_atual == "expirado")
-                    is_recusado = (status_atual == "recusado")
                     
                     valor_numerico = 0
-                    if is_aprovado:
-                        if "1 Hora" in contrato_str or "12" in contrato_str:
-                            valor_numerico = 12000
-                        elif "2 Horas" in contrato_str or "17" in contrato_str:
-                            valor_numerico = 17000
-                        elif "3 Horas" in contrato_str or "20" in contrato_str:
-                            valor_numerico = 20000
-                        resumo_diario_dict[data_dia]["aprovados"] += 1
-                    
-                    if is_recusado:
-                        resumo_diario_dict[data_dia]["recusados"] += 1
+                    if "1 Hora" in contrato_str or "12" in contrato_str:
+                        valor_numerico = 12000
+                    elif "2 Horas" in contrato_str or "17" in contrato_str:
+                        valor_numerico = 17000
+                    elif "3 Horas" in contrato_str or "20" in contrato_str:
+                        valor_numerico = 20000
                     
                     resumo_diario_dict[data_dia]["total_clientes"] += 1
                     resumo_diario_dict[data_dia]["valor_total"] += valor_numerico
@@ -287,8 +255,6 @@ def render():
                     tabela_resumo_dados.append({
                         "Dia": dia,
                         "Total de Clientes": valores["total_clientes"],
-                        "Aprovados": valores["aprovados"],
-                        "Recusados": valores["recusados"],
                         "Valor Total": f"{valores['valor_total']:,.2f} Kwanzaas".replace(",", "X").replace(".", ",").replace("X", ".")
                     })
                 
@@ -348,4 +314,5 @@ def render():
                 else:
                     st.info("Nenhum registo estatístico disponível.")
 
+        # Executa o painel automático
         painel_admin_automatico()
