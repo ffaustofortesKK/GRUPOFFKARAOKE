@@ -16,12 +16,9 @@ st.set_page_config(
     layout="wide",
 )
 
-# --- CSS PARA ESCONDER A BARRA LATERAL (SIDEBAR) ---
+# --- CSS PARA ESTILIZAÇÃO GLOBAL ---
 st.markdown("""
     <style>
-    [data-testid="stSidebar"] {
-        display: none;
-    }
     .main {
         background-color: #09090b;
         color: #fafafa;
@@ -71,8 +68,29 @@ def carregar_modulo(nome_ficheiro):
 # --- SISTEMA DE ROTAS POR PARÂMETRO DE URL ---
 query_params = st.query_params
 
-# Suporta tanto ?view=... quanto ?page=... e define "prestador" como padrão inicial
+# Captura a view ou page (se nenhuma for dada, define 'prestador' como padrão)
 view = query_params.get("view", query_params.get("page", "prestador"))
+
+# Barra superior de navegação rápida para facilitar testes locais e alternância de painéis
+col_nav1, col_nav2, col_nav3, col_nav4 = st.columns(4)
+with col_nav1:
+    if st.button("🎤 Painel Prestador", use_container_width=True):
+        st.query_params["view"] = "prestador"
+        st.rerun()
+with col_nav2:
+    if st.button("⚙️ Painel Admin", use_container_width=True):
+        st.query_params["view"] = "admin"
+        st.rerun()
+with col_nav3:
+    if st.button("📱 Ecrã Cliente", use_container_width=True):
+        st.query_params["view"] = "cliente"
+        st.rerun()
+with col_nav4:
+    if st.button("🖥️ Ecrã TV / Tela", use_container_width=True):
+        st.query_params["view"] = "tela"
+        st.rerun()
+
+st.markdown("---")
 
 # Executa o módulo correspondente carregando-o diretamente pelo nome do ficheiro
 try:
