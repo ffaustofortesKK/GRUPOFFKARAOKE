@@ -25,42 +25,55 @@ def render():
                 else:
                     st.error("Por favor, insira um nome ou alcunha válido.")
                     
-    # ESTADO 2: Painel do Cliente (2ª Imagem com Gestão de Fila e Regra dos 4 Pedidos)
+    # ESTADO 2: Painel do Cliente (2ª Imagem com Gestão de Fila Real)
     else:
         cantor = st.session_state["cliente_nome"]
         
         st.markdown(f"### Benvindo {cantor}")
         st.info(f"Sessão vinculada ao Prestador Token: `{token_prestador}`")
         
-        # Obtém todos os pedidos pendentes da base de dados
+        # Obtém todos os pedidos pendentes da base de dados filtrados para este prestador
         todos_pedidos = obter_pedidos_musicas()
-        pendentes_geral = [p for p in todos_pedidos if p.get("status", "pendente") == "pendente"]
         
-        # Verifica se o cliente tem algum pedido ativo na fila
+        # Filtra apenas os pedidos pendentes do prestador atual
+        pendentes_geral = [
+            p for p in todos_pedidos 
+            if p.get("status", "pendente") == "pendente" 
+            and str(p.get("token_prestador", "")) == str(token_prestador)
+        ]
+        
+        # Filtra os pedidos específicos deste cantor
         pedidos_do_cliente = [
             p for p in pendentes_geral 
-            if str(p.get("cantor", "")).strip().lower() == cantor.strip().lower() 
-            and str(p.get("token_prestador", "")) == str(token_prestador)
+            if str(p.get("cantor", "")).strip().lower() == cantor.strip().lower()
         ]
         
         tem_pedido_ativo = len(pedidos_do_cliente) > 0
         
         if tem_pedido_ativo:
-            # Encontra a posição exata do pedido atual do cliente na fila geral
-            posicao = -1
+            # Encontra a posição exata do PRIMEIRO pedido ativo deste cliente na fila geral do prestador
+            primeiro_pedido_cliente = pedidos_do_cliente[0]
+            
+            posicao_real = -1
             for idx, p in enumerate(pendentes_geral):
-                if str(p.get("cantor", "")).strip().lower() == cantor.strip().lower():
-                    posicao = idx + 1
+                # Compara usando os dados únicos ou o ID se existir
+                if p == primeiro_pedido_cliente or (str(p.get("cantor","")).strip().lower() == str(primeiro_pedido_cliente.get("cantor","")).strip().lower() and str(p.get("musica","")) == str(primeiro_pedido_cliente.get("musica","")) and str(p.get("timestamp","")) == str(primeiro_pedido_cliente.get("timestamp",""))):
+                    posicao_real = idx + 1
                     break
             
-            # Quantas músicas estão à frente do cliente (pedidos acima dele)
-            musicas_acima = posicao - 1 if posicao > 0 else 0
+            # Se por algum motivo não encontrar pelo objeto exato, pega pelo índice do primeiro match na lista geral
+            if posicao_real == -1:
+                for idx, p in enumerate(pendentes_geral):
+                    if str(p.get("cantor", "")).strip().lower() == cantor.strip().lower():
+                        posicao_real = idx + 1
+                        break
+
+            musicas_acima = posicao_real - 1 if posicao_real > 0 else 0
             
-            # Mostra o alerta da posição atual
-            st.warning(f"🎵 O seu pedido está registado! Encontra-se atualmente na **posição {posicao}** da fila.")
+            # Alerta com a posição correta na fila
+            st.warning(f"🎵 O seu pedido (`{primeiro_pedido_cliente.get('musica', '')}`) está registado! Encontra-se atualmente na **posição {posicao_real}** da fila.")
             
-            # REGRA: Só pode enviar novo pedido se houver 4 ou menos músicas à frente dele (ou seja, 4 ou mais abaixo/próximo da vez)
-            # Vamos definir que para poder enviar novo pedido, 'musicas_acima' tem de ser <= 4
+            # Regra: Só pode enviar novo pedido se houver 4 ou menos músicas à frente dele (ou seja, quando restarem 4 ou menos para a vez dele)
             if musicas_acima > 4:
                 st.error(f"⏳ **Aguarde!** Ainda tem {musicas_acima} músicas à sua frente. Só poderá enviar um novo pedido quando restarem 4 ou menos músicas para a sua vez.")
             else:
