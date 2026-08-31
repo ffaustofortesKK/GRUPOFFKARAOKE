@@ -1,7 +1,7 @@
 import streamlit as st
 import time
 from datetime import datetime
-from db import guardar_prestador, obter_prestadores
+from db import guardar_prestador, obter_prestadores, obter_pedidos_musicas
 
 def render():
     if "pedido_submetido" not in st.session_state:
@@ -39,24 +39,6 @@ def render():
         except Exception:
             url_cliente = "https://grupoffkaraoke.streamlit.app/?page=cliente"
             url_tela = "https://grupoffkaraoke.streamlit.app/?page=tela"
-
-        # --- CÁLCULO DO TEMPO RESTANTE DO CONTRATO ---
-        segundos_restantes = 7200  
-        if prestador_atual:
-            segundos_contrato_inicial = prestador_atual.get("segundos_restantes", 7200)
-            data_pedido_str = prestador_atual.get("data_pedido", "")
-            
-            try:
-                dt_pedido = datetime.strptime(data_pedido_str, "%d/%m/%Y %H:%M")
-                decorrido = int((datetime.now() - dt_pedido).total_seconds())
-                segundos_restantes = max(0, segundos_contrato_inicial - decorrido)
-            except Exception:
-                segundos_restantes = segundos_contrato_inicial
-
-        horas = segundos_restantes // 3600
-        minutos = (segundos_restantes % 3600) // 60
-        segundos = segundos_restantes % 60
-        tempo_formatado = f"{horas:02d}:{minutos:02d}:{segundos:02d}"
 
         # CSS personalizado para o estilo escuro com bordas douradas
         st.markdown("""
@@ -103,19 +85,46 @@ def render():
         col_esq, col_dir = st.columns([1.3, 1])
 
         with col_esq:
-            # --- CAIXA 1: A TOCAR AGORA ---
-            st.markdown(f"""
-                <div class="box-container">
-                    <div class="box-title">
-                        <span>▶ A TOCAR AGORA</span>
-                        <span style="color: #eab308; font-family: monospace; font-size: 16px;">⏳ {tempo_formatado}</span>
+            # --- CAIXA 1: A TOCAR AGORA (Com atualização em tempo real do temporizador) ---
+            @st.fragment(run_every=3)
+            def renderizar_a_tocar():
+                # Recarregar dados do prestador para garantir tempo atualizado
+                nonlocal prestador_atual
+                if st.session_state.token_prestador:
+                    prestadores = obter_prestadores()
+                    prestador_atual = next((p for p in prestadores if p.get("token") == st.session_state.token_prestador), None)
+
+                segundos_restantes = 7200  
+                if prestador_atual:
+                    segundos_contrato_inicial = prestador_atual.get("segundos_restantes", 7200)
+                    data_pedido_str = prestador_atual.get("data_pedido", "")
+                    
+                    try:
+                        dt_pedido = datetime.strptime(data_pedido_str, "%d/%m/%Y %H:%M")
+                        decorrido = int((datetime.now() - dt_pedido).total_seconds())
+                        segundos_restantes = max(0, segundos_contrato_inicial - decorrido)
+                    except Exception:
+                        segundos_restantes = segundos_contrato_inicial
+
+                horas = segundos_restantes // 3600
+                minutos = (segundos_restantes % 3600) // 60
+                segundos = segundos_restantes % 60
+                tempo_formatado = f"{horas:02d}:{minutos:02d}:{segundos:02d}"
+
+                st.markdown(f"""
+                    <div class="box-container">
+                        <div class="box-title">
+                            <span>▶ A TOCAR AGORA</span>
+                            <span style="color: #eab308; font-family: monospace; font-size: 16px;">⏳ {tempo_formatado}</span>
+                        </div>
+                        <div class="box-content">
+                            <p style="margin-bottom: 6px; font-weight: 500;">Nada em reprodução.</p>
+                            <p style="color: #a1a1aa; font-size: 13px; margin-bottom: 15px;">A música é reproduzida apenas no ecrã de TV.</p>
+                        </div>
                     </div>
-                    <div class="box-content">
-                        <p style="margin-bottom: 6px; font-weight: 500;">Nada em reprodução.</p>
-                        <p style="color: #a1a1aa; font-size: 13px; margin-bottom: 15px;">A música é reproduzida apenas no ecrã de TV.</p>
-                    </div>
-                </div>
-            """, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
+
+            renderizar_a_tocar()
             
             # Botões de ação
             b1, b2, b3 = st.columns(3)
@@ -131,35 +140,38 @@ def render():
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # --- CAIXA 2: FILA DE PEDIDOS ---
-            try:
-                from db import obter_pedidos_musicas
-                lista_pedidos = obter_pedidos_musicas()
-            except Exception:
-                lista_pedidos = []
+            # --- CAIXA 2: FILA DE PEDIDOS (Com atualização automática a cada 3 segundos) ---
+            @st.fragment(run_every=3)
+            def renderizar_fila_pedidos():
+                try:
+                    lista_pedidos = obter_pedidos_musicas()
+                except Exception:
+                    lista_pedidos = []
 
-            total_pedidos = len(lista_pedidos)
+                total_pedidos = len(lista_pedidos)
 
-            st.markdown(f"""
-                <div class="box-container">
-                    <div class="box-title">
-                        <span>📄 FILA DE PEDIDOS ({total_pedidos})</span>
+                st.markdown(f"""
+                    <div class="box-container">
+                        <div class="box-title">
+                            <span>📄 FILA DE PEDIDOS ({total_pedidos})</span>
+                        </div>
+                        <div class="box-content">
+                """, unsafe_allow_html=True)
+
+                if total_pedidos > 0:
+                    for idx, pedido in enumerate(lista_pedidos, 1):
+                        musica = pedido.get('musica', 'Música Desconhecida')
+                        cantor = pedido.get('cantor', 'Convidado')
+                        st.markdown(f"<p style='margin: 4px 0; color: #fafafa;'><b>{idx}.</b> {musica} — <span style='color: #eab308;'>{cantor}</span></p>", unsafe_allow_html=True)
+                else:
+                    st.markdown("<p style='color: #a1a1aa; margin: 0;'>Sem pedidos em espera.</p>", unsafe_allow_html=True)
+
+                st.markdown("""
+                        </div>
                     </div>
-                    <div class="box-content">
-            """, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
 
-            if total_pedidos > 0:
-                for idx, pedido in enumerate(lista_pedidos, 1):
-                    musica = pedido.get('musica', 'Música Desconhecida')
-                    cantor = pedido.get('cantor', 'Convidado')
-                    st.markdown(f"<p style='margin: 4px 0; color: #fafafa;'><b>{idx}.</b> {musica} — <span style='color: #eab308;'>{cantor}</span></p>", unsafe_allow_html=True)
-            else:
-                st.markdown("<p style='color: #a1a1aa; margin: 0;'>Sem pedidos em espera.</p>", unsafe_allow_html=True)
-
-            st.markdown("""
-                    </div>
-                </div>
-            """, unsafe_allow_html=True)
+            renderizar_fila_pedidos()
 
         with col_dir:
             # --- CAIXA 3: LINKS E QR CODE ---
@@ -215,9 +227,6 @@ def render():
                             p["video_fundo"] = url_video_selecionado
                             guardar_prestador(p)
                     st.success("Vídeo clipe de tela iniciado/guardado com sucesso!")
-        
-        time.sleep(1)
-        st.rerun()
         return
 
     # 2. SE ESTIVER RECUSADO
