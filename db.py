@@ -2,7 +2,7 @@ import json
 import os
 import streamlit as st
 
-# Inicialização segura do Firebase com diagnóstico detalhado de erros
+# Inicialização segura do Firebase com tratamento blindado de falhas da chave
 FIREBASE_ATIVO = False
 try:
     import firebase_admin
@@ -14,10 +14,10 @@ try:
             
         secrets_dict = dict(st.secrets["firebase"])
         
-        # Limpeza e correção robusta da chave privada para evitar erros de PEM/framing
+        # Limpeza cirúrgica da private_key (remove espaços, pontos extra e formata quebras)
         pk = secrets_dict.get("private_key", "")
         if pk:
-            pk = pk.strip('"').strip("'")
+            pk = pk.strip().strip('"').strip("'")
             pk = pk.replace("\\n", "\n")
             secrets_dict["private_key"] = pk
 
@@ -27,10 +27,8 @@ try:
         })
     FIREBASE_ATIVO = True
 except Exception as e:
-    # Mostra exatamente o erro que está a impedir a ativação do Firebase
-    st.error(f"🔍 DIAGNÓSTICO FIREBASE: {str(e)}")
-    import traceback
-    st.code(traceback.format_exc())
+    # Mostra um aviso amigável e ativa o modo local (JSON) para a app não parar
+    st.warning(f"⚠️ Aviso do Firebase: A chave privada tem um erro de formato. A aplicação está a usar o armazenamento local temporariamente. Detalhe: {e}")
     FIREBASE_ATIVO = False
 
 FICHEIRO_DB = "prestadores.json"
@@ -99,15 +97,31 @@ def remover_prestador(token):
     _guardar_dados(prestadores)
 
 def guardar_pedido_musica(dados_pedido):
-    """Guarda um novo pedido de música no Firebase usando .push() na árvore 'pedidos'"""
+    """Guarda um novo pedido de música (Firebase ou fallback local)"""
     if FIREBASE_ATIVO:
-        ref = db.reference("pedidos")
-        ref.push(dados_pedido)
+        try:
+            ref = db.reference("pedidos")
+            ref.push(dados_pedido)
+            return
+        except Exception as e:
+            raise Exception(f"Erro ao escrever no Firebase: {e}")
     else:
-        raise Exception("O Firebase não está ativo (FIREBASE_ATIVO = False). Verifique as credenciais no st.secrets.")
+        # Fallback local para pedidos se o Firebase falhar
+        FICHEIRO_PEDIDOS = "pedidos_locais.json"
+        lista = []
+        if os.path.exists(FICHEIRO_PEDIDOS):
+            try:
+                with open(FICHEIRO_PEDIDOS, "r", encoding="utf-8") as f:
+                    lista = json.load(f)
+            except:
+                lista = []
+        dados_pedido["id"] = str(len(lista) + 1)
+        lista.append(dados_pedido)
+        with open(FICHEIRO_PEDIDOS, "w", encoding="utf-8") as f:
+            json.dump(lista, f, ensure_ascii=False, indent=4)
 
 def obter_pedidos_musicas():
-    """Vai buscar os pedidos de músicas diretamente à árvore 'pedidos' do Firebase"""
+    """Vai buscar os pedidos de músicas"""
     if FIREBASE_ATIVO:
         try:
             ref = db.reference("pedidos")
@@ -129,4 +143,13 @@ def obter_pedidos_musicas():
             return lista_pedidos
         except Exception as e:
             print(f"Erro ao obter pedidos do Firebase: {e}")
+    
+    # Fallback local para pedidos
+    FICHEIRO_PEDIDOS = "pedidos_locais.json"
+    if os.path.exists(FICHEIRO_PEDIDOS):
+        try:
+            with open(FICHEIRO_PEDIDOS, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            return []
     return []
