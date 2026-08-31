@@ -1,15 +1,27 @@
 import streamlit as st
-from db import guardar_pedido_musica, obter_pedidos_musicas
+from db import guardar_pedido_musica, obter_pedidos_musicas, obter_prestadores
 
 def render():
     query_params = st.query_params
-    token_prestador = query_params.get("token", "Nenhum")
+    token_prestador = query_params.get("token", "").strip()
+    
+    # Se não veio token na URL ou veio "Nenhum", tenta encontrar o primeiro prestador aprovado disponível
+    if not token_prestador or token_prestador.lower() == "nenhum":
+        try:
+            prestadores = obter_prestadores()
+            prestador_ativo = next((p for p in prestadores if p.get("status_str") == "aprovado" or p.get("approved") == True), None)
+            if prestador_ativo:
+                token_prestador = prestador_ativo.get("token", "geral")
+            else:
+                token_prestador = "geral"
+        except Exception:
+            token_prestador = "geral"
     
     # 1. Inicializa o estado do nome do cliente se não existir
     if "cliente_nome" not in st.session_state:
         st.session_state["cliente_nome"] = ""
 
-    # ESTADO 1: Inserir o Nome (1ª Imagem)
+    # ESTADO 1: Inserir o Nome
     if not st.session_state["cliente_nome"]:
         st.markdown("### 🎤 Bem-vindo ao FF Karaoke")
         st.write("Insira o seu nome ou alcunha para começar:")
@@ -25,21 +37,21 @@ def render():
                 else:
                     st.error("Por favor, insira um nome ou alcunha válido.")
                     
-    # ESTADO 2: Painel do Cliente (2ª Imagem com Gestão de Fila Real)
+    # ESTADO 2: Painel do Cliente
     else:
         cantor = st.session_state["cliente_nome"]
         
-        st.markdown(f"### Benvindo {cantor}")
-        st.info(f"Sessão vinculada ao Prestador Token: `{token_prestador}`")
+        st.markdown(f"### Bem-vindo {cantor}")
+        st.info(f"Sessão vinculada ao Prestador / Sessão: `{token_prestador}`")
         
-        # Obtém todos os pedidos pendentes da base de dados filtrados para este prestador
+        # Obtém todos os pedidos pendentes da base de dados
         todos_pedidos = obter_pedidos_musicas()
         
-        # Filtra apenas os pedidos pendentes do prestador atual
+        # Filtra os pedidos pendentes (tolerante ao token para garantir que nunca se perde nada)
         pendentes_geral = [
             p for p in todos_pedidos 
             if p.get("status", "pendente") == "pendente" 
-            and str(p.get("token_prestador", "")) == str(token_prestador)
+            and (str(p.get("token_prestador", "")) == str(token_prestador) or str(p.get("token_prestador", "")) in ["", "Nenhum", "geral"])
         ]
         
         # Filtra os pedidos específicos deste cantor
@@ -51,17 +63,14 @@ def render():
         tem_pedido_ativo = len(pedidos_do_cliente) > 0
         
         if tem_pedido_ativo:
-            # Encontra a posição exata do PRIMEIRO pedido ativo deste cliente na fila geral do prestador
             primeiro_pedido_cliente = pedidos_do_cliente[0]
             
             posicao_real = -1
             for idx, p in enumerate(pendentes_geral):
-                # Compara usando os dados únicos ou o ID se existir
-                if p == primeiro_pedido_cliente or (str(p.get("cantor","")).strip().lower() == str(primeiro_pedido_cliente.get("cantor","")).strip().lower() and str(p.get("musica","")) == str(primeiro_pedido_cliente.get("musica","")) and str(p.get("timestamp","")) == str(primeiro_pedido_cliente.get("timestamp",""))):
+                if p == primeiro_pedido_cliente or (str(p.get("cantor","")).strip().lower() == str(primeiro_pedido_cliente.get("cantor","")).strip().lower() and str(p.get("musica","")) == str(primeiro_pedido_cliente.get("musica",""))):
                     posicao_real = idx + 1
                     break
             
-            # Se por algum motivo não encontrar pelo objeto exato, pega pelo índice do primeiro match na lista geral
             if posicao_real == -1:
                 for idx, p in enumerate(pendentes_geral):
                     if str(p.get("cantor", "")).strip().lower() == cantor.strip().lower():
@@ -70,16 +79,13 @@ def render():
 
             musicas_acima = posicao_real - 1 if posicao_real > 0 else 0
             
-            # Alerta com a posição correta na fila
             st.warning(f"🎵 O seu pedido (`{primeiro_pedido_cliente.get('musica', '')}`) está registado! Encontra-se atualmente na **posição {posicao_real}** da fila.")
             
-            # Regra: Só pode enviar novo pedido se houver 4 ou menos músicas à frente dele (ou seja, quando restarem 4 ou menos para a vez dele)
             if musicas_acima > 4:
                 st.error(f"⏳ **Aguarde!** Ainda tem {musicas_acima} músicas à sua frente. Só poderá enviar um novo pedido quando restarem 4 ou menos músicas para a sua vez.")
             else:
                 st.success(f"🔔 **Pode enviar um novo pedido!** Faltam apenas {musicas_acima} músicas para a sua vez.")
                 
-                # Formulário para enviar novo pedido
                 with st.form("form_cliente_novo", clear_on_submit=True):
                     musica = st.text_input("Digite o nome da próxima música ou artista:", placeholder="Ex: Landrick, Nani...")
                     submitted = st.form_submit_button("Enviar Novo Pedido")
@@ -87,12 +93,13 @@ def render():
                     if submitted:
                         if musica.strip():
                             try:
-                                guardar_pedido_musica({
+                                dados_novo_pedido = {
                                     "cantor": cantor,
                                     "musica": musica.strip(),
                                     "token_prestador": token_prestador,
                                     "status": "pendente"
-                                })
+                                }
+                                guardar_pedido_musica(dados_novo_pedido)
                                 st.success(f"Obrigado {cantor}! O seu novo pedido foi adicionado.")
                                 st.rerun()
                             except Exception as e:
@@ -100,7 +107,6 @@ def render():
                         else:
                             st.error("Por favor, preencha o nome da música.")
         else:
-            # Se não tem nenhum pedido pendente na fila, pode enviar livremente
             st.success("✅ Já poderá enviar o seu pedido!")
             
             with st.form("form_cliente", clear_on_submit=True):
@@ -111,12 +117,13 @@ def render():
                 if submitted:
                     if musica.strip():
                         try:
-                            guardar_pedido_musica({
+                            dados_novo_pedido = {
                                 "cantor": cantor,
                                 "musica": musica.strip(),
                                 "token_prestador": token_prestador,
                                 "status": "pendente"
-                            })
+                            }
+                            guardar_pedido_musica(dados_novo_pedido)
                             st.success(f"Obrigado {cantor}! A sua música '{musica}' foi adicionada à fila.")
                             st.rerun()
                         except Exception as e:
@@ -124,7 +131,6 @@ def render():
                     else:
                         st.error("Por favor, preencha o nome da música ou artista.")
         
-        # Botão para alterar nome / reiniciar sessão
         if st.button("🔄 Alterar Nome"):
             st.session_state["cliente_nome"] = ""
             st.rerun()
