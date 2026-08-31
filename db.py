@@ -12,7 +12,7 @@ try:
         firebase_secrets = dict(st.secrets["firebase"])
         cred = credentials.Certificate(firebase_secrets)
         firebase_admin.initialize_app(cred, {
-            'databaseURL': 'https://grupoffkaraoke-default-rtdb.firebaseio.com'  # <-- CORRIGIDO AQUI (default)
+            'databaseURL': 'https://grupoffkaraoke-default-rtdb.firebaseio.com'
         })
     FIREBASE_ATIVO = True
 except Exception as e:
@@ -29,7 +29,6 @@ def _carregar_dados():
             dados = ref.get()
             if not dados:
                 return []
-            # Se o firebase devolver um dicionário, converte para lista
             if isinstance(dados, dict):
                 return list(dados.values())
             elif isinstance(dados, list):
@@ -56,7 +55,6 @@ def _guardar_dados(lista_prestadores):
     if FIREBASE_ATIVO:
         try:
             ref = db.reference("prestadores")
-            # Converte a lista num dicionário indexado pelo token para o Firebase
             dados_dict = {}
             for p in lista_prestadores:
                 token = str(p.get("token", f"token_{id(p)}"))
@@ -66,7 +64,6 @@ def _guardar_dados(lista_prestadores):
         except Exception as e:
             print(f"Erro ao guardar no Firebase: {e}")
 
-    # Fallback local
     try:
         with open(FICHEIRO_DB, "w", encoding="utf-8") as f:
             json.dump(lista_prestadores, f, ensure_ascii=False, indent=4)
@@ -91,11 +88,11 @@ def remover_prestador(token):
 def guardar_pedido_musica(dados_pedido):
     """Guarda um novo pedido de música no Firebase usando .push() na árvore 'pedidos'"""
     if FIREBASE_ATIVO:
-        try:
-            ref = db.reference("pedidos")
-            ref.push(dados_pedido)
-        except Exception as e:
-            print(f"Erro ao guardar pedido no Firebase: {e}")
+        # Sem try/except interno para que o erro exato suba e apareça no Streamlit se algo falhar
+        ref = db.reference("pedidos")
+        ref.push(dados_pedido)
+    else:
+        raise Exception("O Firebase não está ativo (FIREBASE_ATIVO = False). Verifique as credenciais no st.secrets.")
 
 def obter_pedidos_musicas():
     """Vai buscar os pedidos de músicas diretamente à árvore 'pedidos' do Firebase"""
