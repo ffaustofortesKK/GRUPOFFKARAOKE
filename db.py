@@ -2,7 +2,7 @@ import json
 import os
 import streamlit as st
 
-# Inicialização segura do Firebase
+# Inicialização segura do Firebase com alertas visuais para teste
 FIREBASE_ATIVO = False
 try:
     import firebase_admin
@@ -10,7 +10,8 @@ try:
     
     if not firebase_admin._apps:
         if "firebase" not in st.secrets:
-            raise Exception("A secção [firebase] não foi encontrada nos st.secrets.")
+            st.error("A secção [firebase] não foi encontrada nos st.secrets do Streamlit.")
+            raise Exception("Falta st.secrets['firebase']")
             
         secrets_dict = dict(st.secrets["firebase"])
         pk = secrets_dict.get("private_key", "")
@@ -25,7 +26,7 @@ try:
         })
     FIREBASE_ATIVO = True
 except Exception as e:
-    print(f"Aviso Firebase: {e}")
+    st.sidebar.error(f"Aviso Firebase Desligado: {e}")
     FIREBASE_ATIVO = False
 
 FICHEIRO_DB = "prestadores.json"
@@ -97,8 +98,9 @@ def remover_prestador(token):
     _guardar_dados(prestadores)
 
 def guardar_pedido_musica(dados_pedido):
-    """Guarda o pedido de música garantindo persistência tanto no Firebase quanto em cache local de segurança"""
-    # Salva sempre no ficheiro local de segurança para evitar perda de dados por falhas de rede
+    """Guarda o pedido de música garantindo persistência no Firebase e backup local"""
+    
+    # 1. Guarda primeiro no cache local de segurança
     lista_local = []
     if os.path.exists(FICHEIRO_PEDIDOS_LOCAL):
         try:
@@ -116,19 +118,22 @@ def guardar_pedido_musica(dados_pedido):
     except Exception as e:
         print(f"Erro ao salvar cache local de pedidos: {e}")
 
-    # Envia para o Firebase se estiver ativo
+    # 2. Envia para o Firebase (Cria automaticamente a pasta "pedidos")
     if FIREBASE_ATIVO:
         try:
             ref = db.reference("pedidos")
             ref.push(dados_pedido)
+            st.toast("Pedido enviado com sucesso para o Firebase!", icon="🔥")
         except Exception as e:
-            print(f"Erro ao escrever pedidos no Firebase (mantido no local): {e}")
+            st.error(f"Erro ao escrever no Firebase: {e}")
+    else:
+        st.warning("Pedido guardado apenas localmente (Firebase inativo).")
 
 def obter_pedidos_musicas():
-    """Combina os pedidos do Firebase e do armazenamento local para garantir que nenhum histórico se perde"""
+    """Combina os pedidos do Firebase e do armazenamento local"""
     pedidos_dict = {}
     
-    # 1. Tenta carregar do Firebase
+    # 1. Carrega do Firebase
     if FIREBASE_ATIVO:
         try:
             ref = db.reference("pedidos")
@@ -138,7 +143,6 @@ def obter_pedidos_musicas():
                     for chave, valor in dados.items():
                         if isinstance(valor, dict):
                             valor["id"] = chave
-                            # Usa uma chave única baseada no nome e música ou ID para evitar duplicados
                             chave_unica = f"{valor.get('nome')}_{valor.get('musica')}_{valor.get('timestamp', '')}"
                             pedidos_dict[chave_unica] = valor
                 elif isinstance(dados, list):
@@ -150,7 +154,7 @@ def obter_pedidos_musicas():
         except Exception as e:
             print(f"Erro ao obter pedidos do Firebase: {e}")
     
-    # 2. Carrega do ficheiro local de segurança e funde com os dados
+    # 2. Carrega do ficheiro local e funde
     if os.path.exists(FICHEIRO_PEDIDOS_LOCAL):
         try:
             with open(FICHEIRO_PEDIDOS_LOCAL, "r", encoding="utf-8") as f:
