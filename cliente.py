@@ -54,35 +54,21 @@ def render():
             if str(p.get("status", "pendente")).strip().lower() == "pendente"
         ]
         
-        # Filtra os pedidos específicos deste cantor na fila pendente
-        pedidos_do_cliente = [
-            p for p in pendentes_geral 
-            if str(p.get("cantor", "")).strip().lower() == cantor.strip().lower()
-        ]
+        # Filtro ULTRA FLEXÍVEL para apanhar o cantor ignorando espaços e maiúsculas/minúsculas
+        pedidos_do_cliente = []
+        for idx, p in enumerate(pendentes_geral):
+            nome_pedido = str(p.get("cantor", "")).strip().lower()
+            nome_atual = cantor.strip().lower()
+            if nome_atual in nome_pedido or nome_pedido in nome_atual:
+                # Anexa a posição real (1-based index) diretamente no dicionário para facilitar
+                p["_posicao_calculada"] = idx + 1
+                pedidos_do_cliente.append(p)
         
         tem_pedido_ativo = len(pedidos_do_cliente) > 0
         
         if tem_pedido_ativo:
             primeiro_pedido_cliente = pedidos_do_cliente[0]
-            
-            # Encontra a posição exata (1-based index) na fila geral de pendentes
-            posicao_real = -1
-            for idx, p in enumerate(pendentes_geral):
-                # Compara pelo ID ou pela combinação exata de cantor e música
-                if p == primeiro_pedido_cliente or (
-                    str(p.get("cantor", "")).strip().lower() == str(primeiro_pedido_cliente.get("cantor", "")).strip().lower() and 
-                    str(p.get("musica", "")).strip().lower() == str(primeiro_pedido_cliente.get("musica", "")).strip().lower()
-                ):
-                    posicao_real = idx + 1
-                    break
-            
-            # Caso de segurança se não encontrar por igualdade exata
-            if posicao_real == -1:
-                for idx, p in enumerate(pendentes_geral):
-                    if str(p.get("cantor", "")).strip().lower() == cantor.strip().lower():
-                        posicao_real = idx + 1
-                        break
-
+            posicao_real = primeiro_pedido_cliente.get("_posicao_calculada", 1)
             musicas_acima = posicao_real - 1 if posicao_real > 0 else 0
             
             st.warning(f"🎵 O seu pedido (`{primeiro_pedido_cliente.get('musica', '')}`) está registado! Encontra-se atualmente na **posição {posicao_real}** da fila.")
