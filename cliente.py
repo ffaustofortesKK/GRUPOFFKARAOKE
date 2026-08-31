@@ -1,5 +1,5 @@
 import streamlit as st
-from db import guardar_pedido_musica  # Vamos usar a função centralizada do seu db.py
+from db import guardar_pedido_musica  # Função centralizada no db.py
 
 def render():
     query_params = st.query_params
@@ -8,7 +8,7 @@ def render():
     st.title("🎵 FFKaraoke · Inscrição do Cliente")
     st.info(f"Sessão vinculada ao Prestador Token: `{token_prestador}`")
     
-    with st.form("form_cliente"):
+    with st.form("form_cliente", clear_on_submit=True):
         cantor = st.text_input("O seu Nome")
         musica = st.text_input("Nome da Música / Artista")
         
@@ -16,8 +16,8 @@ def render():
         
         if submitted:
             if cantor.strip() and musica.strip():
-                # Chamar a função para guardar no Firebase associado ao token do prestador
                 try:
+                    # Envia os dados para a base de dados (criará o nó 'pedidos' no Firebase)
                     guardar_pedido_musica({
                         "cantor": cantor.strip(),
                         "musica": musica.strip(),
