@@ -12,7 +12,7 @@ try:
         firebase_secrets = dict(st.secrets["firebase"])
         cred = credentials.Certificate(firebase_secrets)
         firebase_admin.initialize_app(cred, {
-            'databaseURL': 'https://grupoffkaraoke-default-rtdb.firebaseio.com'
+            'databaseURL': 'https://grupoffkaraoke-default-rtdb.firebaseio.com'  # <-- CORRIGIDO AQUI (default)
         })
     FIREBASE_ATIVO = True
 except Exception as e:
