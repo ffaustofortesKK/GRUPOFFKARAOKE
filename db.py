@@ -29,11 +29,11 @@ except Exception as e:
     FIREBASE_ATIVO = False
 
 FICHEIRO_DB = "prestadores.json"
+FICHEIRO_PEDIDOS_LOCAL = "pedidos_locais.json"
 
 def _carregar_dados():
     if FIREBASE_ATIVO:
         try:
-            # Compatibilidade com a sua árvore 'providers' ou 'prestadores'
             ref = db.reference("providers")
             dados = ref.get()
             if not dados:
@@ -48,7 +48,7 @@ def _carregar_dados():
                 return [p for p in dados if p is not None]
             return []
         except Exception as e:
-            print(f"Erro ao ler do Firebase: {e}")
+            print(f"Erro ao ler prestadores do Firebase: {e}")
 
     if not os.path.exists(FICHEIRO_DB):
         return []
@@ -73,7 +73,7 @@ def _guardar_dados(lista_prestadores):
             ref.set(dados_dict)
             return
         except Exception as e:
-            print(f"Erro ao guardar no Firebase: {e}")
+            print(f"Erro ao guardar prestadores no Firebase: {e}")
 
     try:
         with open(FICHEIRO_DB, "w", encoding="utf-8") as f:
@@ -97,59 +97,71 @@ def remover_prestador(token):
     _guardar_dados(prestadores)
 
 def guardar_pedido_musica(dados_pedido):
-    """Guarda um novo pedido de música no Firebase (criando a árvore 'pedidos')"""
+    """Guarda o pedido de música garantindo persistência tanto no Firebase quanto em cache local de segurança"""
+    # Salva sempre no ficheiro local de segurança para evitar perda de dados por falhas de rede
+    lista_local = []
+    if os.path.exists(FICHEIRO_PEDIDOS_LOCAL):
+        try:
+            with open(FICHEIRO_PEDIDOS_LOCAL, "r", encoding="utf-8") as f:
+                lista_local = json.load(f)
+                if not isinstance(lista_local, list):
+                    lista_local = []
+        except:
+            lista_local = []
+    
+    lista_local.insert(0, dados_pedido)
+    try:
+        with open(FICHEIRO_PEDIDOS_LOCAL, "w", encoding="utf-8") as f:
+            json.dump(lista_local, f, ensure_ascii=False, indent=4)
+    except Exception as e:
+        print(f"Erro ao salvar cache local de pedidos: {e}")
+
+    # Envia para o Firebase se estiver ativo
     if FIREBASE_ATIVO:
         try:
             ref = db.reference("pedidos")
             ref.push(dados_pedido)
-            return
         except Exception as e:
-            raise Exception(f"Erro ao escrever pedidos no Firebase: {e}")
-    else:
-        # Fallback local se o Firebase estiver desligado
-        FICHEIRO_PEDIDOS = "pedidos_locais.json"
-        lista = []
-        if os.path.exists(FICHEIRO_PEDIDOS):
-            try:
-                with open(FICHEIRO_PEDIDOS, "r", encoding="utf-8") as f:
-                    lista = json.load(f)
-            except:
-                lista = []
-        dados_pedido["id"] = str(len(lista) + 1)
-        lista.append(dados_pedido)
-        with open(FICHEIRO_PEDIDOS, "w", encoding="utf-8") as f:
-            json.dump(lista, f, ensure_ascii=False, indent=4)
+            print(f"Erro ao escrever pedidos no Firebase (mantido no local): {e}")
 
 def obter_pedidos_musicas():
-    """Vai buscar os pedidos de músicas à árvore 'pedidos' do Firebase"""
+    """Combina os pedidos do Firebase e do armazenamento local para garantir que nenhum histórico se perde"""
+    pedidos_dict = {}
+    
+    # 1. Tenta carregar do Firebase
     if FIREBASE_ATIVO:
         try:
             ref = db.reference("pedidos")
             dados = ref.get()
-            if not dados:
-                return []
-            
-            lista_pedidos = []
-            if isinstance(dados, dict):
-                for chave, valor in dados.items():
-                    if isinstance(valor, dict):
-                        valor["id"] = chave
-                        lista_pedidos.append(valor)
-            elif isinstance(dados, list):
-                for idx, valor in enumerate(dados):
-                    if isinstance(valor, dict):
-                        valor["id"] = str(idx)
-                        lista_pedidos.append(valor)
-            return lista_pedidos
+            if dados:
+                if isinstance(dados, dict):
+                    for chave, valor in dados.items():
+                        if isinstance(valor, dict):
+                            valor["id"] = chave
+                            # Usa uma chave única baseada no nome e música ou ID para evitar duplicados
+                            chave_unica = f"{valor.get('nome')}_{valor.get('musica')}_{valor.get('timestamp', '')}"
+                            pedidos_dict[chave_unica] = valor
+                elif isinstance(dados, list):
+                    for idx, valor in enumerate(dados):
+                        if isinstance(valor, dict):
+                            valor["id"] = str(idx)
+                            chave_unica = f"{valor.get('nome')}_{valor.get('musica')}_{valor.get('timestamp', '')}"
+                            pedidos_dict[chave_unica] = valor
         except Exception as e:
             print(f"Erro ao obter pedidos do Firebase: {e}")
     
-    # Fallback local
-    FICHEIRO_PEDIDOS = "pedidos_locais.json"
-    if os.path.exists(FICHEIRO_PEDIDOS):
+    # 2. Carrega do ficheiro local de segurança e funde com os dados
+    if os.path.exists(FICHEIRO_PEDIDOS_LOCAL):
         try:
-            with open(FICHEIRO_PEDIDOS, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except:
-            return []
-    return []
+            with open(FICHEIRO_PEDIDOS_LOCAL, "r", encoding="utf-8") as f:
+                locais = json.load(f)
+                if isinstance(locais, list):
+                    for valor in locais:
+                        if isinstance(valor, dict):
+                            chave_unica = f"{valor.get('nome')}_{valor.get('musica')}_{valor.get('timestamp', '')}"
+                            if chave_unica not in pedidos_dict:
+                                pedidos_dict[chave_unica] = valor
+        except Exception as e:
+            print(f"Erro ao ler cache local de pedidos: {e}")
+            
+    return list(pedidos_dict.values())
