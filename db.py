@@ -2,7 +2,7 @@ import json
 import os
 import streamlit as st
 
-# Inicialização segura do Firebase com limpeza avançada da chave privada
+# Inicialização segura do Firebase com diagnóstico detalhado de erros
 FIREBASE_ATIVO = False
 try:
     import firebase_admin
@@ -27,7 +27,10 @@ try:
         })
     FIREBASE_ATIVO = True
 except Exception as e:
-    st.error(f"❌ ERRO CRÍTICO NO FIREBASE: {e}")
+    # Mostra exatamente o erro que está a impedir a ativação do Firebase
+    st.error(f"🔍 DIAGNÓSTICO FIREBASE: {str(e)}")
+    import traceback
+    st.code(traceback.format_exc())
     FIREBASE_ATIVO = False
 
 FICHEIRO_DB = "prestadores.json"
@@ -48,7 +51,6 @@ def _carregar_dados():
         except Exception as e:
             print(f"Erro ao ler do Firebase: {e}")
 
-    # Fallback local (caso o Firebase falhe)
     if not os.path.exists(FICHEIRO_DB):
         return []
     try:
