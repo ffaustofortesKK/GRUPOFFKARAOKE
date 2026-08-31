@@ -27,18 +27,19 @@ def render():
     # 1. SE ESTIVER APROVADO: Mostra o painel operacional completo
     if st.session_state.get("aprovado", False) or st.session_state.get("estado_pedido") == "aprovado":
         
-        # --- GERAR URLS BASE ROBUSTAS (Apontando corretamente para as páginas do app) ---
+        # --- GERAR URLS BASE ROBUSTAS (Passando o token do prestador para o cliente não perder a referência) ---
+        token_ativo = st.session_state.get("token_prestador", "")
         try:
             base_url = st.context.headers.get("Host", "")
             if base_url:
                 protocol = "http" if "localhost" in base_url or "127.0.0.1" in base_url else "https"
-                url_cliente = f"{protocol}://{base_url}/?page=cliente"
-                url_tela = f"{protocol}://{base_url}/?page=tela"
+                url_cliente = f"{protocol}://{base_url}/?page=cliente&token={token_ativo}"
+                url_tela = f"{protocol}://{base_url}/?page=tela&token={token_ativo}"
             else:
                 raise Exception()
         except Exception:
-            url_cliente = "https://grupoffkaraoke.streamlit.app/?page=cliente"
-            url_tela = "https://grupoffkaraoke.streamlit.app/?page=tela"
+            url_cliente = f"https://grupoffkaraoke.streamlit.app/?page=cliente&token={token_ativo}"
+            url_tela = f"https://grupoffkaraoke.streamlit.app/?page=tela&token={token_ativo}"
 
         # CSS personalizado para o estilo escuro com bordas douradas
         st.markdown("""
@@ -70,7 +71,8 @@ def render():
         # Botão discreto para terminar sessão no topo (com o texto aumentado 100%)
         col_top_info, col_top_btn = st.columns([4, 1])
         with col_top_info:
-            st.markdown(f"<span style='color: #eab308; font-size: 26px; font-weight: bold;'>Sessão Ativa | Prestador: {prestador_atual.get('nome', '') if prestador_atual else ''}</span>", unsafe_allow_html=True)
+            nome_prestador = prestador_atual.get('nome', '') if prestador_atual else ''
+            st.markdown(f"<span style='color: #eab308; font-size: 26px; font-weight: bold;'>Sessão Ativa | Prestador: {nome_prestador}</span>", unsafe_allow_html=True)
         with col_top_btn:
             if st.button("Sair / Terminar", use_container_width=True):
                 st.session_state.pedido_submetido = False
@@ -139,7 +141,7 @@ def render():
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # --- CAIXA 2: FILA DE PEDIDOS (Com numeração sequencial exata e títulos a preto) ---
+            # --- CAIXA 2: FILA DE PEDIDOS (Com filtro inteligente para capturar os pedidos do cliente) ---
             @st.fragment(run_every=3)
             def renderizar_fila_pedidos():
                 try:
@@ -147,13 +149,16 @@ def render():
                 except Exception:
                     todos_pedidos = []
 
-                # Filtra estritamente apenas os pedidos pendentes associados ao token do prestador atual
-                token_ativo = st.session_state.get("token_prestador")
-                lista_pedidos = [
-                    p for p in todos_pedidos 
-                    if p.get("status", "pendente") == "pendente" 
-                    and str(p.get("token_prestador", "")) == str(token_ativo)
-                ]
+                token_ativo = st.session_state.get("token_prestador", "")
+                
+                # Filtro robusto: aceita pedidos associados ao token exato OU pedidos sem token (para garantir que nada se perde)
+                lista_pedidos = []
+                for p in todos_pedidos:
+                    if p.get("status", "pendente") == "pendente":
+                        p_token = str(p.get("token_prestador", ""))
+                        # Se o token coincidir, ou se o token do pedido estiver vazio/não definido, inclui na fila
+                        if not p_token or p_token == "None" or p_token == str(token_ativo):
+                            lista_pedidos.append(p)
 
                 total_pedidos = len(lista_pedidos)
 
@@ -169,7 +174,6 @@ def render():
                     for idx, pedido in enumerate(lista_pedidos, start=1):
                         musica = pedido.get('musica', 'Música Desconhecida')
                         cantor = pedido.get('cantor', 'Convidado')
-                        # Texto com cor preta (#000000) e fundo destacado para leitura perfeita
                         st.markdown(f"<p style='margin: 6px 0; padding: 4px 8px; background-color: #e4e4e7; border-radius: 4px; color: #000000;'><b>{idx}ª Posição.</b> <b>{musica}</b> — <span>{cantor}</span></p>", unsafe_allow_html=True)
                 else:
                     st.markdown("<p style='color: #a1a1aa; margin: 0;'>Sem pedidos em espera.</p>", unsafe_allow_html=True)
