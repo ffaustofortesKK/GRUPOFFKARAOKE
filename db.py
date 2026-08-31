@@ -2,7 +2,7 @@ import json
 import os
 import streamlit as st
 
-# Inicialização segura do Firebase com correção automática da chave privada
+# Inicialização segura do Firebase com limpeza avançada da chave privada
 FIREBASE_ATIVO = False
 try:
     import firebase_admin
@@ -12,14 +12,16 @@ try:
         if "firebase" not in st.secrets:
             raise Exception("A secção [firebase] não foi encontrada nos st.secrets.")
             
-        # Converte os secrets num dicionário modificável
-        firebase_secrets = dict(st.secrets["firebase"])
+        secrets_dict = dict(st.secrets["firebase"])
         
-        # Garante que as quebras de linha da private_key são interpretadas corretamente
-        if "private_key" in firebase_secrets:
-            firebase_secrets["private_key"] = firebase_secrets["private_key"].replace("\\n", "\n")
-            
-        cred = credentials.Certificate(firebase_secrets)
+        # Limpeza e correção robusta da chave privada para evitar erros de PEM/framing
+        pk = secrets_dict.get("private_key", "")
+        if pk:
+            pk = pk.strip('"').strip("'")
+            pk = pk.replace("\\n", "\n")
+            secrets_dict["private_key"] = pk
+
+        cred = credentials.Certificate(secrets_dict)
         firebase_admin.initialize_app(cred, {
             'databaseURL': 'https://grupoffkaraoke-default-rtdb.firebaseio.com'
         })
