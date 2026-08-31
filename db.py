@@ -12,7 +12,6 @@ def _carregar_dados():
         _guardar_dados(dados_iniciais)
         return dados_iniciais
     try:
-        # Força a leitura fresca do disco evitando cache de ficheiro antiga
         if os.path.exists(FICHEIRO_DB):
             with open(FICHEIRO_DB, "r", encoding="utf-8") as f:
                 content = f.read().strip()
@@ -34,15 +33,15 @@ def obter_prestadores():
     return _carregar_dados()
 
 def guardar_prestador(prestador_dict):
-    # Carrega sempre os dados mais recentes do disco antes de adicionar o novo prestador
+    # Carrega os dados mais recentes do disco
     prestadores = _carregar_dados()
     
-    # Remove se já existir pelo token para atualizar os dados sem duplicar
+    # Remove se já existir pelo token para atualizar sem duplicar
     token_atual = str(prestador_dict.get("token"))
     prestadores = [p for p in prestadores if str(p.get("token")) != token_atual]
     
-    # Adiciona o novo pedido no topo/fim da lista
-    prestadores.append(prestador_dict)
+    # Insere o novo pedido no topo da lista para aparecer logo em primeiro no Admin
+    prestadores.insert(0, prestador_dict)
     
     _guardar_dados(prestadores)
 
