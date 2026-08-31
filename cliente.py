@@ -48,27 +48,38 @@ def render():
         # Obtém todos os pedidos da base de dados
         todos_pedidos = obter_pedidos_musicas()
         
-        # Filtra estritamente todos os pedidos com status "pendente" para a fila geral
+        # Filtra todos os pedidos com status "pendente" para a fila geral
         pendentes_geral = [
             p for p in todos_pedidos 
             if str(p.get("status", "pendente")).strip().lower() == "pendente"
         ]
         
-        # Filtro ULTRA FLEXÍVEL para apanhar o cantor ignorando espaços e maiúsculas/minúsculas
-        pedidos_do_cliente = []
-        for idx, p in enumerate(pendentes_geral):
-            nome_pedido = str(p.get("cantor", "")).strip().lower()
-            nome_atual = cantor.strip().lower()
-            if nome_atual in nome_pedido or nome_pedido in nome_atual:
-                # Anexa a posição real (1-based index) diretamente no dicionário
-                p["_posicao_calculada"] = idx + 1
-                pedidos_do_cliente.append(p)
+        # Filtra os pedidos específicos deste cantor (comparação exata de nome, ignorando maiúsculas/minúsculas)
+        pedidos_do_cliente = [
+            p for p in pendentes_geral 
+            if str(p.get("cantor", "")).strip().lower() == cantor.strip().lower()
+        ]
         
         tem_pedido_ativo = len(pedidos_do_cliente) > 0
         
         if tem_pedido_ativo:
             primeiro_pedido_cliente = pedidos_do_cliente[0]
-            posicao_real = primeiro_pedido_cliente.get("_posicao_calculada", 1)
+            
+            # Encontra a posição exata (1 a N) na fila geral de pendentes
+            posicao_real = -1
+            for idx, p in enumerate(pendentes_geral):
+                if str(p.get("cantor", "")).strip().lower() == cantor.strip().lower() and \
+                   str(p.get("musica", "")).strip().lower() == str(primeiro_pedido_cliente.get("musica", "")).strip().lower():
+                    posicao_real = idx + 1
+                    break
+            
+            # Fallback se não encontrar por combinação exata de música
+            if posicao_real == -1:
+                for idx, p in enumerate(pendentes_geral):
+                    if str(p.get("cantor", "")).strip().lower() == cantor.strip().lower():
+                        posicao_real = idx + 1
+                        break
+
             musicas_acima = posicao_real - 1 if posicao_real > 0 else 0
             
             st.warning(f"🎵 O seu pedido (`{primeiro_pedido_cliente.get('musica', '')}`) está registado! Encontra-se atualmente na **posição {posicao_real}** da fila.")
@@ -121,7 +132,6 @@ def render():
         
         st.write("")
         if st.button("🔄 Alterar Nome"):
-            # Limpa rigorosamente o estado do cliente e recarrega de forma limpa
             st.session_state["cliente_nome"] = ""
             if "form_cliente_novo" in st.session_state:
                 del st.session_state["form_cliente_novo"]
