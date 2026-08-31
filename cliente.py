@@ -45,17 +45,16 @@ def render():
         st.markdown(f"### Bem-vindo {cantor}")
         st.info(f"Sessão vinculada ao Prestador / Sessão: `{token_prestador}`")
         
-        # Obtém todos os pedidos pendentes da base de dados
+        # Obtém todos os pedidos da base de dados
         todos_pedidos = obter_pedidos_musicas()
         
-        # Filtra os pedidos pendentes (tolerante ao token para garantir que nunca se perde nada)
+        # Filtra estritamente todos os pedidos com status "pendente" para a fila geral
         pendentes_geral = [
             p for p in todos_pedidos 
-            if p.get("status", "pendente") == "pendente" 
-            and (str(p.get("token_prestador", "")) == str(token_prestador) or str(p.get("token_prestador", "")) in ["", "Nenhum", "geral"])
+            if str(p.get("status", "pendente")).strip().lower() == "pendente"
         ]
         
-        # Filtra os pedidos específicos deste cantor
+        # Filtra os pedidos específicos deste cantor na fila pendente
         pedidos_do_cliente = [
             p for p in pendentes_geral 
             if str(p.get("cantor", "")).strip().lower() == cantor.strip().lower()
@@ -66,12 +65,18 @@ def render():
         if tem_pedido_ativo:
             primeiro_pedido_cliente = pedidos_do_cliente[0]
             
+            # Encontra a posição exata (1-based index) na fila geral de pendentes
             posicao_real = -1
             for idx, p in enumerate(pendentes_geral):
-                if p == primeiro_pedido_cliente or (str(p.get("cantor","")).strip().lower() == str(primeiro_pedido_cliente.get("cantor","")).strip().lower() and str(p.get("musica","")) == str(primeiro_pedido_cliente.get("musica",""))):
+                # Compara pelo ID ou pela combinação exata de cantor e música
+                if p == primeiro_pedido_cliente or (
+                    str(p.get("cantor", "")).strip().lower() == str(primeiro_pedido_cliente.get("cantor", "")).strip().lower() and 
+                    str(p.get("musica", "")).strip().lower() == str(primeiro_pedido_cliente.get("musica", "")).strip().lower()
+                ):
                     posicao_real = idx + 1
                     break
             
+            # Caso de segurança se não encontrar por igualdade exata
             if posicao_real == -1:
                 for idx, p in enumerate(pendentes_geral):
                     if str(p.get("cantor", "")).strip().lower() == cantor.strip().lower():
@@ -87,7 +92,6 @@ def render():
             else:
                 st.success(f"🔔 **Pode enviar um novo pedido!** Faltam apenas {musicas_acima} músicas para a sua vez.")
                 
-                # Formulário único e limpo para envio de novo pedido
                 with st.form("form_cliente_novo"):
                     musica_novo = st.text_input("Digite o nome da próxima música ou artista:", placeholder="Ex: Landrick, Nani...")
                     submitted_novo = st.form_submit_button("Enviar Novo Pedido")
@@ -109,7 +113,6 @@ def render():
         else:
             st.success("✅ Já poderá enviar o seu pedido!")
             
-            # Formulário padrão para primeiro pedido
             with st.form("form_cliente"):
                 st.markdown("### 🔍 Pesquisar / Pedir Música")
                 musica_inicial = st.text_input("Digite o nome da música ou artista:", placeholder="Ex: Landrick, Nani...")
