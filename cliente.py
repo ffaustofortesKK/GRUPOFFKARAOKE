@@ -1,4 +1,5 @@
 import streamlit as st
+from datetime import datetime
 from db import guardar_pedido_musica, obter_pedidos_musicas, obter_prestadores
 
 def render():
@@ -86,51 +87,50 @@ def render():
             else:
                 st.success(f"🔔 **Pode enviar um novo pedido!** Faltam apenas {musicas_acima} músicas para a sua vez.")
                 
-                with st.form("form_cliente_novo", clear_on_submit=True):
-                    musica = st.text_input("Digite o nome da próxima música ou artista:", placeholder="Ex: Landrick, Nani...")
-                    submitted = st.form_submit_button("Enviar Novo Pedido")
+                # Formulário único e limpo para envio de novo pedido
+                with st.form("form_cliente_novo"):
+                    musica_novo = st.text_input("Digite o nome da próxima música ou artista:", placeholder="Ex: Landrick, Nani...")
+                    submitted_novo = st.form_submit_button("Enviar Novo Pedido")
                     
-                    if submitted:
-                        if musica.strip():
-                            try:
-                                dados_novo_pedido = {
-                                    "cantor": cantor,
-                                    "musica": musica.strip(),
-                                    "token_prestador": token_prestador,
-                                    "status": "pendente"
-                                }
-                                guardar_pedido_musica(dados_novo_pedido)
-                                st.success(f"Obrigado {cantor}! O seu novo pedido foi adicionado.")
-                                st.rerun()
-                            except Exception as e:
-                                st.error(f"Erro ao enviar o pedido: {e}")
+                    if submitted_novo:
+                        if musica_novo.strip():
+                            dados_novo_pedido = {
+                                "cantor": cantor,
+                                "musica": musica_novo.strip(),
+                                "token_prestador": token_prestador,
+                                "status": "pendente",
+                                "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                            }
+                            guardar_pedido_musica(dados_novo_pedido)
+                            st.success(f"Obrigado {cantor}! O seu novo pedido foi adicionado.")
+                            st.rerun()
                         else:
                             st.error("Por favor, preencha o nome da música.")
         else:
             st.success("✅ Já poderá enviar o seu pedido!")
             
-            with st.form("form_cliente", clear_on_submit=True):
+            # Formulário padrão para primeiro pedido
+            with st.form("form_cliente"):
                 st.markdown("### 🔍 Pesquisar / Pedir Música")
-                musica = st.text_input("Digite o nome da música ou artista:", placeholder="Ex: Landrick, Nani...")
-                submitted = st.form_submit_button("Pedir Música")
+                musica_inicial = st.text_input("Digite o nome da música ou artista:", placeholder="Ex: Landrick, Nani...")
+                submitted_inicial = st.form_submit_button("Pedir Música")
                 
-                if submitted:
-                    if musica.strip():
-                        try:
-                            dados_novo_pedido = {
-                                "cantor": cantor,
-                                "musica": musica.strip(),
-                                "token_prestador": token_prestador,
-                                "status": "pendente"
-                            }
-                            guardar_pedido_musica(dados_novo_pedido)
-                            st.success(f"Obrigado {cantor}! A sua música '{musica}' foi adicionada à fila.")
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Erro detalhado ao enviar o pedido: {e}")
+                if submitted_inicial:
+                    if musica_inicial.strip():
+                        dados_novo_pedido = {
+                            "cantor": cantor,
+                            "musica": musica_inicial.strip(),
+                            "token_prestador": token_prestador,
+                            "status": "pendente",
+                            "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                        }
+                        guardar_pedido_musica(dados_novo_pedido)
+                        st.success(f"Obrigado {cantor}! A sua música foi adicionada à fila.")
+                        st.rerun()
                     else:
                         st.error("Por favor, preencha o nome da música ou artista.")
         
+        st.write("")
         if st.button("🔄 Alterar Nome"):
             st.session_state["cliente_nome"] = ""
             st.rerun()
