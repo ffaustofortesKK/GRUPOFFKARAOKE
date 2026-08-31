@@ -60,7 +60,7 @@ def render():
             nome_pedido = str(p.get("cantor", "")).strip().lower()
             nome_atual = cantor.strip().lower()
             if nome_atual in nome_pedido or nome_pedido in nome_atual:
-                # Anexa a posição real (1-based index) diretamente no dicionário para facilitar
+                # Anexa a posição real (1-based index) diretamente no dicionário
                 p["_posicao_calculada"] = idx + 1
                 pedidos_do_cliente.append(p)
         
@@ -121,5 +121,10 @@ def render():
         
         st.write("")
         if st.button("🔄 Alterar Nome"):
+            # Limpa rigorosamente o estado do cliente e recarrega de forma limpa
             st.session_state["cliente_nome"] = ""
+            if "form_cliente_novo" in st.session_state:
+                del st.session_state["form_cliente_novo"]
+            if "form_cliente" in st.session_state:
+                del st.session_state["form_cliente"]
             st.rerun()
