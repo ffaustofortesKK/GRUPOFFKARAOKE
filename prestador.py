@@ -132,13 +132,31 @@ def render():
             st.markdown("<br>", unsafe_allow_html=True)
 
             # --- CAIXA 2: FILA DE PEDIDOS ---
-            st.markdown("""
+            try:
+                from db import obter_pedidos_musicas
+                lista_pedidos = obter_pedidos_musicas()
+            except Exception:
+                lista_pedidos = []
+
+            total_pedidos = len(lista_pedidos)
+
+            st.markdown(f"""
                 <div class="box-container">
                     <div class="box-title">
-                        <span>📄 FILA DE PEDIDOS (0)</span>
+                        <span>📄 FILA DE PEDIDOS ({total_pedidos})</span>
                     </div>
                     <div class="box-content">
-                        <p style="color: #a1a1aa; margin: 0;">Sem pedidos em espera.</p>
+            """, unsafe_allow_html=True)
+
+            if total_pedidos > 0:
+                for idx, pedido in enumerate(lista_pedidos, 1):
+                    musica = pedido.get('musica', 'Música Desconhecida')
+                    cantor = pedido.get('cantor', 'Convidado')
+                    st.markdown(f"<p style='margin: 4px 0; color: #fafafa;'><b>{idx}.</b> {musica} — <span style='color: #eab308;'>{cantor}</span></p>", unsafe_allow_html=True)
+            else:
+                st.markdown("<p style='color: #a1a1aa; margin: 0;'>Sem pedidos em espera.</p>", unsafe_allow_html=True)
+
+            st.markdown("""
                     </div>
                 </div>
             """, unsafe_allow_html=True)
