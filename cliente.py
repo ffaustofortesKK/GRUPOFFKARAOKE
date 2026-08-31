@@ -45,41 +45,30 @@ def render():
         st.markdown(f"### Bem-vindo {cantor}")
         st.info(f"Sessão vinculada ao Prestador / Sessão: `{token_prestador}`")
         
-        # Obtém todos os pedidos da base de dados
+        # Obtém todos os pedidos da base de dados frescos
         todos_pedidos = obter_pedidos_musicas()
         
-        # Filtra todos os pedidos com status "pendente" para a fila geral
+        # Filtra estritamente todos os pedidos com status "pendente" para a fila geral
         pendentes_geral = [
             p for p in todos_pedidos 
             if str(p.get("status", "pendente")).strip().lower() == "pendente"
         ]
         
-        # Filtra os pedidos específicos deste cantor (comparação exata de nome, ignorando maiúsculas/minúsculas)
-        pedidos_do_cliente = [
-            p for p in pendentes_geral 
-            if str(p.get("cantor", "")).strip().lower() == cantor.strip().lower()
-        ]
+        # Filtro ULTRA FLEXÍVEL para apanhar o cantor ignorando espaços e maiúsculas/minúsculas
+        pedidos_do_cliente = []
+        for idx, p in enumerate(pendentes_geral):
+            nome_pedido = str(p.get("cantor", "")).strip().lower()
+            nome_atual = cantor.strip().lower()
+            if nome_atual in nome_pedido or nome_pedido in nome_atual:
+                # Anexa a posição real (1-based index) diretamente no dicionário para facilitar
+                p["_posicao_calculada"] = idx + 1
+                pedidos_do_cliente.append(p)
         
         tem_pedido_ativo = len(pedidos_do_cliente) > 0
         
         if tem_pedido_ativo:
             primeiro_pedido_cliente = pedidos_do_cliente[0]
-            
-            # Encontra a posição exata (1 a N) na fila geral de pendentes
-            posicao_real = -1
-            for idx, p in enumerate(pendentes_geral):
-                if str(p.get("cantor", "")).strip().lower() == cantor.strip().lower() and \
-                   str(p.get("musica", "")).strip().lower() == str(primeiro_pedido_cliente.get("musica", "")).strip().lower():
-                    posicao_real = idx + 1
-                    break
-            
-            # Fallback se não encontrar por combinação exata de música
-            if posicao_real == -1:
-                for idx, p in enumerate(pendentes_geral):
-                    if str(p.get("cantor", "")).strip().lower() == cantor.strip().lower():
-                        posicao_real = idx + 1
-                        break
-
+            posicao_real = primeiro_pedido_cliente.get("_posicao_calculada", 1)
             musicas_acima = posicao_real - 1 if posicao_real > 0 else 0
             
             st.warning(f"🎵 O seu pedido (`{primeiro_pedido_cliente.get('musica', '')}`) está registado! Encontra-se atualmente na **posição {posicao_real}** da fila.")
@@ -131,10 +120,13 @@ def render():
                         st.error("Por favor, preencha o nome da música ou artista.")
         
         st.write("")
+        # Botão de alterar nome com limpeza rigorosa de estado e widgets do Streamlit
         if st.button("🔄 Alterar Nome"):
             st.session_state["cliente_nome"] = ""
-            if "form_cliente_novo" in st.session_state:
-                del st.session_state["form_cliente_novo"]
-            if "form_cliente" in st.session_state:
-                del st.session_state["form_cliente"]
+            # Limpa todas as chaves de formulário guardadas na cache do Streamlit para evitar retenção do nome antigo
+            for key in list(st.session_state.keys()):
+                if key.startswith("form_") or key == "cliente_nome":
+                    if key != "cliente_nome":
+                        del st.session_state[key]
+            st.session_state["cliente_nome"] = ""
             st.rerun()
