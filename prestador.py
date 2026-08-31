@@ -88,7 +88,6 @@ def render():
             # --- CAIXA 1: A TOCAR AGORA (Com atualização em tempo real do temporizador) ---
             @st.fragment(run_every=3)
             def renderizar_a_tocar():
-                # Recarregar dados do prestador para garantir tempo atualizado
                 nonlocal prestador_atual
                 if st.session_state.token_prestador:
                     prestadores = obter_prestadores()
@@ -140,13 +139,21 @@ def render():
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # --- CAIXA 2: FILA DE PEDIDOS (Com atualização automática a cada 3 segundos) ---
+            # --- CAIXA 2: FILA DE PEDIDOS (Com numeração sequencial exata por posição) ---
             @st.fragment(run_every=3)
             def renderizar_fila_pedidos():
                 try:
-                    lista_pedidos = obter_pedidos_musicas()
+                    todos_pedidos = obter_pedidos_musicas()
                 except Exception:
-                    lista_pedidos = []
+                    todos_pedidos = []
+
+                # Filtra estritamente apenas os pedidos pendentes associados ao token do prestador atual
+                token_ativo = st.session_state.get("token_prestador")
+                lista_pedidos = [
+                    p for p in todos_pedidos 
+                    if p.get("status", "pendente") == "pendente" 
+                    and str(p.get("token_prestador", "")) == str(token_ativo)
+                ]
 
                 total_pedidos = len(lista_pedidos)
 
@@ -159,10 +166,11 @@ def render():
                 """, unsafe_allow_html=True)
 
                 if total_pedidos > 0:
-                    for idx, pedido in enumerate(lista_pedidos, 1):
+                    # O índice 'idx' começa em 1 de forma sequencial real (1º, 2º, 3º...)
+                    for idx, pedido in enumerate(lista_pedidos, start=1):
                         musica = pedido.get('musica', 'Música Desconhecida')
                         cantor = pedido.get('cantor', 'Convidado')
-                        st.markdown(f"<p style='margin: 4px 0; color: #fafafa;'><b>{idx}.</b> {musica} — <span style='color: #eab308;'>{cantor}</span></p>", unsafe_allow_html=True)
+                        st.markdown(f"<p style='margin: 4px 0; color: #fafafa;'><b>{idx}ª Posição.</b> {musica} — <span style='color: #eab308;'>{cantor}</span></p>", unsafe_allow_html=True)
                 else:
                     st.markdown("<p style='color: #a1a1aa; margin: 0;'>Sem pedidos em espera.</p>", unsafe_allow_html=True)
 
@@ -191,8 +199,7 @@ def render():
             """, unsafe_allow_html=True)
 
             col_bt_tv, col_bt_cli = st.columns(2)
-            with col_bt_tv:
-                st.markdown(f'<a href="{url_tela}" target="_blank"><button style="width: 100%; background-color: #18181b; color: #ffffff; border: 1px solid #eab308; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 13px;">🖥️ Abrir TV</button></a>', unsafe_allow_html=True)
+            with col_bt_tv: st.markdown(f'<a href="{url_tela}" target="_blank"><button style="width: 100%; background-color: #18181b; color: #ffffff; border: 1px solid #eab308; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 13px;">🖥️ Abrir TV</button></a>', unsafe_allow_html=True)
             with col_bt_cli:
                 st.markdown(f'<a href="{url_cliente}" target="_blank"><button style="width: 100%; background-color: #18181b; color: #ffffff; border: 1px solid #eab308; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 13px;">📱 Abrir cliente</button></a>', unsafe_allow_html=True)
 
