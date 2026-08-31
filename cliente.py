@@ -1,5 +1,5 @@
 import streamlit as st
-from db import guardar_pedido_musica  # Função centralizada no db.py
+from db import guardar_pedido_musica
 
 def render():
     query_params = st.query_params
@@ -26,6 +26,7 @@ def render():
                     })
                     st.success(f"Obrigado {cantor}! A sua música '{musica}' foi adicionada à fila.")
                 except Exception as e:
-                    st.error(f"Erro ao enviar o pedido: {e}")
+                    # Mostra a mensagem detalhada caso haja qualquer falha de gravação
+                    st.error(f"Erro detalhado ao enviar o pedido: {e}")
             else:
                 st.error("Por favor preencha todos os campos.")
