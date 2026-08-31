@@ -88,6 +88,15 @@ def remover_prestador(token):
     prestadores = [p for p in prestadores if str(p.get("token")) != str(token)]
     _guardar_dados(prestadores)
 
+def guardar_pedido_musica(dados_pedido):
+    """Guarda um novo pedido de música no Firebase usando .push() na árvore 'pedidos'"""
+    if FIREBASE_ATIVO:
+        try:
+            ref = db.reference("pedidos")
+            ref.push(dados_pedido)
+        except Exception as e:
+            print(f"Erro ao guardar pedido no Firebase: {e}")
+
 def obter_pedidos_musicas():
     """Vai buscar os pedidos de músicas diretamente à árvore 'pedidos' do Firebase"""
     if FIREBASE_ATIVO:
