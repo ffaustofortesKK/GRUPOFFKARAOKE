@@ -2,7 +2,7 @@ import json
 import os
 import streamlit as st
 
-# Inicialização segura do Firebase com tratamento blindado de falhas da chave
+# Inicialização segura do Firebase
 FIREBASE_ATIVO = False
 try:
     import firebase_admin
@@ -13,8 +13,6 @@ try:
             raise Exception("A secção [firebase] não foi encontrada nos st.secrets.")
             
         secrets_dict = dict(st.secrets["firebase"])
-        
-        # Limpeza cirúrgica da private_key (remove espaços, pontos extra e formata quebras)
         pk = secrets_dict.get("private_key", "")
         if pk:
             pk = pk.strip().strip('"').strip("'")
@@ -27,18 +25,21 @@ try:
         })
     FIREBASE_ATIVO = True
 except Exception as e:
-    # Mostra um aviso amigável e ativa o modo local (JSON) para a app não parar
-    st.warning(f"⚠️ Aviso do Firebase: A chave privada tem um erro de formato. A aplicação está a usar o armazenamento local temporariamente. Detalhe: {e}")
+    print(f"Aviso Firebase: {e}")
     FIREBASE_ATIVO = False
 
 FICHEIRO_DB = "prestadores.json"
 
 def _carregar_dados():
-    """Lê os prestadores do Firebase ou do ficheiro local como alternativa"""
     if FIREBASE_ATIVO:
         try:
-            ref = db.reference("prestadores")
+            # Compatibilidade com a sua árvore 'providers' ou 'prestadores'
+            ref = db.reference("providers")
             dados = ref.get()
+            if not dados:
+                ref = db.reference("prestadores")
+                dados = ref.get()
+            
             if not dados:
                 return []
             if isinstance(dados, dict):
@@ -62,10 +63,9 @@ def _carregar_dados():
         return []
 
 def _guardar_dados(lista_prestadores):
-    """Guarda a lista de prestadores"""
     if FIREBASE_ATIVO:
         try:
-            ref = db.reference("prestadores")
+            ref = db.reference("providers")
             dados_dict = {}
             for p in lista_prestadores:
                 token = str(p.get("token", f"token_{id(p)}"))
@@ -97,16 +97,16 @@ def remover_prestador(token):
     _guardar_dados(prestadores)
 
 def guardar_pedido_musica(dados_pedido):
-    """Guarda um novo pedido de música (Firebase ou fallback local)"""
+    """Guarda um novo pedido de música no Firebase (criando a árvore 'pedidos')"""
     if FIREBASE_ATIVO:
         try:
             ref = db.reference("pedidos")
             ref.push(dados_pedido)
             return
         except Exception as e:
-            raise Exception(f"Erro ao escrever no Firebase: {e}")
+            raise Exception(f"Erro ao escrever pedidos no Firebase: {e}")
     else:
-        # Fallback local para pedidos se o Firebase falhar
+        # Fallback local se o Firebase estiver desligado
         FICHEIRO_PEDIDOS = "pedidos_locais.json"
         lista = []
         if os.path.exists(FICHEIRO_PEDIDOS):
@@ -121,7 +121,7 @@ def guardar_pedido_musica(dados_pedido):
             json.dump(lista, f, ensure_ascii=False, indent=4)
 
 def obter_pedidos_musicas():
-    """Vai buscar os pedidos de músicas"""
+    """Vai buscar os pedidos de músicas à árvore 'pedidos' do Firebase"""
     if FIREBASE_ATIVO:
         try:
             ref = db.reference("pedidos")
@@ -144,7 +144,7 @@ def obter_pedidos_musicas():
         except Exception as e:
             print(f"Erro ao obter pedidos do Firebase: {e}")
     
-    # Fallback local para pedidos
+    # Fallback local
     FICHEIRO_PEDIDOS = "pedidos_locais.json"
     if os.path.exists(FICHEIRO_PEDIDOS):
         try:
