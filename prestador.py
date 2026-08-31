@@ -67,10 +67,10 @@ def render():
             </style>
         """, unsafe_allow_html=True)
 
-        # Botão discreto para terminar sessão no topo
+        # Botão discreto para terminar sessão no topo (com o texto aumentado 100%)
         col_top_info, col_top_btn = st.columns([4, 1])
         with col_top_info:
-            st.markdown(f"<span style='color: #a1a1aa; font-size: 13px;'>Sessão Ativa | Prestador: {prestador_atual.get('nome', '') if prestador_atual else ''}</span>", unsafe_allow_html=True)
+            st.markdown(f"<span style='color: #eab308; font-size: 26px; font-weight: bold;'>Sessão Ativa | Prestador: {prestador_atual.get('nome', '') if prestador_atual else ''}</span>", unsafe_allow_html=True)
         with col_top_btn:
             if st.button("Sair / Terminar", use_container_width=True):
                 st.session_state.pedido_submetido = False
@@ -139,7 +139,7 @@ def render():
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # --- CAIXA 2: FILA DE PEDIDOS (Com numeração sequencial exata por posição) ---
+            # --- CAIXA 2: FILA DE PEDIDOS (Com numeração sequencial exata e títulos a preto) ---
             @st.fragment(run_every=3)
             def renderizar_fila_pedidos():
                 try:
@@ -166,11 +166,11 @@ def render():
                 """, unsafe_allow_html=True)
 
                 if total_pedidos > 0:
-                    # O índice 'idx' começa em 1 de forma sequencial real (1º, 2º, 3º...)
                     for idx, pedido in enumerate(lista_pedidos, start=1):
                         musica = pedido.get('musica', 'Música Desconhecida')
                         cantor = pedido.get('cantor', 'Convidado')
-                        st.markdown(f"<p style='margin: 4px 0; color: #fafafa;'><b>{idx}ª Posição.</b> {musica} — <span style='color: #eab308;'>{cantor}</span></p>", unsafe_allow_html=True)
+                        # Texto com cor preta (#000000) e fundo destacado para leitura perfeita
+                        st.markdown(f"<p style='margin: 6px 0; padding: 4px 8px; background-color: #e4e4e7; border-radius: 4px; color: #000000;'><b>{idx}ª Posição.</b> <b>{musica}</b> — <span>{cantor}</span></p>", unsafe_allow_html=True)
                 else:
                     st.markdown("<p style='color: #a1a1aa; margin: 0;'>Sem pedidos em espera.</p>", unsafe_allow_html=True)
 
