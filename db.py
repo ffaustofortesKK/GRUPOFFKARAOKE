@@ -6,7 +6,8 @@ import streamlit as st
 FIREBASE_ATIVO = False
 try:
     import firebase_admin
-    from firebase_admin import credentials, db
+    import firebase_admin.credentials as credentials
+    from firebase_admin import db
     
     if not firebase_admin._apps:
         if "firebase" not in st.secrets:
@@ -130,7 +131,7 @@ def guardar_pedido_musica(dados_pedido):
         st.warning("Pedido guardado apenas localmente (Firebase inativo).")
 
 def obter_pedidos_musicas():
-    """Combina os pedidos do Firebase e do armazenamento local"""
+    """Combina os pedidos do Firebase e do armazenamento local ordenados cronologicamente"""
     pedidos_dict = {}
     
     # 1. Carrega do Firebase
@@ -140,16 +141,28 @@ def obter_pedidos_musicas():
             dados = ref.get()
             if dados:
                 if isinstance(dados, dict):
-                    for chave, valor in dados.items():
+                    # Ordena os nós do Firebase pelo timestamp inserido para manter a fila correta
+                    lista_ordenada_fb = sorted(
+                        dados.items(), 
+                        key=lambda x: x[1].get("timestamp", "") if isinstance(x[1], dict) else ""
+                    )
+                    for chave, valor in lista_ordenada_fb:
                         if isinstance(valor, dict):
                             valor["id"] = chave
-                            chave_unica = f"{valor.get('nome')}_{valor.get('musica')}_{valor.get('timestamp', '')}"
+                            # CORRIGIDO: Utiliza 'cantor' em vez de 'nome'
+                            cantor_val = str(valor.get('cantor', '')).strip().lower()
+                            musica_val = str(valor.get('musica', '')).strip().lower()
+                            ts_val = valor.get('timestamp', '')
+                            chave_unica = f"{cantor_val}_{musica_val}_{ts_val}"
                             pedidos_dict[chave_unica] = valor
                 elif isinstance(dados, list):
                     for idx, valor in enumerate(dados):
                         if isinstance(valor, dict):
                             valor["id"] = str(idx)
-                            chave_unica = f"{valor.get('nome')}_{valor.get('musica')}_{valor.get('timestamp', '')}"
+                            cantor_val = str(valor.get('cantor', '')).strip().lower()
+                            musica_val = str(valor.get('musica', '')).strip().lower()
+                            ts_val = valor.get('timestamp', '')
+                            chave_unica = f"{cantor_val}_{musica_val}_{ts_val}"
                             pedidos_dict[chave_unica] = valor
         except Exception as e:
             print(f"Erro ao obter pedidos do Firebase: {e}")
@@ -162,7 +175,10 @@ def obter_pedidos_musicas():
                 if isinstance(locais, list):
                     for valor in locais:
                         if isinstance(valor, dict):
-                            chave_unica = f"{valor.get('nome')}_{valor.get('musica')}_{valor.get('timestamp', '')}"
+                            cantor_val = str(valor.get('cantor', '')).strip().lower()
+                            musica_val = str(valor.get('musica', '')).strip().lower()
+                            ts_val = valor.get('timestamp', '')
+                            chave_unica = f"{cantor_val}_{musica_val}_{ts_val}"
                             if chave_unica not in pedidos_dict:
                                 pedidos_dict[chave_unica] = valor
         except Exception as e:
