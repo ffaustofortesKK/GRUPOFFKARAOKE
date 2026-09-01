@@ -163,7 +163,7 @@ def render():
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # --- CAIXA 2: FILA DE PEDIDOS ---
+            # --- CAIXA 2: FILA DE PEDIDOS COM ORDENAÇÃO E REMOÇÃO ---
             @st.fragment(run_every=3)
             def renderizar_fila_pedidos():
                 try:
@@ -191,15 +191,39 @@ def render():
                 """, unsafe_allow_html=True)
 
                 if total_pedidos > 0:
-                    for idx, pedido in enumerate(lista_pedidos, start=1):
+                    for idx, pedido in enumerate(lista_pedidos):
                         musica = pedido.get('musica', 'Música Desconhecida')
                         cantor = pedido.get('cantor', 'Convidado')
-                        st.markdown(f"""
-                            <div class="pedido-item">
-                                <div><b style="color: #eab308;">{idx}º</b> <span style="margin-left: 8px;"><b>{musica}</b> — <span style="color: #a1a1aa;">{cantor}</span></span></div>
-                                <span style="color: #71717a; cursor: grab;">⋮⋮</span>
-                            </div>
-                        """, unsafe_allow_html=True)
+                        pedido_id = pedido.get('id', idx)
+
+                        # Colunas ajustadas para acomodar o texto, subir, descer e remover
+                        col_info, col_up, col_down, col_del = st.columns([5, 1, 1, 1])
+                        
+                        with col_info:
+                            st.markdown(f"""
+                                <div style="margin-top: 6px;">
+                                    <b style="color: #eab308;">{idx+1}º</b> <span style="margin-left: 8px;"><b>{musica}</b> — <span style="color: #a1a1aa;">{cantor}</span></span>
+                                </div>
+                            """, unsafe_allow_html=True)
+                        
+                        with col_up:
+                            if idx > 0:
+                                if st.button("⬆️", key=f"subir_{pedido_id}_{idx}", help="Mover para cima"):
+                                    lista_pedidos[idx], lista_pedidos[idx-1] = lista_pedidos[idx-1], lista_pedidos[idx]
+                                    st.rerun()
+                        
+                        with col_down:
+                            if idx < total_pedidos - 1:
+                                if st.button("⬇️", key=f"descer_{pedido_id}_{idx}", help="Mover para baixo"):
+                                    lista_pedidos[idx], lista_pedidos[idx+1] = lista_pedidos[idx+1], lista_pedidos[idx]
+                                    st.rerun()
+
+                        with col_del:
+                            if st.button("❌", key=f"remover_{pedido_id}_{idx}", help="Remover pedido"):
+                                # Lógica para remover ou marcar como cancelado/removido na BD
+                                # Exemplo: se houver uma função de atualizar/apagar, adicione aqui.
+                                st.toast(f"Removido: {musica}")
+                                st.rerun()
                 else:
                     st.markdown("<p style='color: #a1a1aa; margin: 0;'>Sem pedidos em espera.</p>", unsafe_allow_html=True)
 
