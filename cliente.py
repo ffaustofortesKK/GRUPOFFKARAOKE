@@ -40,13 +40,11 @@ def render():
     else:
         cantor = st.session_state["cliente_nome"]
         
-        st.markdown(f"### Bem-vindo {cantor}")
+        st.markdown(f"### Bem-vindo, {cantor}")
         st.info(f"Sessão vinculada ao Prestador / Sessão: `{token_prestador}`")
         
-        # Obtém todos os pedidos da base de dados
+        # 1. Obtém e filtra todos os pedidos pendentes para este prestador
         todos_pedidos = obter_pedidos_musicas()
-        
-        # Filtra estritamente por status "pendente" E pelo token do prestador atual
         pendentes_geral = []
         for p in todos_pedidos:
             status = str(p.get("status", "pendente")).strip().lower()
@@ -56,7 +54,7 @@ def render():
                 if token_prestador == "geral" or not t_ped or t_ped == token_prestador or t_ped == "geral":
                     pendentes_geral.append(p)
         
-        # Filtra os pedidos específicos deste cantor exato
+        # 2. Identifica todos os pedidos deste cliente específico na fila
         pedidos_do_cliente = [
             p for p in pendentes_geral 
             if str(p.get("cantor", "")).strip().lower() == cantor.strip().lower()
@@ -65,10 +63,10 @@ def render():
         tem_pedido_ativo = len(pedidos_do_cliente) > 0
         
         if tem_pedido_ativo:
-            # Pega no pedido mais antigo deste cliente que ainda está pendente na fila
+            # Pega no pedido mais antigo deste cliente que ainda está pendente
             primeiro_pedido_cliente = pedidos_do_cliente[0]
             
-            # Encontra a posição real (1-based index) na fila global de pendentes comparando campos seguros
+            # Calcula a posição real (1-based index) na fila global de pendentes
             posicao_real = -1
             c_alvo = str(primeiro_pedido_cliente.get("cantor", "")).strip().lower()
             m_alvo = str(primeiro_pedido_cliente.get("musica", "")).strip().lower()
@@ -88,6 +86,7 @@ def render():
 
             musicas_acima = posicao_real - 1 if posicao_real > 0 else 0
             
+            # Mostra imediatamente a posição logo no topo do painel
             st.warning(f"🎵 O seu pedido (`{primeiro_pedido_cliente.get('musica', '')}`) está registado! Encontra-se atualmente na **posição {posicao_real}** da fila.")
             
             if musicas_acima > 4:
@@ -114,7 +113,10 @@ def render():
                         else:
                             st.error("Por favor, preencha o nome da música.")
         else:
-            st.success("✅ Já poderá enviar o seu pedido!")
+            # Caso o cliente tenha entrado agora e ainda não tenha nenhum pedido pendente na fila
+            total_fila_geral = len(pendentes_geral)
+            st.info(grau_info := f"ℹ️ Atualmente existem **{total_fila_geral} músicas** na fila de espera global.")
+            st.success("✅ Já pode enviar o seu primeiro pedido!")
             
             with st.form("form_cliente"):
                 st.markdown("### 🔍 Pesquisar / Pedir Música")
