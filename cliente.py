@@ -46,35 +46,42 @@ def render():
         # Obtém todos os pedidos da base de dados
         todos_pedidos = obter_pedidos_musicas()
         
-        # --- BLOCO DE DIAGNÓSTICO VISUAL (Ajuda a ver o que está na BD) ---
-        with st.expander("🛠️ [Debug] Ver estado dos dados na BD", expanded=False):
-            st.write(f"**Nome inserido (Procurado):** `{cantor}` (Lower: `{cantor.strip().lower()}`)")
-            st.write(f"**Total de pedidos crus obtidos:** {len(todos_pedidos)}")
-            st.json(todos_pedidos)
-        # -----------------------------------------------------------------
-
-        # Filtra estritamente todos os pedidos com status "pendente" para a fila geral
-        pendentes_geral = [
-            p for p in todos_pedidos 
-            if str(p.get("status", "pendente")).strip().lower() == "pendente"
-        ]
-        
-        # Filtro flexível para encontrar os pedidos do cantor
-        pedidos_do_cliente = []
-        for idx, p in enumerate(pendentes_geral):
-            nome_pedido = str(p.get("cantor", "")).strip().lower()
-            nome_atual = cantor.strip().lower()
+        # Filtra estritamente por status "pendente" E pelo token do prestador atual (se não for geral)
+        pendentes_geral = []
+        for p in todos_pedidos:
+            status = str(p.get("status", "pendente")).strip().lower()
+            t_ped = str(p.get("token_prestador", "geral")).strip()
             
-            # Condição ampla: se o nome inserido estiver contido no nome do pedido ou vice-versa
-            if nome_atual in nome_pedido or nome_pedido in nome_atual:
-                p["_posicao_calculada"] = idx + 1
-                pedidos_do_cliente.append(p)
+            if status == "pendente":
+                # Se a sessão for específica de um prestador, filtra por ele. Se for geral, aceita tudo ou o match correspondente.
+                if token_prestador == "geral" or not t_ped or t_ped == token_prestador or t_ped == "geral":
+                    pendentes_geral.append(p)
+        
+        # Filtra os pedidos específicos deste cantor exato (ignorando maiúsculas/minúsculas e espaços)
+        pedidos_do_cliente = [
+            p for p in pendentes_geral 
+            if str(p.get("cantor", "")).strip().lower() == cantor.strip().lower()
+        ]
         
         tem_pedido_ativo = len(pedidos_do_cliente) > 0
         
         if tem_pedido_ativo:
+            # Pega no pedido mais recente ou no primeiro da lista do cliente
             primeiro_pedido_cliente = pedidos_do_cliente[0]
-            posicao_real = primeiro_pedido_cliente.get("_posicao_calculada", 1)
+            
+            # Encontra a posição real (1-based index) na fila global de pendentes deste prestador
+            posicao_real = -1
+            for idx, p in enumerate(pendentes_geral):
+                if p == primeiro_pedido_cliente or (
+                    str(p.get("cantor", "")).strip().lower() == cantor.strip().lower() and
+                    str(p.get("musica", "")).strip().lower() == str(primeiro_pedido_cliente.get("musica", "")).strip().lower()
+                ):
+                    posicao_real = idx + 1
+                    break
+            
+            if posicao_real == -1:
+                posicao_real = 1
+
             musicas_acima = posicao_real - 1 if posicao_real > 0 else 0
             
             st.warning(f"🎵 O seu pedido (`{primeiro_pedido_cliente.get('musica', '')}`) está registado! Encontra-se atualmente na **posição {posicao_real}** da fila.")
@@ -103,7 +110,7 @@ def render():
                         else:
                             st.error("Por favor, preencha o nome da música.")
         else:
-            st.success("✅ Já poderá enviar o seu pedido! (Nenhum pedido ativo encontrado para este nome)")
+            st.success("✅ Já poderá enviar o seu pedido!")
             
             with st.form("form_cliente"):
                 st.markdown("### 🔍 Pesquisar / Pedir Música")
