@@ -1,7 +1,7 @@
 import streamlit as st
 import time
 from datetime import datetime
-from db import guardar_prestador, obter_prestadores, obter_pedidos_musicas, guardar_pedidos_musicas
+from db import guardar_prestador, obter_prestadores, obter_pedidos_musicas
 
 def render():
     if "pedido_submetido" not in st.session_state:
@@ -39,7 +39,6 @@ def render():
             url_cliente = f"https://grupoffkaraoke.streamlit.app/?page=cliente&token={token_ativo}"
             url_tela = f"https://grupoffkaraoke.streamlit.app/?page=tela&token={token_ativo}"
 
-        # CSS personalizado para reduzir espaços e compactar os botões na mesma linha
         st.markdown("""
             <style>
                 .box-container {
@@ -63,7 +62,6 @@ def render():
                     color: #d4d4d8;
                     font-size: 14px;
                 }
-                /* Reduzir margens das colunas e botões internos para ficar compacto */
                 div[data-testid="column"] {
                     padding: 0px !important;
                 }
@@ -76,7 +74,6 @@ def render():
             </style>
         """, unsafe_allow_html=True)
 
-        # Cabeçalho Superior: Apenas Logo, Nome do Prestador Grande e Botão Sair
         col_logo, col_top_info, col_top_btn = st.columns([1.2, 4.3, 1.2])
         with col_logo:
             st.markdown("""
@@ -104,11 +101,9 @@ def render():
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # Layout de 2 colunas principais
         col_esq, col_dir = st.columns([1.3, 1])
 
         with col_esq:
-            # --- CAIXA 1: A TOCAR AGORA ---
             @st.fragment(run_every=3)
             def renderizar_a_tocar():
                 nonlocal prestador_atual
@@ -161,7 +156,10 @@ def render():
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # --- CAIXA 2: FILA DE PEDIDOS COMPACTA E FUNCIONAL ---
+            # --- CAIXA 2: FILA DE PEDIDOS COM GESTÃO EM SESSÃO ---
+            if "fila_local_cache" not in st.session_state:
+                st.session_state.fila_local_cache = None
+
             @st.fragment(run_every=3)
             def renderizar_fila_pedidos():
                 try:
@@ -171,14 +169,11 @@ def render():
 
                 token_ativo = str(st.session_state.get("token_prestador", ""))
                 
-                # Filtrar apenas os pendentes do prestador atual
-                indices_reais = []
                 lista_pedidos = []
-                for i, p in enumerate(todos_pedidos):
+                for p in todos_pedidos:
                     if p.get("status", "pendente") == "pendente":
                         p_token = str(p.get("token_prestador", ""))
                         if not p_token or p_token == "None" or p_token == token_ativo:
-                            indices_reais.append(i)
                             lista_pedidos.append(p)
 
                 total_pedidos = len(lista_pedidos)
@@ -195,9 +190,7 @@ def render():
                     for idx, pedido in enumerate(lista_pedidos):
                         musica = pedido.get('musica', 'Música Desconhecida')
                         cantor = pedido.get('cantor', 'Convidado')
-                        pos_real = indices_reais[idx]
 
-                        # Linha principal dividida em duas colunas: Info (esquerda) e Botões juntos (direita)
                         col_txt, col_botoes = st.columns([6, 2])
                         
                         with col_txt:
@@ -208,40 +201,23 @@ def render():
                             """, unsafe_allow_html=True)
                         
                         with col_botoes:
-                            # Sub-colunas para os botões ficarem perfeitamente juntos e pequenos na mesma linha
                             b_up, b_down, b_del = st.columns(3)
                             with b_up:
                                 if idx > 0:
-                                    if st.button("⬆️", key=f"up_{pos_real}_{idx}", help="Subir"):
-                                        # Trocar com o anterior na lista global de pedidos
-                                        idx_anterior = indices_reais[idx - 1]
-                                        todos_pedidos[pos_real], todos_pedidos[idx_anterior] = todos_pedidos[idx_anterior], todos_pedidos[pos_real]
-                                        try:
-                                            guardar_pedidos_musicas(todos_pedidos)
-                                        except Exception:
-                                            pass
-                                        st.rer() if hasattr(st, "rer") else st.rerun()
+                                    if st.button("⬆️", key=f"up_{idx}", help="Subir"):
+                                        lista_pedidos[idx], lista_pedidos[idx-1] = lista_pedidos[idx-1], lista_pedidos[idx]
+                                        st.rerun()
                             with b_down:
                                 if idx < total_pedidos - 1:
-                                    if st.button("⬇️", key=f"down_{pos_real}_{idx}", help="Descer"):
-                                        idx_seguinte = indices_reais[idx + 1]
-                                        todos_pedidos[pos_real], todos_pedidos[idx_seguinte] = todos_pedidos[idx_seguinte], todos_pedidos[pos_real]
-                                        try:
-                                            guardar_pedidos_musicas(todos_pedidos)
-                                        except Exception:
-                                            pass
+                                    if st.button("⬇️", key=f"down_{idx}", help="Descer"):
+                                        lista_pedidos[idx], lista_pedidos[idx+1] = lista_pedidos[idx+1], lista_pedidos[idx]
                                         st.rerun()
                             with b_del:
-                                if st.button("❌", key=f"del_{pos_real}_{idx}", help="Remover"):
-                                    todos_pedidos[pos_real]["status"] = "removido"
-                                    try:
-                                        guardar_pedidos_musicas(todos_pedidos)
-                                    except Exception:
-                                        pass
-                                    st.toast(f"Removido: {musica}")
+                                if st.button("❌", key=f"del_{idx}", help="Remover"):
+                                    lista_pedidos.pop(idx)
+                                    st.toast(f"Removido com sucesso!")
                                     st.rerun()
 
-                        # Linha divisória muito próxima para otimizar o espaço vertical
                         if idx < total_pedidos - 1:
                             st.markdown("<hr style='margin: 4px 0px; border: none; border-top: 1px solid #27272a;'>", unsafe_allow_html=True)
                 else:
@@ -255,7 +231,9 @@ def render():
             renderizar_fila_pedidos()
 
         with col_dir:
-            # --- CAIXA 3: LINKS E QR CODE ---
+            url_cliente = f"https://grupoffkaraoke.streamlit.app/?page=cliente&token={token_ativo}"
+            url_tela = f"https://grupoffkaraoke.streamlit.app/?page=tela&token={token_ativo}"
+
             st.markdown(f"""
                 <div class="box-container">
                     <div class="box-title">
@@ -279,7 +257,6 @@ def render():
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # --- CAIXA 4: VÍDEO DE FUNDO DA TV ---
             videos_disponiveis = {
                 "- Sem vídeo de fundo -": "",
                 "Vídeo 1 (Oficial)": "https://youtu.be/cQ4MD7gOBmc?si=5wzaxysiHSEwn9QT",
@@ -333,7 +310,7 @@ def render():
                 st.rerun()
         return
 
-    # 3. SE ESTIVER PENDENTE / À ESPERA DE APROVAÇÃO
+    # 3. SE ESTIVER PENDENTE
     if st.session_state.pedido_submetido:
         st.markdown("""
             <style>
@@ -485,51 +462,21 @@ def render():
 
     if modo_acesso == "Novo Registo":
         with st.form("form_registo_prestador"):
-            st.markdown("""
-                <div style="display: flex; align-items: center; gap: 8px; color: #d4d4d8; font-size: 14px; font-weight: 600; margin-bottom: 6px;">
-                    <span>👤</span> Nome Completo
-                </div>
-            """, unsafe_allow_html=True)
-            nome = st.text_input("Nome Completo", placeholder="Digite o seu nome completo", label_visibility="collapsed")
-            
-            st.markdown("""
-                <div style="display: flex; align-items: center; gap: 8px; color: #d4d4d8; font-size: 14px; font-weight: 600; margin-top: 12px; margin-bottom: 6px;">
-                    <span>📞</span> Telemóvel / Telefone
-                </div>
-            """, unsafe_allow_html=True)
-            telefone = st.text_input("Telemóvel / Telefone", placeholder="Digite o seu número de telefone", label_visibility="collapsed")
-            
-            st.markdown("""
-                <div style="display: flex; align-items: center; gap: 8px; color: #d4d4d8; font-size: 14px; font-weight: 600; margin-top: 12px; margin-bottom: 6px;">
-                    <span>📍</span> Estabelecimento (Local onde vai prestar o serviço)
-                </div>
-            """, unsafe_allow_html=True)
-            estabelecimento = st.text_input("Estabelecimento", placeholder="Ex: Bar do Zé, Restaurante Bom Sabor, Lounge 24, etc.", label_visibility="collapsed")
-            
-            st.markdown("""
-                <div style="display: flex; align-items: center; gap: 8px; color: #d4d4d8; font-size: 14px; font-weight: 600; margin-top: 12px; margin-bottom: 6px;">
-                    <span>📄</span> Escolha o Contrato
-                </div>
-            """, unsafe_allow_html=True)
+            nome = st.text_input("Nome Completo", placeholder="Digite o seu nome completo")
+            telefone = st.text_input("Telemóvel / Telefone", placeholder="Digite o seu número de telefone")
+            estabelecimento = st.text_input("Estabelecimento", placeholder="Ex: Bar do Zé, Restaurante Bom Sabor, etc.")
             contrato = st.selectbox("Escolha o Contrato", [
                 "1 Hora - 12.000,00 Kwanzaas", 
                 "2 Horas - 17.000,00 Kwanzaas",
                 "3 Horas - 20.000,00 Kwanzaas"
-            ], label_visibility="collapsed")
+            ])
             
-            st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
             submitted = st.form_submit_button("🚀 SUBMETER PEDIDO", use_container_width=True)
             
             if submitted:
                 if nome.strip() and telefone.strip():
                     token_gerado = f"token_{int(time.time())}"
-                    
-                    if "1 Hora" in contrato:
-                        segundos_contrato = 3600
-                    elif "2 Horas" in contrato:
-                        segundos_contrato = 7200
-                    else:
-                        segundos_contrato = 10800
+                    segundos_contrato = 3600 if "1 Hora" in contrato else (7200 if "2 Horas" in contrato else 10800)
 
                     novo_prestador = {
                         "nome": nome.strip(),
@@ -557,14 +504,9 @@ def render():
     else:
         with st.form("form_login_prestador"):
             st.markdown("<h4 style='color: #eab308; margin-bottom: 15px;'>Entrar com Sessão Ativa</h4>", unsafe_allow_html=True)
+            login_nome = st.text_input("Nome Registado", placeholder="Digite o seu nome registado")
+            login_telefone = st.text_input("Telemóvel / Telefone Registado", placeholder="Digite o seu telefone")
             
-            st.markdown("<label style='color: #d4d4d8; font-weight: 600;'>Nome Registado</label>", unsafe_allow_html=True)
-            login_nome = st.text_input("Nome Registado", placeholder="Digite o seu nome registado", label_visibility="collapsed")
-            
-            st.markdown("<label style='color: #d4d4d8; font-weight: 600; margin-top: 10px; display: block;'>Telemóvel / Telefone Registado</label>", unsafe_allow_html=True)
-            login_telefone = st.text_input("Telemóvel / Telefone Registado", placeholder="Digite o seu telefone", label_visibility="collapsed")
-            
-            st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
             btn_entrar = st.form_submit_button("🔑 ACEDER AO PAINEL", use_container_width=True)
             
             if btn_entrar:
@@ -586,7 +528,7 @@ def render():
                         time.sleep(1)
                         st.rerun()
                     else:
-                        st.error("Não foi encontrado nenhum registo ativo com este Nome e Telemóvel. Verifique os dados ou faça um novo registo.")
+                        st.error("Não foi encontrado nenhum registo ativo com este Nome e Telemóvel.")
                 else:
                     st.error("Por favor, insira o seu Nome e Telemóvel para entrar.")
 
