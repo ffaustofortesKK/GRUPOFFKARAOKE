@@ -11,7 +11,6 @@ def render():
     if "aprovado" not in st.session_state:
         st.session_state.aprovado = False
 
-    # Verificação periódica do estado do prestador se houver token ativo
     prestador_atual = None
     if st.session_state.pedido_submetido and st.session_state.token_prestador:
         prestadores = obter_prestadores()
@@ -24,10 +23,9 @@ def render():
             if status_atual == "aprovado":
                 st.session_state.aprovado = True
 
-    # 1. SE ESTIVER APROVADO: Mostra o painel operacional completo
+    # 1. SE ESTIVER APROVADO: Painel Operacional
     if st.session_state.get("aprovado", False) or st.session_state.get("estado_pedido") == "aprovado":
         
-        # --- GERAR URLS BASE ROBUSTAS ---
         token_ativo = st.session_state.get("token_prestador", "")
         try:
             base_url = st.context.headers.get("Host", "")
@@ -41,7 +39,7 @@ def render():
             url_cliente = f"https://grupoffkaraoke.streamlit.app/?page=cliente&token={token_ativo}"
             url_tela = f"https://grupoffkaraoke.streamlit.app/?page=tela&token={token_ativo}"
 
-        # CSS personalizado para o estilo escuro com bordas douradas e roxas
+        # CSS personalizado para as linhas divisorias, tamanho do nome e estilo geral
         st.markdown("""
             <style>
                 .box-container {
@@ -65,26 +63,39 @@ def render():
                     color: #d4d4d8;
                     font-size: 14px;
                 }
+                .pedido-row {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 12px 4px;
+                    border-bottom: 1px solid #27272a;
+                }
+                .pedido-row:last-child {
+                    border-bottom: none;
+                }
             </style>
         """, unsafe_allow_html=True)
 
-        # Cabeçalho Superior com Logotipo e Botão Sair
-        col_logo, col_top_info, col_top_btn = st.columns([1.5, 3, 1])
+        # Cabeçalho Superior: Apenas Logo, Nome do Prestador Grande e Botão Sair
+        col_logo, col_top_info, col_top_btn = st.columns([1.2, 4.3, 1.2])
         with col_logo:
             st.markdown("""
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 28px;">⭐</span>
+                <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
+                    <span style="font-size: 32px;">⭐</span>
                     <div>
                         <span style="color: #eab308; font-weight: bold; font-size: 18px; display: block; line-height: 1;">FF KARAOKE</span>
                         <span style="color: #a1a1aa; font-size: 9px; letter-spacing: 0.5px;">FAZ A VOZ, FAZ A FESTA!</span>
                     </div>
                 </div>
             """, unsafe_allow_html=True)
+            
         with col_top_info:
             nome_prestador = prestador_atual.get('nome', '') if prestador_atual else ''
-            st.markdown(f"<span style='color: #eab308; font-size: 20px; font-weight: bold;'>SESSÃO ATIVA<br>PRESTADOR: {nome_prestador.upper()}</span>", unsafe_allow_html=True)
+            # Nome com tamanho duplicado (+100%) e sem o texto "Sessão Ativa"
+            st.markdown(f"<div style='text-align: center;'><span style='color: #eab308; font-size: 40px; font-weight: 900; letter-spacing: 2px;'>PRESTADOR: {nome_prestador.upper()}</span></div>", unsafe_allow_html=True)
+            
         with col_top_btn:
-            st.markdown("<div style='height: 5px;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
             if st.button("🚪 Sair / Terminar", use_container_width=True):
                 st.session_state.pedido_submetido = False
                 st.session_state.token_prestador = None
@@ -138,7 +149,6 @@ def render():
 
             renderizar_a_tocar()
             
-            # Botões de ação
             b1, b2, b3 = st.columns(3)
             with b1:
                 if st.button("▶ Tocar primeiro da fila", use_container_width=True):
@@ -152,7 +162,7 @@ def render():
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # --- CAIXA 2: FILA DE PEDIDOS COM ORDENAÇÃO E REMOÇÃO ---
+            # --- CAIXA 2: FILA DE PEDIDOS COM LINHAS E BOTÕES NA MESMA LINHA ---
             @st.fragment(run_every=3)
             def renderizar_fila_pedidos():
                 try:
@@ -185,31 +195,36 @@ def render():
                         cantor = pedido.get('cantor', 'Convidado')
                         pedido_id = pedido.get('id', idx)
 
-                        col_info, col_up, col_down, col_del = st.columns([5, 1, 1, 1])
+                        # Usamos colunas na mesma linha: Info da música | Subir | Descer | Remover
+                        c_info, c_up, c_down, c_del = st.columns([5.5, 1, 1, 1])
                         
-                        with col_info:
+                        with c_info:
                             st.markdown(f"""
-                                <div style="margin-top: 6px;">
-                                    <b style="color: #eab308;">{idx+1}º</b> <span style="margin-left: 8px;"><b>{musica}</b> — <span style="color: #a1a1aa;">{cantor}</span></span>
+                                <div style="padding-top: 6px;">
+                                    <b style="color: #eab308;">{idx+1}º</b> <span style="margin-left: 6px;"><b>{musica}</b> — <span style="color: #a1a1aa;">{cantor}</span></span>
                                 </div>
                             """, unsafe_allow_html=True)
                         
-                        with col_up:
+                        with c_up:
                             if idx > 0:
                                 if st.button("⬆️", key=f"subir_{pedido_id}_{idx}", help="Mover para cima"):
                                     lista_pedidos[idx], lista_pedidos[idx-1] = lista_pedidos[idx-1], lista_pedidos[idx]
                                     st.rerun()
                         
-                        with col_down:
+                        with c_down:
                             if idx < total_pedidos - 1:
                                 if st.button("⬇️", key=f"descer_{pedido_id}_{idx}", help="Mover para baixo"):
                                     lista_pedidos[idx], lista_pedidos[idx+1] = lista_pedidos[idx+1], lista_pedidos[idx]
                                     st.rerun()
 
-                        with col_del:
+                        with c_del:
                             if st.button("❌", key=f"remover_{pedido_id}_{idx}", help="Remover pedido"):
                                 st.toast(f"Removido: {musica}")
                                 st.rerun()
+
+                        # Linha divisória fina entre os itens da lista
+                        if idx < total_pedidos - 1:
+                            st.markdown("<hr style='margin: 4px 0px; border: none; border-top: 1px solid #27272a;'>", unsafe_allow_html=True)
                 else:
                     st.markdown("<p style='color: #a1a1aa; margin: 0;'>Sem pedidos em espera.</p>", unsafe_allow_html=True)
 
@@ -339,10 +354,9 @@ def render():
         st.rerun()
         return
 
-    # 4. TELA INICIAL: ESTILO IDÊNTICO À IMAGEM DE REFERÊNCIA
+    # 4. TELA INICIAL: NOVO REGISTO OU LOGIN
     st.markdown("""
         <style>
-            /* Estilo Geral do Recipiente Principal */
             .prestador-wrapper {
                 background: linear-gradient(180deg, rgba(15, 15, 20, 0.95) 0%, rgba(10, 10, 15, 0.98) 100%);
                 border: 2px solid #8b5cf6;
@@ -368,7 +382,6 @@ def render():
                 color: #a1a1aa;
                 font-size: 14px;
             }
-            /* Ícone de Usuário Topo */
             .top-icon-badge {
                 width: 60px;
                 height: 60px;
@@ -381,7 +394,6 @@ def render():
                 background: #18181b;
                 box-shadow: 0 0 15px rgba(234, 179, 8, 0.3);
             }
-            /* Seção de Escolha de Opção */
             .opcao-box {
                 background-color: #121217;
                 border: 1px solid #3f3f46;
@@ -395,7 +407,6 @@ def render():
                 align-items: center;
                 gap: 8px;
             }
-            /* Linha Divisória Dourada Curta */
             .linha-dourada {
                 width: 60px;
                 height: 3px;
@@ -403,7 +414,6 @@ def render():
                 margin: 8px auto 20px auto;
                 border-radius: 2px;
             }
-            /* Estilo dos Blocos do Rodapé */
             .footer-features {
                 display: flex;
                 justify-content: space-between;
@@ -446,7 +456,6 @@ def render():
             </div>
     """, unsafe_allow_html=True)
 
-    # Caixa indicativa "ESCOLHA A OPÇÃO:"
     st.markdown("""
         <div class="opcao-box">
             <span>👥</span> ESCOLHA A OPÇÃO:
@@ -562,7 +571,6 @@ def render():
                 else:
                     st.error("Por favor, insira o seu Nome e Telemóvel para entrar.")
 
-    # Rodapé idêntico ao da imagem (3 blocos informativos)
     st.markdown("""
         <div class="footer-features">
             <div class="feature-card">
