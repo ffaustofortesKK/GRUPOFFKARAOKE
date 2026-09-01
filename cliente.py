@@ -6,7 +6,6 @@ def render():
     query_params = st.query_params
     token_prestador = query_params.get("token", "").strip()
     
-    # Se não veio token na URL ou veio "Nenhum", tenta encontrar o primeiro prestador aprovado disponível
     if not token_prestador or token_prestador.lower() == "nenhum":
         try:
             prestadores = obter_prestadores()
@@ -18,7 +17,6 @@ def render():
         except Exception:
             token_prestador = "geral"
     
-    # 1. Inicializa o estado do nome do cliente se não existir
     if "cliente_nome" not in st.session_state:
         st.session_state["cliente_nome"] = ""
 
@@ -45,22 +43,30 @@ def render():
         st.markdown(f"### Bem-vindo {cantor}")
         st.info(f"Sessão vinculada ao Prestador / Sessão: `{token_prestador}`")
         
-        # Obtém todos os pedidos da base de dados frescos
+        # Obtém todos os pedidos da base de dados
         todos_pedidos = obter_pedidos_musicas()
         
+        # --- BLOCO DE DIAGNÓSTICO VISUAL (Ajuda a ver o que está na BD) ---
+        with st.expander("🛠️ [Debug] Ver estado dos dados na BD", expanded=False):
+            st.write(f"**Nome inserido (Procurado):** `{cantor}` (Lower: `{cantor.strip().lower()}`)")
+            st.write(f"**Total de pedidos crus obtidos:** {len(todos_pedidos)}")
+            st.json(todos_pedidos)
+        -----------------------------------------------------------------
+
         # Filtra estritamente todos os pedidos com status "pendente" para a fila geral
         pendentes_geral = [
             p for p in todos_pedidos 
             if str(p.get("status", "pendente")).strip().lower() == "pendente"
         ]
         
-        # Filtro ULTRA FLEXÍVEL para apanhar o cantor ignorando espaços e maiúsculas/minúsculas
+        # Filtro flexível para encontrar os pedidos do cantor
         pedidos_do_cliente = []
         for idx, p in enumerate(pendentes_geral):
             nome_pedido = str(p.get("cantor", "")).strip().lower()
             nome_atual = cantor.strip().lower()
+            
+            # Condição ampla: se o nome inserido estiver contido no nome do pedido ou vice-versa
             if nome_atual in nome_pedido or nome_pedido in nome_atual:
-                # Anexa a posição real (1-based index) diretamente no dicionário para facilitar
                 p["_posicao_calculada"] = idx + 1
                 pedidos_do_cliente.append(p)
         
@@ -97,7 +103,7 @@ def render():
                         else:
                             st.error("Por favor, preencha o nome da música.")
         else:
-            st.success("✅ Já poderá enviar o seu pedido!")
+            st.success("✅ Já poderá enviar o seu pedido! (Nenhum pedido ativo encontrado para este nome)")
             
             with st.form("form_cliente"):
                 st.markdown("### 🔍 Pesquisar / Pedir Música")
@@ -120,10 +126,8 @@ def render():
                         st.error("Por favor, preencha o nome da música ou artista.")
         
         st.write("")
-        # Botão de alterar nome com limpeza rigorosa de estado e widgets do Streamlit
         if st.button("🔄 Alterar Nome"):
             st.session_state["cliente_nome"] = ""
-            # Limpa todas as chaves de formulário guardadas na cache do Streamlit para evitar retenção do nome antigo
             for key in list(st.session_state.keys()):
                 if key.startswith("form_") or key == "cliente_nome":
                     if key != "cliente_nome":
