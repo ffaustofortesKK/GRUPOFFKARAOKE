@@ -41,7 +41,7 @@ def render():
             url_cliente = f"https://grupoffkaraoke.streamlit.app/?page=cliente&token={token_ativo}"
             url_tela = f"https://grupoffkaraoke.streamlit.app/?page=tela&token={token_ativo}"
 
-        # CSS personalizado para o estilo escuro com bordas douradas
+        # CSS personalizado para o estilo escuro com bordas douradas e roxas
         st.markdown("""
             <style>
                 .box-container {
@@ -64,17 +64,6 @@ def render():
                 .box-content {
                     color: #d4d4d8;
                     font-size: 14px;
-                }
-                .pedido-item {
-                    background-color: #18181b;
-                    border: 1px solid #27272a;
-                    padding: 8px 12px;
-                    border-radius: 6px;
-                    margin-bottom: 8px;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    color: #d4d4d8;
                 }
             </style>
         """, unsafe_allow_html=True)
@@ -196,7 +185,6 @@ def render():
                         cantor = pedido.get('cantor', 'Convidado')
                         pedido_id = pedido.get('id', idx)
 
-                        # Colunas ajustadas para acomodar o texto, subir, descer e remover
                         col_info, col_up, col_down, col_del = st.columns([5, 1, 1, 1])
                         
                         with col_info:
@@ -220,8 +208,6 @@ def render():
 
                         with col_del:
                             if st.button("❌", key=f"remover_{pedido_id}_{idx}", help="Remover pedido"):
-                                # Lógica para remover ou marcar como cancelado/removido na BD
-                                # Exemplo: se houver uma função de atualizar/apagar, adicione aqui.
                                 st.toast(f"Removido: {musica}")
                                 st.rerun()
                 else:
@@ -353,25 +339,158 @@ def render():
         st.rerun()
         return
 
-    # 4. TELA INICIAL: NOVO REGISTO OU ENTRAR COM SESSÃO ATIVA
-    st.markdown("<h2 style='text-align: center; color: #eab308;'>Área do Prestador</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #a1a1aa; margin-bottom: 25px;'>Faça o seu registo de acesso ou entre com os seus dados se já tiver uma sessão ativa.</p>", unsafe_allow_html=True)
+    # 4. TELA INICIAL: ESTILO IDÊNTICO À IMAGEM DE REFERÊNCIA
+    st.markdown("""
+        <style>
+            /* Estilo Geral do Recipiente Principal */
+            .prestador-wrapper {
+                background: linear-gradient(180deg, rgba(15, 15, 20, 0.95) 0%, rgba(10, 10, 15, 0.98) 100%);
+                border: 2px solid #8b5cf6;
+                border-radius: 14px;
+                padding: 30px;
+                box-shadow: 0 0 25px rgba(139, 92, 246, 0.25);
+                max-width: 850px;
+                margin: 0 auto;
+            }
+            .prestador-header {
+                text-align: center;
+                margin-bottom: 25px;
+            }
+            .prestador-title {
+                color: #eab308;
+                font-size: 28px;
+                font-weight: 800;
+                letter-spacing: 1px;
+                margin-top: 10px;
+                margin-bottom: 5px;
+            }
+            .prestador-subtitle {
+                color: #a1a1aa;
+                font-size: 14px;
+            }
+            /* Ícone de Usuário Topo */
+            .top-icon-badge {
+                width: 60px;
+                height: 60px;
+                border: 2px solid #eab308;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto;
+                background: #18181b;
+                box-shadow: 0 0 15px rgba(234, 179, 8, 0.3);
+            }
+            /* Seção de Escolha de Opção */
+            .opcao-box {
+                background-color: #121217;
+                border: 1px solid #3f3f46;
+                border-radius: 8px;
+                padding: 12px 18px;
+                margin-bottom: 20px;
+                color: #eab308;
+                font-weight: 600;
+                font-size: 14px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            /* Linha Divisória Dourada Curta */
+            .linha-dourada {
+                width: 60px;
+                height: 3px;
+                background-color: #eab308;
+                margin: 8px auto 20px auto;
+                border-radius: 2px;
+            }
+            /* Estilo dos Blocos do Rodapé */
+            .footer-features {
+                display: flex;
+                justify-content: space-between;
+                gap: 15px;
+                margin-top: 30px;
+                padding-top: 20px;
+                border-top: 1px solid #27272a;
+            }
+            .feature-card {
+                background: #121216;
+                border: 1px solid #27272a;
+                border-radius: 8px;
+                padding: 15px;
+                flex: 1;
+                display: flex;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .feature-icon {
+                width: 38px;
+                height: 38px;
+                border-radius: 50%;
+                border: 1px solid #8b5cf6;
+                background: #181824;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+            }
+        </style>
 
-    modo_acesso = st.radio("Escolha a opção:", ["Novo Registo", "Já estou online / Entrar com Nome e Telefone"], horizontal=True)
+        <div class="prestador-wrapper">
+            <div class="prestador-header">
+                <div class="top-icon-badge">
+                    <span style="font-size: 26px;">👤</span>
+                </div>
+                <div class="prestador-title">ÁREA DO PRESTADOR</div>
+                <div class="linha-dourada"></div>
+                <div class="prestador-subtitle">Faça o seu registo de acesso ou entre com os seus dados se já tiver uma sessão ativa.</div>
+            </div>
+    """, unsafe_allow_html=True)
+
+    # Caixa indicativa "ESCOLHA A OPÇÃO:"
+    st.markdown("""
+        <div class="opcao-box">
+            <span>👥</span> ESCOLHA A OPÇÃO:
+        </div>
+    """, unsafe_allow_html=True)
+
+    modo_acesso = st.radio("Escolha a opção:", ["Novo Registo", "Já estou online / Entrar com Nome e Telefone"], horizontal=True, label_visibility="collapsed")
 
     if modo_acesso == "Novo Registo":
         with st.form("form_registo_prestador"):
-            nome = st.text_input("Nome Completo")
-            telefone = st.text_input("Telemóvel / Telefone")
-            estabelecimento = st.text_input("Estabelecimento (Local onde vai prestar o serviço)")
+            st.markdown("""
+                <div style="display: flex; align-items: center; gap: 8px; color: #d4d4d8; font-size: 14px; font-weight: 600; margin-bottom: 6px;">
+                    <span>👤</span> Nome Completo
+                </div>
+            """, unsafe_allow_html=True)
+            nome = st.text_input("Nome Completo", placeholder="Digite o seu nome completo", label_visibility="collapsed")
             
+            st.markdown("""
+                <div style="display: flex; align-items: center; gap: 8px; color: #d4d4d8; font-size: 14px; font-weight: 600; margin-top: 12px; margin-bottom: 6px;">
+                    <span>📞</span> Telemóvel / Telefone
+                </div>
+            """, unsafe_allow_html=True)
+            telefone = st.text_input("Telemóvel / Telefone", placeholder="Digite o seu número de telefone", label_visibility="collapsed")
+            
+            st.markdown("""
+                <div style="display: flex; align-items: center; gap: 8px; color: #d4d4d8; font-size: 14px; font-weight: 600; margin-top: 12px; margin-bottom: 6px;">
+                    <span>📍</span> Estabelecimento (Local onde vai prestar o serviço)
+                </div>
+            """, unsafe_allow_html=True)
+            estabelecimento = st.text_input("Estabelecimento", placeholder="Ex: Bar do Zé, Restaurante Bom Sabor, Lounge 24, etc.", label_visibility="collapsed")
+            
+            st.markdown("""
+                <div style="display: flex; align-items: center; gap: 8px; color: #d4d4d8; font-size: 14px; font-weight: 600; margin-top: 12px; margin-bottom: 6px;">
+                    <span>📄</span> Escolha o Contrato
+                </div>
+            """, unsafe_allow_html=True)
             contrato = st.selectbox("Escolha o Contrato", [
                 "1 Hora - 12.000,00 Kwanzaas", 
                 "2 Horas - 17.000,00 Kwanzaas",
                 "3 Horas - 20.000,00 Kwanzaas"
-            ])
+            ], label_visibility="collapsed")
             
-            submitted = st.form_submit_button("Submeter Pedido", use_container_width=True)
+            st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+            submitted = st.form_submit_button("🚀 SUBMETER PEDIDO", use_container_width=True)
             
             if submitted:
                 if nome.strip() and telefone.strip():
@@ -409,11 +528,16 @@ def render():
                     st.error("Por favor, preencha pelo menos o Nome Completo e o Telefone.")
     else:
         with st.form("form_login_prestador"):
-            st.markdown("#### Entrar com Sessão Ativa")
-            login_nome = st.text_input("Nome Registado")
-            login_telefone = st.text_input("Telemóvel / Telefone Registado")
+            st.markdown("<h4 style='color: #eab308; margin-bottom: 15px;'>Entrar com Sessão Ativa</h4>", unsafe_allow_html=True)
             
-            btn_entrar = st.form_submit_button("Aceder ao Painel", use_container_width=True)
+            st.markdown("<label style='color: #d4d4d8; font-weight: 600;'>Nome Registado</label>", unsafe_allow_html=True)
+            login_nome = st.text_input("Nome Registado", placeholder="Digite o seu nome registado", label_visibility="collapsed")
+            
+            st.markdown("<label style='color: #d4d4d8; font-weight: 600; margin-top: 10px; display: block;'>Telemóvel / Telefone Registado</label>", unsafe_allow_html=True)
+            login_telefone = st.text_input("Telemóvel / Telefone Registado", placeholder="Digite o seu telefone", label_visibility="collapsed")
+            
+            st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
+            btn_entrar = st.form_submit_button("🔑 ACEDER AO PAINEL", use_container_width=True)
             
             if btn_entrar:
                 if login_nome.strip() and login_telefone.strip():
@@ -437,3 +561,31 @@ def render():
                         st.error("Não foi encontrado nenhum registo ativo com este Nome e Telemóvel. Verifique os dados ou faça um novo registo.")
                 else:
                     st.error("Por favor, insira o seu Nome e Telemóvel para entrar.")
+
+    # Rodapé idêntico ao da imagem (3 blocos informativos)
+    st.markdown("""
+        <div class="footer-features">
+            <div class="feature-card">
+                <div class="feature-icon">🎧</div>
+                <div>
+                    <div style="color: #eab308; font-weight: bold; font-size: 13px; margin-bottom: 2px;">RÁPIDO E FÁCIL</div>
+                    <div style="color: #a1a1aa; font-size: 11px; line-height: 1.3;">Registe-se em poucos passos e comece já.</div>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🛡️</div>
+                <div>
+                    <div style="color: #eab308; font-weight: bold; font-size: 13px; margin-bottom: 2px;">SEGURO</div>
+                    <div style="color: #a1a1aa; font-size: 11px; line-height: 1.3;">Os seus dados estão protegidos com total segurança.</div>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⭐</div>
+                <div>
+                    <div style="color: #eab308; font-weight: bold; font-size: 13px; margin-bottom: 2px;">FAZ A VOZ, FAZ A FESTA!</div>
+                    <div style="color: #a1a1aa; font-size: 11px; line-height: 1.3;">Junte-se à comunidade do FF KARAOKE e brilhe!</div>
+                </div>
+            </div>
+        </div>
+        </div>
+    """, unsafe_allow_html=True)
