@@ -43,15 +43,20 @@ def render():
         st.markdown(f"### Bem-vindo, {cantor}")
         st.info(f"Sessão vinculada ao Prestador / Sessão: `{token_prestador}`")
         
-        # 1. Obtém e filtra todos os pedidos pendentes para este prestador
+        # 1. Obtém todos os pedidos da base de dados
         todos_pedidos = obter_pedidos_musicas()
+        
+        # DEBUG VISUAL: Descomente a linha abaixo se quiser ver o que está a vir da BD na tela
+        # st.write("DEBUG - Todos os pedidos na BD:", todos_pedidos)
+
         pendentes_geral = []
         for p in todos_pedidos:
             status = str(p.get("status", "pendente")).strip().lower()
             t_ped = str(p.get("token_prestador", "geral")).strip()
             
             if status == "pendente":
-                if token_prestador == "geral" or not t_ped or t_ped == token_prestador or t_ped == "geral":
+                # Aceita se for "geral", se o token coincidir, ou se o token guardado for vazio/geral
+                if token_prestador == "geral" or not t_ped or t_ped == "geral" or t_ped == token_prestador:
                     pendentes_geral.append(p)
         
         # Identifica todos os pedidos deste cliente específico na fila
@@ -63,10 +68,9 @@ def render():
         tem_pedido_ativo = len(pedidos_do_cliente) > 0
         
         if tem_pedido_ativo:
-            # Pega no pedido mais antigo deste cliente que ainda está pendente
             primeiro_pedido_cliente = pedidos_do_cliente[0]
             
-            # Calcula a posição real (1-based index) comparando o cantor e a música de forma fiável
+            # Calcula a posição real (1-based index)
             posicao_real = -1
             c_alvo = str(primeiro_pedido_cliente.get("cantor", "")).strip().lower()
             m_alvo = str(primeiro_pedido_cliente.get("musica", "")).strip().lower()
@@ -75,7 +79,6 @@ def render():
                 c_atual = str(p.get("cantor", "")).strip().lower()
                 m_atual = str(p.get("musica", "")).strip().lower()
                 
-                # Encontra a primeira ocorrência deste pedido exato na fila global
                 if c_atual == c_alvo and m_atual == m_alvo:
                     posicao_real = idx + 1
                     break
