@@ -99,8 +99,6 @@ def render():
                     
                     if submitted_novo:
                         if musica_novo.strip():
-                            # A posição exata ao enviar será o total atual de pendentes + 1
-                            nova_posicao = len(pendentes_geral) + 1
                             dados_novo_pedido = {
                                 "cantor": cantor,
                                 "musica": musica_novo.strip(),
@@ -109,14 +107,13 @@ def render():
                                 "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                             }
                             guardar_pedido_musica(dados_novo_pedido)
-                            st.success(f"Obrigado {cantor}! O seu pedido foi adicionado. 🎯 **Estás na Posição {nova_posicao}**!")
                             st.rerun()
                         else:
                             st.error("Por favor, preencha o nome da música.")
         else:
             total_fila_geral = len(pendentes_geral)
+            # Mantém apenas a informação da fila global (sem a frase dos 0 pedidos)
             st.info(f"ℹ️ Atualmente existem **{total_fila_geral} músicas** na fila de espera global.")
-            st.success("✅ Já pode enviar o seu primeiro pedido!")
             
             with st.form("form_cliente"):
                 st.markdown("### 🔍 Pesquisar / Pedir Música")
@@ -125,8 +122,6 @@ def render():
                 
                 if submitted_inicial:
                     if musica_inicial.strip():
-                        # Como a fila tem X músicas, o novo pedido entra na posição X + 1
-                        nova_posicao = total_fila_geral + 1
                         dados_novo_pedido = {
                             "cantor": cantor,
                             "musica": musica_inicial.strip(),
@@ -135,7 +130,6 @@ def render():
                             "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                         }
                         guardar_pedido_musica(dados_novo_pedido)
-                        st.success(f"Obrigado {cantor}! A sua música foi adicionada à fila. 🎯 **Estás na Posição {nova_posicao}**!")
                         st.rerun()
                     else:
                         st.error("Por favor, preencha o nome da música ou artista.")
