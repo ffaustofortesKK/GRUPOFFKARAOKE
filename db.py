@@ -120,6 +120,11 @@ def guardar_pedido_musica(dados_pedido):
     if FIREBASE_ATIVO:
         try:
             ref = db.reference("pedidos")
+            # Valida e limpa se o nó ficou gravado incorretamente como string vazia ou tipo inválido
+            valor_atual = ref.get()
+            if valor_atual == "" or not isinstance(valor_atual, (dict, list)):
+                ref.set(None)
+            
             ref.push(dados_pedido)
         except Exception as e:
             print(f"Erro ao escrever pedidos no Firebase: {e}")
