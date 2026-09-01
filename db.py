@@ -73,7 +73,7 @@ def _guardar_dados(lista_prestadores):
             return
         except Exception as e:
             print(f"Erro ao guardar prestadores no Firebase: {e}")
-
+            
     try:
         with open(FICHEIRO_DB, "w", encoding="utf-8") as f:
             json.dump(lista_prestadores, f, ensure_ascii=False, indent=4)
@@ -124,7 +124,6 @@ def guardar_pedido_musica(dados_pedido):
             st.info("🔥 A tentar escrever no Firebase (nó 'pedidos')...")
             ref = db.reference("pedidos")
             
-            # Garante que limpa se houver algum valor corrompido no nó principal
             valor_atual = ref.get()
             if valor_atual == "" or not isinstance(valor_atual, (dict, list)):
                 ref.set(None)
@@ -136,9 +135,30 @@ def guardar_pedido_musica(dados_pedido):
     else:
         st.warning("⚠️ FIREBASE_ATIVO está como False. O Firebase está desligado.")
 
+def guardar_pedidos_musicas(lista_pedidos):
+    """Guarda ou atualiza a lista completa de pedidos de músicas (local e Firebase)."""
+    # 1. Atualizar cache local
+    try:
+        with open(FICHEIRO_PEDIDOS_LOCAL, "w", encoding="utf-8") as f:
+            json.dump(lista_pedidos, f, ensure_ascii=False, indent=4)
+    except Exception as e:
+        print(f"Erro ao guardar pedidos locais: {e}")
+
+    # 2. Atualizar Firebase se ativo
+    if FIREBASE_ATIVO:
+        try:
+            ref = db.reference("pedidos")
+            dados_dict = {}
+            for p in lista_pedidos:
+                pid = str(p.get("id", f"pedido_{id(p)}"))
+                dados_dict[pid] = p
+            ref.set(dados_dict)
+        except Exception as e:
+            print(f"Erro ao atualizar pedidos no Firebase: {e}")
+
 def obter_pedidos_musicas():
     """Combina os pedidos do Firebase e do armazenamento local ordenados rigorosamente por data/hora real"""
-    pedidos_dict = {}
+    pedidos_dict = {}  
     
     # 1. Carrega do Firebase
     if FIREBASE_ATIVO:
