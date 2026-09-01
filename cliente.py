@@ -25,7 +25,7 @@ def render():
         st.markdown("### 🎤 Bem-vindo ao FF Karaoke")
         st.write("Insira o seu nome ou alcunha para começar:")
         
-        with st.form(key="form_login_cliente"):
+        with st.form(key="form_login_cliente", clear_on_submit=True):
             cantor_input = st.text_input("O seu Nome / alcunha:", placeholder="Ex: João da Silva")
             submit_nome = st.form_submit_button("Entrar")
             
@@ -66,18 +66,17 @@ def render():
             # Pega no pedido mais antigo deste cliente que ainda está pendente
             primeiro_pedido_cliente = pedidos_do_cliente[0]
             
-            # Calcula a posição real (1-based index) na fila global de pendentes
+            # Calcula a posição real (1-based index) comparando o cantor e a música de forma fiável
             posicao_real = -1
             c_alvo = str(primeiro_pedido_cliente.get("cantor", "")).strip().lower()
             m_alvo = str(primeiro_pedido_cliente.get("musica", "")).strip().lower()
-            t_alvo = str(primeiro_pedido_cliente.get("timestamp", "")).strip()
             
             for idx, p in enumerate(pendentes_geral):
                 c_atual = str(p.get("cantor", "")).strip().lower()
                 m_atual = str(p.get("musica", "")).strip().lower()
-                t_atual = str(p.get("timestamp", "")).strip()
                 
-                if c_atual == c_alvo and m_atual == m_alvo and (not t_alvo or not t_atual or t_atual == t_alvo):
+                # Encontra a primeira ocorrência deste pedido exato na fila global
+                if c_atual == c_alvo and m_atual == m_alvo:
                     posicao_real = idx + 1
                     break
             
@@ -93,7 +92,7 @@ def render():
             else:
                 st.success(f"🔔 **Pode enviar um novo pedido!** Faltam apenas {musicas_acima} músicas para a sua vez.")
                 
-                with st.form("form_cliente_novo"):
+                with st.form("form_cliente_novo", clear_on_submit=True):
                     musica_novo = st.text_input("Digite o nome da próxima música ou artista:", placeholder="Ex: Landrick, Nani...")
                     submitted_novo = st.form_submit_button("Enviar Novo Pedido")
                     
@@ -107,6 +106,7 @@ def render():
                                 "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                             }
                             guardar_pedido_musica(dados_novo_pedido)
+                            st.success("Pedido enviado com sucesso!")
                             st.rerun()
                         else:
                             st.error("Por favor, preencha o nome da música.")
@@ -114,7 +114,7 @@ def render():
             total_fila_geral = len(pendentes_geral)
             st.info(f"ℹ️ Atualmente existem **{total_fila_geral} músicas** na fila de espera global.")
             
-            with st.form("form_cliente"):
+            with st.form("form_cliente", clear_on_submit=True):
                 st.markdown("### 🔍 Pesquisar / Pedir Música")
                 musica_inicial = st.text_input("Digite o nome da música ou artista:", placeholder="Ex: Landrick, Nani...")
                 submitted_inicial = st.form_submit_button("Pedir Música")
@@ -129,6 +129,7 @@ def render():
                             "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                         }
                         guardar_pedido_musica(dados_novo_pedido)
+                        st.success("Pedido adicionado à fila!")
                         st.rerun()
                     else:
                         st.error("Por favor, preencha o nome da música ou artista.")
