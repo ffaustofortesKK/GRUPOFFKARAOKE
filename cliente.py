@@ -46,18 +46,17 @@ def render():
         # Obtém todos os pedidos da base de dados
         todos_pedidos = obter_pedidos_musicas()
         
-        # Filtra estritamente por status "pendente" E pelo token do prestador atual (se não for geral)
+        # Filtra estritamente por status "pendente" E pelo token do prestador atual
         pendentes_geral = []
         for p in todos_pedidos:
             status = str(p.get("status", "pendente")).strip().lower()
             t_ped = str(p.get("token_prestador", "geral")).strip()
             
             if status == "pendente":
-                # Se a sessão for específica de um prestador, filtra por ele. Se for geral, aceita tudo ou o match correspondente.
                 if token_prestador == "geral" or not t_ped or t_ped == token_prestador or t_ped == "geral":
                     pendentes_geral.append(p)
         
-        # Filtra os pedidos específicos deste cantor exato (ignorando maiúsculas/minúsculas e espaços)
+        # Filtra os pedidos específicos deste cantor exato
         pedidos_do_cliente = [
             p for p in pendentes_geral 
             if str(p.get("cantor", "")).strip().lower() == cantor.strip().lower()
@@ -66,16 +65,21 @@ def render():
         tem_pedido_ativo = len(pedidos_do_cliente) > 0
         
         if tem_pedido_ativo:
-            # Pega no pedido mais recente ou no primeiro da lista do cliente
+            # Pega no pedido mais antigo deste cliente que ainda está pendente na fila
             primeiro_pedido_cliente = pedidos_do_cliente[0]
             
-            # Encontra a posição real (1-based index) na fila global de pendentes deste prestador
+            # Encontra a posição real (1-based index) na fila global de pendentes comparando campos seguros
             posicao_real = -1
+            c_alvo = str(primeiro_pedido_cliente.get("cantor", "")).strip().lower()
+            m_alvo = str(primeiro_pedido_cliente.get("musica", "")).strip().lower()
+            t_alvo = str(primeiro_pedido_cliente.get("timestamp", "")).strip()
+            
             for idx, p in enumerate(pendentes_geral):
-                if p == primeiro_pedido_cliente or (
-                    str(p.get("cantor", "")).strip().lower() == cantor.strip().lower() and
-                    str(p.get("musica", "")).strip().lower() == str(primeiro_pedido_cliente.get("musica", "")).strip().lower()
-                ):
+                c_atual = str(p.get("cantor", "")).strip().lower()
+                m_atual = str(p.get("musica", "")).strip().lower()
+                t_atual = str(p.get("timestamp", "")).strip()
+                
+                if c_atual == c_alvo and m_atual == m_alvo and (not t_alvo or not t_atual or t_atual == t_alvo):
                     posicao_real = idx + 1
                     break
             
