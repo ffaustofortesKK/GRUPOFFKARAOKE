@@ -51,7 +51,7 @@ def render():
             st.write(f"**Nome inserido (Procurado):** `{cantor}` (Lower: `{cantor.strip().lower()}`)")
             st.write(f"**Total de pedidos crus obtidos:** {len(todos_pedidos)}")
             st.json(todos_pedidos)
-        -----------------------------------------------------------------
+        # -----------------------------------------------------------------
 
         # Filtra estritamente todos os pedidos com status "pendente" para a fila geral
         pendentes_geral = [
