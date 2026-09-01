@@ -96,7 +96,10 @@ def remover_prestador(token):
     _guardar_dados(prestadores)
 
 def guardar_pedido_musica(dados_pedido):
-    """Guarda o pedido de música garantindo persistência no Firebase (nó 'pedidos') e backup local"""
+    """Guarda o pedido de música com depuração visual total na tela e criação do nó 'pedidos'"""
+    st.info("🔄 A função guardar_pedido_musica foi acionada!")
+    
+    # 1. Guarda primeiro no cache local de segurança
     lista_local = []
     if os.path.exists(FICHEIRO_PEDIDOS_LOCAL):
         try:
@@ -111,19 +114,27 @@ def guardar_pedido_musica(dados_pedido):
     try:
         with open(FICHEIRO_PEDIDOS_LOCAL, "w", encoding="utf-8") as f:
             json.dump(lista_local, f, ensure_ascii=False, indent=4)
+        st.success("💾 Cache local atualizado com sucesso!")
     except Exception as e:
-        print(f"Erro ao salvar cache local de pedidos: {e}")
+        st.error(f"❌ Erro ao salvar cache local: {e}")
 
+    # 2. Envia para o Firebase no nó explícito "pedidos"
     if FIREBASE_ATIVO:
         try:
+            st.info("🔥 A tentar escrever no Firebase (nó 'pedidos')...")
             ref = db.reference("pedidos")
+            
+            # Garante que limpa se houver algum valor corrompido no nó principal
             valor_atual = ref.get()
             if valor_atual == "" or not isinstance(valor_atual, (dict, list)):
                 ref.set(None)
             
-            ref.push(dados_pedido)
+            novo_filho = ref.push(dados_pedido)
+            st.success(f"🎉 SUCESSO! Nó 'pedidos' criado no Firebase com ID: {novo_filho.key}")
         except Exception as e:
-            print(f"Erro ao escrever pedidos no Firebase: {e}")
+            st.error(f"❌ ERRO CRÍTICO NO FIREBASE: {e}")
+    else:
+        st.warning("⚠️ FIREBASE_ATIVO está como False. O Firebase está desligado.")
 
 def obter_pedidos_musicas():
     """Combina os pedidos do Firebase e do armazenamento local ordenados rigorosamente por data/hora real"""
