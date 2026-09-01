@@ -86,7 +86,6 @@ def render():
 
             musicas_acima = posicao_real - 1 if posicao_real > 0 else 0
             
-            # Mostra imediatamente a posição logo no topo do painel
             st.warning(f"🎵 O seu pedido (`{primeiro_pedido_cliente.get('musica', '')}`) está registado! Encontra-se atualmente na **posição {posicao_real}** da fila.")
             
             if musicas_acima > 4:
@@ -100,6 +99,8 @@ def render():
                     
                     if submitted_novo:
                         if musica_novo.strip():
+                            # A posição exata ao enviar será o total atual de pendentes + 1
+                            nova_posicao = len(pendentes_geral) + 1
                             dados_novo_pedido = {
                                 "cantor": cantor,
                                 "musica": musica_novo.strip(),
@@ -108,14 +109,13 @@ def render():
                                 "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                             }
                             guardar_pedido_musica(dados_novo_pedido)
-                            st.success(f"Obrigado {cantor}! O seu novo pedido foi adicionado.")
+                            st.success(f"Obrigado {cantor}! O seu pedido foi adicionado. 🎯 **Estás na Posição {nova_posicao}**!")
                             st.rerun()
                         else:
                             st.error("Por favor, preencha o nome da música.")
         else:
-            # Caso o cliente tenha entrado agora e ainda não tenha nenhum pedido pendente na fila
             total_fila_geral = len(pendentes_geral)
-            st.info(grau_info := f"ℹ️ Atualmente existem **{total_fila_geral} músicas** na fila de espera global.")
+            st.info(f"ℹ️ Atualmente existem **{total_fila_geral} músicas** na fila de espera global.")
             st.success("✅ Já pode enviar o seu primeiro pedido!")
             
             with st.form("form_cliente"):
@@ -125,6 +125,8 @@ def render():
                 
                 if submitted_inicial:
                     if musica_inicial.strip():
+                        # Como a fila tem X músicas, o novo pedido entra na posição X + 1
+                        nova_posicao = total_fila_geral + 1
                         dados_novo_pedido = {
                             "cantor": cantor,
                             "musica": musica_inicial.strip(),
@@ -133,7 +135,7 @@ def render():
                             "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                         }
                         guardar_pedido_musica(dados_novo_pedido)
-                        st.success(f"Obrigado {cantor}! A sua música foi adicionada à fila.")
+                        st.success(f"Obrigado {cantor}! A sua música foi adicionada à fila. 🎯 **Estás na Posição {nova_posicao}**!")
                         st.rerun()
                     else:
                         st.error("Por favor, preencha o nome da música ou artista.")
