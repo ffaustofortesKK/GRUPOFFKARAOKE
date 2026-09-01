@@ -27,7 +27,7 @@ def render():
     # 1. SE ESTIVER APROVADO: Mostra o painel operacional completo
     if st.session_state.get("aprovado", False) or st.session_state.get("estado_pedido") == "aprovado":
         
-        # --- GERAR URLS BASE ROBUSTAS (Passando o token do prestador para o cliente não perder a referência) ---
+        # --- GERAR URLS BASE ROBUSTAS ---
         token_ativo = st.session_state.get("token_prestador", "")
         try:
             base_url = st.context.headers.get("Host", "")
@@ -65,16 +65,38 @@ def render():
                     color: #d4d4d8;
                     font-size: 14px;
                 }
+                .pedido-item {
+                    background-color: #18181b;
+                    border: 1px solid #27272a;
+                    padding: 8px 12px;
+                    border-radius: 6px;
+                    margin-bottom: 8px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    color: #d4d4d8;
+                }
             </style>
         """, unsafe_allow_html=True)
 
-        # Botão discreto para terminar sessão no topo (com o texto aumentado 100%)
-        col_top_info, col_top_btn = st.columns([4, 1])
+        # Cabeçalho Superior com Logotipo e Botão Sair
+        col_logo, col_top_info, col_top_btn = st.columns([1.5, 3, 1])
+        with col_logo:
+            st.markdown("""
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 28px;">⭐</span>
+                    <div>
+                        <span style="color: #eab308; font-weight: bold; font-size: 18px; display: block; line-height: 1;">FF KARAOKE</span>
+                        <span style="color: #a1a1aa; font-size: 9px; letter-spacing: 0.5px;">FAZ A VOZ, FAZ A FESTA!</span>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
         with col_top_info:
             nome_prestador = prestador_atual.get('nome', '') if prestador_atual else ''
-            st.markdown(f"<span style='color: #eab308; font-size: 26px; font-weight: bold;'>Sessão Ativa | Prestador: {nome_prestador}</span>", unsafe_allow_html=True)
+            st.markdown(f"<span style='color: #eab308; font-size: 20px; font-weight: bold;'>SESSÃO ATIVA<br>PRESTADOR: {nome_prestador.upper()}</span>", unsafe_allow_html=True)
         with col_top_btn:
-            if st.button("Sair / Terminar", use_container_width=True):
+            st.markdown("<div style='height: 5px;'></div>", unsafe_allow_html=True)
+            if st.button("🚪 Sair / Terminar", use_container_width=True):
                 st.session_state.pedido_submetido = False
                 st.session_state.token_prestador = None
                 st.session_state.estado_pedido = "pendente"
@@ -87,7 +109,7 @@ def render():
         col_esq, col_dir = st.columns([1.3, 1])
 
         with col_esq:
-            # --- CAIXA 1: A TOCAR AGORA (Com atualização em tempo real do temporizador) ---
+            # --- CAIXA 1: A TOCAR AGORA ---
             @st.fragment(run_every=3)
             def renderizar_a_tocar():
                 nonlocal prestador_atual
@@ -141,7 +163,7 @@ def render():
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # --- CAIXA 2: FILA DE PEDIDOS (Com filtro inteligente para capturar os pedidos do cliente) ---
+            # --- CAIXA 2: FILA DE PEDIDOS ---
             @st.fragment(run_every=3)
             def renderizar_fila_pedidos():
                 try:
@@ -151,17 +173,15 @@ def render():
 
                 token_ativo = st.session_state.get("token_prestador", "")
                 
-                # Filtro robusto: aceita pedidos associados ao token exato OU pedidos sem token (para garantir que nada se perde)
                 lista_pedidos = []
                 for p in todos_pedidos:
                     if p.get("status", "pendente") == "pendente":
                         p_token = str(p.get("token_prestador", ""))
-                        # Se o token coincidir, ou se o token do pedido estiver vazio/não definido, inclui na fila
                         if not p_token or p_token == "None" or p_token == str(token_ativo):
                             lista_pedidos.append(p)
 
                 total_pedidos = len(lista_pedidos)
-
+                
                 st.markdown(f"""
                     <div class="box-container">
                         <div class="box-title">
@@ -174,7 +194,12 @@ def render():
                     for idx, pedido in enumerate(lista_pedidos, start=1):
                         musica = pedido.get('musica', 'Música Desconhecida')
                         cantor = pedido.get('cantor', 'Convidado')
-                        st.markdown(f"<p style='margin: 6px 0; padding: 4px 8px; background-color: #e4e4e7; border-radius: 4px; color: #000000;'><b>{idx}ª Posição.</b> <b>{musica}</b> — <span>{cantor}</span></p>", unsafe_allow_html=True)
+                        st.markdown(f"""
+                            <div class="pedido-item">
+                                <div><b style="color: #eab308;">{idx}º</b> <span style="margin-left: 8px;"><b>{musica}</b> — <span style="color: #a1a1aa;">{cantor}</span></span></div>
+                                <span style="color: #71717a; cursor: grab;">⋮⋮</span>
+                            </div>
+                        """, unsafe_allow_html=True)
                 else:
                     st.markdown("<p style='color: #a1a1aa; margin: 0;'>Sem pedidos em espera.</p>", unsafe_allow_html=True)
 
@@ -192,9 +217,9 @@ def render():
                     <div class="box-title">
                         <span>🔗 LINKS E QR CODE</span>
                     </div>
-                    <div class="box-content" style="font-size: 12px; word-break: break-all; margin-bottom: 12px;">
-                        <span style="color: #eab308; font-weight: bold;">Cliente:</span> {url_cliente}<br><br>
-                        <span style="color: #3b82f6; font-weight: bold;">TV:</span> {url_tela}
+                    <div class="box-content" style="font-size: 11px; word-break: break-all; margin-bottom: 12px;">
+                        <span style="color: #eab308; font-weight: bold;">Cliente:</span><br>{url_cliente}<br><br>
+                        <span style="color: #3b82f6; font-weight: bold;">TV:</span><br>{url_tela}
                     </div>
                     <div style="text-align: center; background: #ffffff; padding: 10px; border-radius: 6px; margin-bottom: 12px;">
                         <img src="https://api.qrserver.com/v1/create-qr-code/?size=170x170&data={url_cliente}" width="170" />
@@ -203,7 +228,8 @@ def render():
             """, unsafe_allow_html=True)
 
             col_bt_tv, col_bt_cli = st.columns(2)
-            with col_bt_tv: st.markdown(f'<a href="{url_tela}" target="_blank"><button style="width: 100%; background-color: #18181b; color: #ffffff; border: 1px solid #eab308; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 13px;">🖥️ Abrir TV</button></a>', unsafe_allow_html=True)
+            with col_bt_tv: 
+                st.markdown(f'<a href="{url_tela}" target="_blank"><button style="width: 100%; background-color: #18181b; color: #ffffff; border: 1px solid #eab308; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 13px;">🖥️ Abrir TV</button></a>', unsafe_allow_html=True)
             with col_bt_cli:
                 st.markdown(f'<a href="{url_cliente}" target="_blank"><button style="width: 100%; background-color: #18181b; color: #ffffff; border: 1px solid #eab308; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 13px;">📱 Abrir cliente</button></a>', unsafe_allow_html=True)
 
@@ -220,8 +246,8 @@ def render():
             }
 
             st.markdown("""
-                <div class="box-container" style="margin-bottom: 0;">
-                    <div class="box-title">
+                <div class="box-container" style="margin-bottom: 10px;">
+                    <div class="box-title" style="margin-bottom: 0;">
                         <span>🎬 VÍDEO DE FUNDO DA TV</span>
                     </div>
                 </div>
@@ -230,7 +256,7 @@ def render():
             video_escolhido = st.selectbox("Selecione o vídeo de fundo:", list(videos_disponiveis.keys()), label_visibility="collapsed")
             url_video_selecionado = videos_disponiveis[video_escolhido]
 
-            if st.button("Iniciar Vídeo Clipe Tela", use_container_width=True, type="primary"):
+            if st.button("▶ Iniciar Vídeo Clipe Tela", use_container_width=True, type="primary"):
                 if st.session_state.token_prestador:
                     prestadores = obter_prestadores()
                     for p in prestadores:
