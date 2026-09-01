@@ -54,7 +54,7 @@ def render():
                 if token_prestador == "geral" or not t_ped or t_ped == token_prestador or t_ped == "geral":
                     pendentes_geral.append(p)
         
-        # 2. Identifica todos os pedidos deste cliente específico na fila
+        # Identifica todos os pedidos deste cliente específico na fila
         pedidos_do_cliente = [
             p for p in pendentes_geral 
             if str(p.get("cantor", "")).strip().lower() == cantor.strip().lower()
@@ -112,7 +112,6 @@ def render():
                             st.error("Por favor, preencha o nome da música.")
         else:
             total_fila_geral = len(pendentes_geral)
-            # Mantém apenas a informação da fila global (sem a frase dos 0 pedidos)
             st.info(f"ℹ️ Atualmente existem **{total_fila_geral} músicas** na fila de espera global.")
             
             with st.form("form_cliente"):
