@@ -39,7 +39,7 @@ def render():
             url_cliente = f"https://grupoffkaraoke.streamlit.app/?page=cliente&token={token_ativo}"
             url_tela = f"https://grupoffkaraoke.streamlit.app/?page=tela&token={token_ativo}"
 
-        # CSS personalizado para as linhas divisorias, tamanho do nome e estilo geral
+        # CSS personalizado para o design geral, caixas e botões compactos
         st.markdown("""
             <style>
                 .box-container {
@@ -63,15 +63,12 @@ def render():
                     color: #d4d4d8;
                     font-size: 14px;
                 }
-                .pedido-row {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 12px 4px;
-                    border-bottom: 1px solid #27272a;
-                }
-                .pedido-row:last-child {
-                    border-bottom: none;
+                /* Estilo para tornar os botões da fila compactos e juntos */
+                div[data-testid="stHorizontalBlock"] button {
+                    padding: 2px 6px !important;
+                    font-size: 12px !important;
+                    min-height: 26px !important;
+                    max-height: 30px !important;
                 }
             </style>
         """, unsafe_allow_html=True)
@@ -91,7 +88,6 @@ def render():
             
         with col_top_info:
             nome_prestador = prestador_atual.get('nome', '') if prestador_atual else ''
-            # Nome com tamanho duplicado (+100%) e sem o texto "Sessão Ativa"
             st.markdown(f"<div style='text-align: center;'><span style='color: #eab308; font-size: 40px; font-weight: 900; letter-spacing: 2px;'>PRESTADOR: {nome_prestador.upper()}</span></div>", unsafe_allow_html=True)
             
         with col_top_btn:
@@ -162,7 +158,11 @@ def render():
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # --- CAIXA 2: FILA DE PEDIDOS COM LINHAS E BOTÕES NA MESMA LINHA ---
+            # --- CAIXA 2: FILA DE PEDIDOS ---
+            # Guardamos a lista de pedidos em session_state para permitir alteração de ordem fluida na interface
+            if "fila_local" not in st.session_state:
+                st.session_state.fila_local = []
+
             @st.fragment(run_every=3)
             def renderizar_fila_pedidos():
                 try:
@@ -172,14 +172,26 @@ def render():
 
                 token_ativo = st.session_state.get("token_prestador", "")
                 
-                lista_pedidos = []
+                # Filtrar pedidos pendentes do prestador atual
+                lista_filtrada = []
                 for p in todos_pedidos:
                     if p.get("status", "pendente") == "pendente":
                         p_token = str(p.get("token_prestador", ""))
                         if not p_token or p_token == "None" or p_token == str(token_ativo):
-                            lista_pedidos.append(p)
+                            lista_filtrada.append(p)
 
-                total_pedidos = len(lista_pedidos)
+                # Inicializa ou sincroniza a lista local na sessão
+                if not st.session_state.fila_local and lista_filtrada:
+                    st.session_state.fila_local = lista_filtrada
+                else:
+                    # Garantir que novos pedidos entrem ou saiam sem perder a ordem manipulada
+                    ids_atuais = {str(p.get("id", i)) for i, p in enumerate(st.session_state.fila_local)}
+                    for p in lista_filtrada:
+                        pid = str(p.get("id", ""))
+                        if pid not in ids_atuais:
+                            st.session_state.fila_local.append(p)
+
+                total_pedidos = len(st.session_state.fila_local)
                 
                 st.markdown(f"""
                     <div class="box-container">
@@ -190,41 +202,44 @@ def render():
                 """, unsafe_allow_html=True)
 
                 if total_pedidos > 0:
-                    for idx, pedido in enumerate(lista_pedidos):
+                    # Percorrer uma cópia para evitar problemas de índice durante o loop
+                    for idx, pedido in enumerate(list(st.session_state.fila_local)):
                         musica = pedido.get('musica', 'Música Desconhecida')
                         cantor = pedido.get('cantor', 'Convidado')
-                        pedido_id = pedido.get('id', idx)
+                        p_id = pedido.get('id', idx)
 
-                        # Usamos colunas na mesma linha: Info da música | Subir | Descer | Remover
-                        c_info, c_up, c_down, c_del = st.columns([5.5, 1, 1, 1])
+                        # Linha dividida: Nome da música (espaço maior) e os 3 botões juntos num bloco compacto à direita
+                        col_txt, col_botoes = st.columns([4.2, 1.8])
                         
-                        with c_info:
+                        with col_txt:
                             st.markdown(f"""
-                                <div style="padding-top: 6px;">
-                                    <b style="color: #eab308;">{idx+1}º</b> <span style="margin-left: 6px;"><b>{musica}</b> — <span style="color: #a1a1aa;">{cantor}</span></span>
+                                <div style="padding-top: 4px;">
+                                    <b style="color: #eab308;">{idx+1}º</b> <span><b>{musica}</b> — <span style="color: #a1a1aa;">{cantor}</span></span>
                                 </div>
                             """, unsafe_allow_html=True)
                         
-                        with c_up:
-                            if idx > 0:
-                                if st.button("⬆️", key=f"subir_{pedido_id}_{idx}", help="Mover para cima"):
-                                    lista_pedidos[idx], lista_pedidos[idx-1] = lista_pedidos[idx-1], lista_pedidos[idx]
-                                    st.rerun()
-                        
-                        with c_down:
-                            if idx < total_pedidos - 1:
-                                if st.button("⬇️", key=f"descer_{pedido_id}_{idx}", help="Mover para baixo"):
-                                    lista_pedidos[idx], lista_pedidos[idx+1] = lista_pedidos[idx+1], lista_pedidos[idx]
+                        with col_botoes:
+                            # Sub-colunas estreitas para colocar os botões juntos e pequenos
+                            b_subir, b_descer, b_rem = st.columns(3)
+                            with b_subir:
+                                if idx > 0:
+                                    if st.button("⬆", key=f"up_{p_id}_{idx}", help="Subir"):
+                                        st.session_state.fila_local[idx], st.session_state.fila_local[idx-1] = st.session_state.fila_local[idx-1], st.session_state.fila_local[idx]
+                                        st.rerun()
+                            with b_descer:
+                                if idx < total_pedidos - 1:
+                                    if st.button("⬇", key=f"down_{p_id}_{idx}", help="Descer"):
+                                        st.session_state.fila_local[idx], st.session_state.fila_local[idx+1] = st.session_state.fila_local[idx+1], st.session_state.fila_local[idx]
+                                        st.rerun()
+                            with b_rem:
+                                if st.button("❌", key=f"del_{p_id}_{idx}", help="Remover"):
+                                    st.session_state.fila_local.pop(idx)
+                                    st.toast(f"Música removida da fila.")
                                     st.rerun()
 
-                        with c_del:
-                            if st.button("❌", key=f"remover_{pedido_id}_{idx}", help="Remover pedido"):
-                                st.toast(f"Removido: {musica}")
-                                st.rerun()
-
-                        # Linha divisória fina entre os itens da lista
+                        # Linha divisória fina entre os itens
                         if idx < total_pedidos - 1:
-                            st.markdown("<hr style='margin: 4px 0px; border: none; border-top: 1px solid #27272a;'>", unsafe_allow_html=True)
+                            st.markdown("<hr style='margin: 6px 0px; border: none; border-top: 1px solid #27272a;'>", unsafe_allow_html=True)
                 else:
                     st.markdown("<p style='color: #a1a1aa; margin: 0;'>Sem pedidos em espera.</p>", unsafe_allow_html=True)
 
