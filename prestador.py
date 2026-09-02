@@ -61,7 +61,7 @@ def render():
         """
             <style>
                 .block-container {
-                    padding-top: 0.5rem !important;
+                    padding-top: 1.5rem !important;
                     padding-bottom: 0.5rem !important;
                     padding-left: 1rem !important;
                     padding-right: 1rem !important;
@@ -122,8 +122,9 @@ def render():
           prestador_atual.get("nome", "") if prestador_atual else ""
       )
       st.markdown(
-          f"<div style='text-align: center;'><span style='color: #eab308;"
-          f" font-size: 20px; font-weight: 800; letter-spacing: 1px;'>PRESTADOR:"
+          f"<div style='text-align: center; padding-top: 2px;'><span"
+          f" style='color: #eab308; font-size: 16px; font-weight: 800;"
+          f" letter-spacing: 1px;'>PRESTADOR:"
           f" {nome_prestador.upper()}</span></div>",
           unsafe_allow_html=True,
       )
