@@ -61,7 +61,7 @@ def render():
         """
             <style>
                 .block-container {
-                    padding-top: 1.5rem !important;
+                    padding-top: 2.2rem !important;
                     padding-bottom: 0.5rem !important;
                     padding-left: 1rem !important;
                     padding-right: 1rem !important;
