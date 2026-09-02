@@ -31,7 +31,7 @@ def render():
       if status_atual == "aprovado":
         st.session_state.aprovado = True
 
-  # 1. SE ESTIVER APROVADO: Painel Operacional Compacto (Telemóvel)
+  # 1. SE ESTIVER APROVADO: Painel Operacional Compacto (Vertical para Telemóvel)
   if (
       st.session_state.get("aprovado", False)
       or st.session_state.get("estado_pedido") == "aprovado"
@@ -61,11 +61,11 @@ def render():
         """
             <style>
                 .block-container {
-                    padding-top: 1rem !important;
+                    padding-top: 0.8rem !important;
                     padding-bottom: 1rem !important;
-                    padding-left: 0.5rem !important;
-                    padding-right: 0.5rem !important;
-                    max-width: 100% !important;
+                    padding-left: 0.4rem !important;
+                    padding-right: 0.4rem !important;
+                    max-width: 480px !important;
                 }
                 .box-container {
                     background-color: #0c0c0e;
@@ -78,7 +78,7 @@ def render():
                 .box-title {
                     color: #eab308;
                     font-weight: bold;
-                    font-size: 13px;
+                    font-size: 12px;
                     margin-bottom: 6px;
                     display: flex;
                     justify-content: space-between;
@@ -86,10 +86,7 @@ def render():
                 }
                 .box-content {
                     color: #d4d4d8;
-                    font-size: 12px;
-                }
-                div[data-testid="column"] {
-                    padding: 0px !important;
+                    font-size: 11px;
                 }
                 .stButton button {
                     min-height: 24px !important;
@@ -102,30 +99,24 @@ def render():
         unsafe_allow_html=True,
     )
 
-    col_logo, col_top_info, col_top_btn = st.columns([1.5, 3.5, 1.5])
+    # Topo Compacto
+    col_logo, col_top_btn = st.columns([3, 1])
     with col_logo:
+      nome_prestador = (
+          prestador_atual.get("nome", "").upper() if prestador_atual else ""
+      )
       st.markdown(
-          """
-                <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
-                    <span style="font-size: 22px;">⭐</span>
+          f"""
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 18px;">⭐</span>
                     <div>
-                        <span style="color: #eab308; font-weight: bold; font-size: 13px; display: block; line-height: 1;">FF KARAOKE</span>
+                        <span style="color: #eab308; font-weight: bold; font-size: 11px; display: block; line-height: 1;">FF KARAOKE</span>
+                        <span style="color: #ffffff; font-size: 12px; font-weight: 800;">{nome_prestador}</span>
                     </div>
                 </div>
             """,
           unsafe_allow_html=True,
       )
-
-    with col_top_info:
-      nome_prestador = (
-          prestador_atual.get("nome", "") if prestador_atual else ""
-      )
-      st.markdown(
-          f"<div style='text-align: center;'><span style='color: #eab308;"
-          f" font-size: 14px; font-weight: 800;'>{nome_prestador.upper()}</span></div>",
-          unsafe_allow_html=True,
-      )
-
     with col_top_btn:
       if st.button("🚪 Sair", use_container_width=True):
         st.session_state.pedido_submetido = False
@@ -136,6 +127,7 @@ def render():
 
     st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
 
+    # A Tocar Agora
     @st.fragment(run_every=3)
     def renderizar_a_tocar():
       nonlocal prestador_atual
@@ -174,10 +166,10 @@ def render():
                 <div class="box-container">
                     <div class="box-title">
                         <span>▶ A TOCAR AGORA</span>
-                        <span style="color: #eab308; font-family: monospace; font-size: 13px;">⏳ {tempo_formatado}</span>
+                        <span style="color: #eab308; font-family: monospace; font-size: 12px;">⏳ {tempo_formatado}</span>
                     </div>
                     <div class="box-content">
-                        <p style="margin-bottom: 2px; font-size: 11px;">Sem reprodução ativa no momento.</p>
+                        <p style="margin: 0; font-size: 11px;">Nada em reprodução ativa.</p>
                     </div>
                 </div>
             """,
@@ -189,16 +181,17 @@ def render():
     b1, b2, b3 = st.columns(3)
     with b1:
       if st.button("▶ Tocar", use_container_width=True):
-        st.toast("A tocar o primeiro...")
+        st.toast("A tocar...")
     with b2:
       if st.button("⏸ Parar", use_container_width=True):
         st.toast("Parado.")
     with b3:
       if st.button("⏭ Próx.", use_container_width=True):
-        st.toast("Próxima música.")
+        st.toast("Próxima.")
 
     st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
 
+    # Fila de Pedidos
     @st.fragment(run_every=3)
     def renderizar_fila_pedidos():
       try:
@@ -221,7 +214,7 @@ def render():
           f"""
                 <div class="box-container">
                     <div class="box-title">
-                        <span>📄 FILA ({total_pedidos})</span>
+                        <span>📄 FILA DE PEDIDOS ({total_pedidos})</span>
                     </div>
                     <div class="box-content">
             """,
@@ -238,7 +231,7 @@ def render():
           with col_txt:
             st.markdown(
                 f"""
-                            <div style="font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2;">
+                            <div style="font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2;">
                                 <b style="color: #eab308;">{idx+1}º</b> {musica} — <span style="color: #a1a1aa;">{cantor}</span>
                             </div>
                         """,
@@ -277,7 +270,7 @@ def render():
       else:
         st.markdown(
             "<p style='color: #a1a1aa; margin: 0; font-size: 11px;'>Sem"
-            " pedidos na fila.</p>",
+            " pedidos.</p>",
             unsafe_allow_html=True,
         )
 
@@ -291,6 +284,7 @@ def render():
 
     renderizar_fila_pedidos()
 
+    # Bloco Links e QR Code
     st.markdown(
         f"""
             <div class="box-container">
@@ -302,7 +296,7 @@ def render():
                     <span style="color: #3b82f6;">TV:</span> {url_tela}
                 </div>
                 <div style="text-align: center; background: #ffffff; padding: 6px; border-radius: 4px;">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data={url_cliente}" width="120" />
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=110x110&data={url_cliente}" width="110" />
                 </div>
             </div>
         """,
@@ -314,7 +308,7 @@ def render():
       st.markdown(
           f'<a href="{url_tela}" target="_blank"><button style="width: 100%;'
           " background-color: #18181b; color: #ffffff; border: 1px solid"
-          " #eab308; padding: 6px; border-radius: 4px; cursor: pointer; font-size:"
+          " #eab308; padding: 5px; border-radius: 4px; font-size:"
           ' 11px;">🖥️ Abrir TV</button></a>',
           unsafe_allow_html=True,
       )
@@ -322,13 +316,14 @@ def render():
       st.markdown(
           f'<a href="{url_cliente}" target="_blank"><button style="width:'
           " 100%; background-color: #18181b; color: #ffffff; border: 1px solid"
-          " #eab308; padding: 6px; border-radius: 4px; cursor: pointer; font-size:"
+          " #eab308; padding: 5px; border-radius: 4px; font-size:"
           ' 11px;">📱 Cliente</button></a>',
           unsafe_allow_html=True,
       )
 
     st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
 
+    # Vídeo de Fundo
     videos_disponiveis = {
         "- Sem vídeo -": "",
         "Vídeo 1 (Oficial)": "https://youtu.be/cQ4MD7gOBmc?si=5wzaxysiHSEwn9QT",
@@ -366,12 +361,9 @@ def render():
   ):
     st.markdown(
         """
-            <div style="background-color: #0f0f11; border: 1px solid #ef4444; padding: 20px 10px; text-align: center; border-radius: 8px; margin-top: 10px;">
-                <div style="font-size: 32px; margin-bottom: 8px;">❌</div>
-                <h3 style="color: #ef4444; font-weight: bold; margin-bottom: 8px; font-size: 15px;">Pedido Recusado</h3>
-                <p style="color: #d4d4d8; font-size: 12px; margin-bottom: 12px;">
-                    O seu pedido de acesso foi recusado pelo Administrador.
-                </p>
+            <div style="background-color: #0f0f11; border: 1px solid #ef4444; padding: 15px; text-align: center; border-radius: 6px;">
+                <h3 style="color: #ef4444; font-size: 14px; margin-bottom: 6px;">Pedido Recusado</h3>
+                <p style="color: #d4d4d8; font-size: 11px;">O acesso foi recusado.</p>
             </div>
         """,
         unsafe_allow_html=True,
@@ -388,11 +380,9 @@ def render():
   if st.session_state.pedido_submetido:
     st.markdown(
         """
-            <div style="background-color: #0f0f11; padding: 20px 10px; text-align: center; border-radius: 8px; margin-top: 10px;">
-                <h3 style="color: #ffffff; font-weight: bold; margin-bottom: 8px; font-size: 15px;">Aguardando Aprovação</h3>
-                <p style="color: #d4d4d8; font-size: 12px; margin-bottom: 8px;">
-                    O seu registo está a aguardar validação do Administrador.
-                </p>
+            <div style="background-color: #0f0f11; padding: 15px; text-align: center; border-radius: 6px;">
+                <h3 style="color: #ffffff; font-size: 14px; margin-bottom: 6px;">Aguardando Aprovação</h3>
+                <p style="color: #d4d4d8; font-size: 11px;">Aguarde validação do Administrador.</p>
             </div>
         """,
         unsafe_allow_html=True,
@@ -404,11 +394,10 @@ def render():
   # 4. TELA INICIAL: REGISTO OU LOGIN
   st.markdown(
       """
-        <div style="background: #0f0f13; border: 1px solid #8b5cf6; border-radius: 8px; padding: 15px; max-width: 100%; margin: 0 auto;">
-            <div style="text-align: center; margin-bottom: 12px;">
-                <span style="font-size: 20px;">👤</span>
-                <div style="color: #eab308; font-size: 15px; font-weight: 800; margin-top: 4px;">ÁREA DO PRESTADOR</div>
-                <div style="color: #a1a1aa; font-size: 11px;">Registe-se ou entre na sua conta.</div>
+        <div style="background: #0f0f13; border: 1px solid #8b5cf6; border-radius: 8px; padding: 12px; max-width: 420px; margin: 0 auto;">
+            <div style="text-align: center; margin-bottom: 10px;">
+                <span style="font-size: 18px;">👤</span>
+                <div style="color: #eab308; font-size: 13px; font-weight: 800; margin-top: 2px;">ÁREA DO PRESTADOR</div>
             </div>
     """,
       unsafe_allow_html=True,
@@ -416,7 +405,7 @@ def render():
 
   modo_acesso = st.radio(
       "Modo:",
-      ["Novo Registo", "Entrar (Já registado)"],
+      ["Novo Registo", "Entrar"],
       horizontal=True,
       label_visibility="collapsed",
   )
@@ -424,10 +413,10 @@ def render():
   if modo_acesso == "Novo Registo":
     with st.form("form_registo_prestador_movel"):
       nome = st.text_input(
-          "Nome Completo", placeholder="Seu nome", label_visibility="collapsed"
+          "Nome", placeholder="Seu nome", label_visibility="collapsed"
       )
       telefone = st.text_input(
-          "Telemóvel",
+          "Telefone",
           placeholder="Seu telemóvel",
           label_visibility="collapsed",
       )
