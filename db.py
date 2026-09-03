@@ -1,6 +1,6 @@
 import json
 import os
-import streamlit as st
+import streamlit as datetime
 from datetime import datetime
 
 # Inicialização segura do Firebase
@@ -155,6 +155,38 @@ def guardar_pedidos_musicas(lista_pedidos):
             ref.set(dados_dict)
         except Exception as e:
             print(f"Erro ao atualizar pedidos no Firebase: {e}")
+
+def apagar_pedido_musica(pedido_id):
+    """Apaga um pedido de música específico pelo ID ou timestamp (Local e Firebase)."""
+    pedido_id_str = str(pedido_id)
+    
+    # 1. Remover do cache local
+    if os.path.exists(FICHEIRO_PEDIDOS_LOCAL):
+        try:
+            with open(FICHEIRO_PEDIDOS_LOCAL, "r", encoding="utf-8") as f:
+                lista_local = json.load(f)
+                if isinstance(lista_local, list):
+                    nova_lista = [
+                        p for p in lista_local 
+                        if str(p.get("id")) != pedido_id_str and str(p.get("timestamp")) != pedido_id_str
+                    ]
+                    with open(FICHEIRO_PEDIDOS_LOCAL, "w", encoding="utf-8") as f_out:
+                        json.dump(nova_lista, f_out, ensure_ascii=False, indent=4)
+        except Exception as e:
+            print(f"Erro ao apagar pedido local: {e}")
+
+    # 2. Remover do Firebase
+    if FIREBASE_ATIVO:
+        try:
+            ref = db.reference("pedidos")
+            dados = ref.get()
+            if isinstance(dados, dict):
+                for chave, valor in dados.items():
+                    if chave == pedido_id_str or str(valor.get("timestamp")) == pedido_id_str:
+                        db.reference(f"pedidos/{chave}").delete()
+                        break
+        except Exception as e:
+            print(f"Erro ao apagar pedido no Firebase: {e}")
 
 def obter_pedidos_musicas():
     """Combina os pedidos do Firebase e do armazenamento local ordenados rigorosamente por data/hora real"""
