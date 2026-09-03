@@ -416,61 +416,92 @@ def render():
 
         st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
-        # Rodapé com os 4 blocos devidamente estruturados
+        # 5. Rodapé estruturado com colunas nativas do Streamlit
         st.markdown(
             """
-            <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 14px 16px; margin-top: 10px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    
-                    <!-- Bloco 1 -->
-                    <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 220px;">
-                        <div style="width: 42px; height: 42px; border: 1px solid #c084fc; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <span style="color: #c084fc; font-size: 18px;">🚀</span>
-                        </div>
-                        <div>
-                            <div style="color: #c084fc; font-weight: bold; font-size: 11px; letter-spacing: 0.5px;">RÁPIDO E PRÁTICO</div>
-                            <div style="color: #a1a1aa; font-size: 11px; line-height: 1.2;">Controle a reprodução de forma rápida e fácil.</div>
-                        </div>
-                    </div>
-
-                    <!-- Bloco 2 -->
-                    <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 220px;">
-                        <div style="width: 42px; height: 42px; border: 1px solid #eab308; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 8px rgba(234, 179, 8, 0.2);">
-                            <span style="color: #eab308; font-size: 18px;">🛡️</span>
-                        </div>
-                        <div>
-                            <div style="color: #eab308; font-weight: bold; font-size: 11px; letter-spacing: 0.5px;">CONTROLE TOTAL</div>
-                            <div style="color: #a1a1aa; font-size: 11px; line-height: 1.2;">Gerencie a fila de pedidos e a exibição na TV.</div>
-                        </div>
-                    </div>
-
-                    <!-- Bloco 3 -->
-                    <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 220px;">
-                        <div style="width: 42px; height: 42px; border: 1px solid #c084fc; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <span style="color: #c084fc; font-size: 18px;">👥</span>
-                        </div>
-                        <div>
-                            <div style="color: #c084fc; font-weight: bold; font-size: 11px; letter-spacing: 0.5px;">CONECTADO</div>
-                            <div style="color: #a1a1aa; font-size: 11px; line-height: 1.2;">Links e QR Code para o acesso do cliente e da TV.</div>
-                        </div>
-                    </div>
-
-                    <!-- Bloco 4 -->
-                    <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 220px;">
-                        <div style="width: 42px; height: 42px; border: 1px solid #eab308; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 8px rgba(234, 179, 8, 0.2);">
-                            <span style="color: #eab308; font-size: 18px;">⭐</span>
-                        </div>
-                        <div>
-                            <div style="color: #eab308; font-weight: bold; font-size: 11px; letter-spacing: 0.5px;">FAZ A VOZ, FAZ A FESTA!</div>
-                            <div style="color: #a1a1aa; font-size: 11px; line-height: 1.2;">Obrigado por fazer parte do FF KARAOKE!</div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
+            <style>
+                .footer-box {
+                    background-color: #0c0c0e;
+                    border: 1px solid #27272a;
+                    border-radius: 8px;
+                    padding: 14px 16px;
+                    margin-top: 10px;
+                }
+            </style>
             """,
             unsafe_allow_html=True,
         )
+
+        with st.container():
+            st.markdown(
+                '<div class="footer-box">', unsafe_allow_html=True
+            )
+            f1, f2, f3, f4 = st.columns(4)
+
+            with f1:
+                st.markdown(
+                    """
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 38px; height: 38px; border: 1px solid #c084fc; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <span style="color: #c084fc; font-size: 16px;">🚀</span>
+                        </div>
+                        <div>
+                            <div style="color: #c084fc; font-weight: bold; font-size: 10px; letter-spacing: 0.5px;">RÁPIDO E PRÁTICO</div>
+                            <div style="color: #a1a1aa; font-size: 10px; line-height: 1.2;">Controle a reprodução fácil.</div>
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+            with f2:
+                st.markdown(
+                    """
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 38px; height: 38px; border: 1px solid #eab308; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 6px rgba(234, 179, 8, 0.2);">
+                            <span style="color: #eab308; font-size: 16px;">🛡️</span>
+                        </div>
+                        <div>
+                            <div style="color: #eab308; font-weight: bold; font-size: 10px; letter-spacing: 0.5px;">CONTROLE TOTAL</div>
+                            <div style="color: #a1a1aa; font-size: 10px; line-height: 1.2;">Gerencie a fila e a TV.</div>
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+            with f3:
+                st.markdown(
+                    """
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 38px; height: 38px; border: 1px solid #c084fc; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <span style="color: #c084fc; font-size: 16px;">👥</span>
+                        </div>
+                        <div>
+                            <div style="color: #c084fc; font-weight: bold; font-size: 10px; letter-spacing: 0.5px;">CONECTADO</div>
+                            <div style="color: #a1a1aa; font-size: 10px; line-height: 1.2;">Links e QR Code ativos.</div>
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+            with f4:
+                st.markdown(
+                    """
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 38px; height: 38px; border: 1px solid #eab308; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 6px rgba(234, 179, 8, 0.2);">
+                            <span style="color: #eab308; font-size: 16px;">⭐</span>
+                        </div>
+                        <div>
+                            <div style="color: #eab308; font-weight: bold; font-size: 10px; letter-spacing: 0.5px;">FAZ A VOZ!</div>
+                            <div style="color: #a1a1aa; font-size: 10px; line-height: 1.2;">Obrigado por fazer parte!</div>
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+            st.markdown("</div>", unsafe_allow_html=True)
 
         return
 
