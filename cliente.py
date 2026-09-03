@@ -280,7 +280,7 @@ def render():
             </div>
         """, unsafe_allow_html=True)
         
-        # 1. Obtém todos os pedidos da base de dados
+        # 1. Obtém todos os pedidos da base de dados filtrados pelo prestador/geral
         todos_pedidos = obter_pedidos_musicas()
         
         pendentes_geral = []
@@ -292,7 +292,7 @@ def render():
                 if token_prestador == "geral" or not t_ped or t_ped == "geral" or t_ped == token_prestador:
                     pendentes_geral.append(p)
         
-        # Identifica todos os pedidos deste cliente específico na fila
+        # Identifica todos os pedidos deste cliente específico na fila pendente
         pedidos_do_cliente = [
             p for p in pendentes_geral 
             if str(p.get("cantor", "")).strip().lower() == cantor.strip().lower()
@@ -303,16 +303,14 @@ def render():
         if tem_pedido_ativo:
             primeiro_pedido_cliente = pedidos_do_cliente[0]
             
-            # Calcula a posição real (1-based index)
+            # Descobre a posição real (1-based index) na fila geral de pendentes
             posicao_real = -1
-            c_alvo = str(primeiro_pedido_cliente.get("cantor", "")).strip().lower()
-            m_alvo = str(primeiro_pedido_cliente.get("musica", "")).strip().lower()
-            
             for idx, p in enumerate(pendentes_geral):
-                c_atual = str(p.get("cantor", "")).strip().lower()
-                m_atual = str(p.get("musica", "")).strip().lower()
-                
-                if c_atual == c_alvo and m_atual == m_alvo:
+                if p == primeiro_pedido_cliente or (
+                    str(p.get("cantor", "")).strip().lower() == str(primeiro_pedido_cliente.get("cantor", "")).strip().lower() and
+                    str(p.get("musica", "")).strip().lower() == str(primeiro_pedido_cliente.get("musica", "")).strip().lower() and
+                    str(p.get("timestamp", "")) == str(primeiro_pedido_cliente.get("timestamp", ""))
+                ):
                     posicao_real = idx + 1
                     break
             
