@@ -292,7 +292,7 @@ def render():
                 if token_prestador == "geral" or not t_ped or t_ped == "geral" or t_ped == token_prestador:
                     pendentes_geral.append(p)
         
-        # Identifica todos os pedidos deste cliente específico na fila pendente
+        # Identifica todos os pedidos deste cliente específico na fila pendente (comparação flexível por nome)
         pedidos_do_cliente = [
             p for p in pendentes_geral 
             if str(p.get("cantor", "")).strip().lower() == cantor.strip().lower()
@@ -301,19 +301,18 @@ def render():
         tem_pedido_ativo = len(pedidos_do_cliente) > 0
         
         if tem_pedido_ativo:
+            # Pega o primeiro pedido da lista do cliente
             primeiro_pedido_cliente = pedidos_do_cliente[0]
             
-            # Descobre a posição real (1-based index) na fila geral de pendentes
+            # Descobre a posição exata (1-based index) na fila geral de pendentes
             posicao_real = -1
             for idx, p in enumerate(pendentes_geral):
-                if p == primeiro_pedido_cliente or (
-                    str(p.get("cantor", "")).strip().lower() == str(primeiro_pedido_cliente.get("cantor", "")).strip().lower() and
-                    str(p.get("musica", "")).strip().lower() == str(primeiro_pedido_cliente.get("musica", "")).strip().lower() and
-                    str(p.get("timestamp", "")) == str(primeiro_pedido_cliente.get("timestamp", ""))
-                ):
+                if (str(p.get("cantor", "")).strip().lower() == str(primeiro_pedido_cliente.get("cantor", "")).strip().lower() and
+                    str(p.get("musica", "")).strip().lower() == str(primeiro_pedido_cliente.get("musica", "")).strip().lower()):
                     posicao_real = idx + 1
                     break
             
+            # Fallback seguro caso ocorra alguma divergência temporária de índices
             if posicao_real == -1:
                 posicao_real = 1
                 
