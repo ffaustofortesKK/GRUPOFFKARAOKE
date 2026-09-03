@@ -59,29 +59,35 @@ def render():
         st.markdown(
             """
             <style>
+                /* Fundo preto geral da página */
+                .stApp {
+                    background-color: #08080a !important;
+                }
                 .block-container {
-                    padding-top: 1.8rem !important;
-                    padding-bottom: 0.5rem !important;
+                    padding-top: 1.5rem !important;
+                    padding-bottom: 1rem !important;
                     padding-left: 1rem !important;
                     padding-right: 1rem !important;
                     max-width: 100% !important;
+                    background-color: #08080a !important;
                 }
                 .box-container {
                     background-color: #0c0c0e;
-                    border: 1px solid #eab308;
-                    border-radius: 6px;
-                    padding: 10px 14px;
-                    margin-bottom: 8px;
-                    box-shadow: 0 0 6px rgba(234, 179, 8, 0.1);
+                    border: 1px solid #27272a;
+                    border-radius: 8px;
+                    padding: 12px 16px;
+                    margin-bottom: 10px;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
                 }
                 .box-title {
                     color: #eab308;
                     font-weight: bold;
-                    font-size: 14px;
-                    margin-bottom: 6px;
+                    font-size: 13px;
+                    margin-bottom: 8px;
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
+                    letter-spacing: 0.5px;
                 }
                 .box-content {
                     color: #d4d4d8;
@@ -90,34 +96,46 @@ def render():
                 div[data-testid="column"] {
                     padding: 0px !important;
                 }
-                /* Estilo geral de botões padrão */
+                /* Estilo geral de botões padrão do Streamlit */
                 .stButton button {
-                    min-height: 28px !important;
-                    height: 30px !important;
-                    padding: 0px 6px !important;
-                    font-size: 13px !important;
+                    background-color: #121215 !important;
+                    color: #ffffff !important;
+                    border: 1px solid #27272a !important;
+                    border-radius: 6px !important;
+                    min-height: 32px !important;
+                    height: 36px !important;
+                    font-weight: 500;
                 }
-                /* Classe específica para reduzir os botões Tocar, Parar, Próxima */
+                .stButton button:hover {
+                    border-color: #eab308 !important;
+                    color: #eab308 !important;
+                }
+                /* Estilo personalizado para os botões de Ação Principal (Tocar, Parar, Próxima) */
                 .btn-acao button {
-                    min-height: 22px !important;
-                    height: 24px !important;
-                    font-size: 11px !important;
-                    padding: 0px 4px !important;
+                    background-color: #121215 !important;
+                    border: 1px solid #eab308 !important;
+                    color: #ffffff !important;
+                    border-radius: 8px !important;
+                    height: 42px !important;
+                    font-weight: 600 !important;
+                }
+                .btn-acao button:hover {
+                    background-color: #18181b !important;
                 }
             </style>
             """,
             unsafe_allow_html=True,
         )
 
-        col_logo, col_top_info, col_top_btn = st.columns([1.2, 4.3, 1.2])
+        col_logo, col_top_info, col_top_btn = st.columns([1.5, 4.5, 1])
         with col_logo:
             st.markdown(
                 """
-                <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
-                    <span style="font-size: 26px;">⭐</span>
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
+                    <span style="font-size: 28px;">⭐</span>
                     <div>
-                        <span style="color: #eab308; font-weight: bold; font-size: 15px; display: block; line-height: 1;">FF KARAOKE</span>
-                        <span style="color: #a1a1aa; font-size: 8px; letter-spacing: 0.5px;">FAZ A VOZ, FAZ A FESTA!</span>
+                        <span style="color: #eab308; font-weight: 900; font-size: 16px; display: block; line-height: 1.1; letter-spacing: 0.5px;">FF KARAOKE</span>
+                        <span style="color: #a1a1aa; font-size: 9px; letter-spacing: 1px;">FAZ A VOZ, FAZ A FESTA!</span>
                     </div>
                 </div>
                 """,
@@ -126,13 +144,15 @@ def render():
 
         with col_top_info:
             nome_prestador = (
-                prestador_atual.get("nome", "") if prestador_atual else ""
+                prestador_atual.get("nome", "").upper() if prestador_atual else ""
             )
             st.markdown(
-                f"<div style='text-align: center; padding-top: 4px;'><span"
-                f" style='color: #eab308; font-size: 19px; font-weight: 800;"
-                f" letter-spacing: 1px;'>PRESTADOR:"
-                f" {nome_prestador.upper()}</span></div>",
+                f"""
+                <div style='text-align: center; padding-top: 4px;'>
+                    <span style='color: #eab308; font-size: 20px; font-weight: 900; letter-spacing: 0.5px;'>PRESTADOR:</span>
+                    <span style='color: #ffffff; font-size: 20px; font-weight: 900; letter-spacing: 0.5px;'> {nome_prestador}</span>
+                </div>
+                """,
                 unsafe_allow_html=True,
             )
 
@@ -144,9 +164,17 @@ def render():
                 st.session_state.aprovado = False
                 st.rerun()
 
-        st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
+        st.markdown(
+            """
+            <div style="margin: 8px 0px 14px 0px; text-align: center;">
+                <hr style="border: none; border-top: 1px solid #eab308; opacity: 0.6; margin: 0;">
+                <span style="position: relative; top: -10px; background-color: #08080a; padding: 0 10px; color: #eab308; font-size: 14px;">⭐</span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
-        col_esq, col_dir = st.columns([1.3, 1])
+        col_esq, col_dir = st.columns([1.35, 1])
 
         with col_esq:
 
@@ -187,13 +215,24 @@ def render():
 
                 st.markdown(
                     f"""
-                        <div class="box-container">
-                            <div class="box-title">
-                                <span>▶ A TOCAR AGORA</span>
-                                <span style="color: #eab308; font-family: monospace; font-size: 14px;">⏳ {tempo_formatado}</span>
+                        <div class="box-container" style="border: 1px solid #27272a;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="width: 48px; height: 48px; border: 2px solid #eab308; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(234, 179, 8, 0.2);">
+                                        <span style="font-size: 20px; color: #eab308;">🎵</span>
+                                    </div>
+                                    <div>
+                                        <div style="color: #eab308; font-weight: bold; font-size: 12px; letter-spacing: 0.5px;">▶ A TOCAR AGORA</div>
+                                        <div style="color: #ffffff; font-size: 18px; font-weight: bold;">Nada em reprodução</div>
+                                        <div style="color: #a1a1aa; font-size: 11px;">(Apenas no ecrã de TV).</div>
+                                    </div>
+                                </div>
+                                <div style="background-color: #121215; border: 1px solid #27272a; padding: 6px 12px; border-radius: 6px; color: #eab308; font-family: monospace; font-size: 14px; font-weight: bold;">
+                                    ⏳ {tempo_formatado}
+                                </div>
                             </div>
-                            <div class="box-content">
-                                <p style="margin: 0 0 2px 0; font-weight: 500; font-size: 13px;">Nada em reprodução (Apenas no ecrã de TV).</p>
+                            <div style="text-align: right; opacity: 0.7; margin-top: 4px;">
+                                <span style="font-size: 11px; color: #eab308; letter-spacing: 2px;">▂▃▄▅▆▇█▇▆▅▄▃▂ ▂▃▄▅▆▇█</span>
                             </div>
                         </div>
                     """,
@@ -202,7 +241,7 @@ def render():
 
             renderizar_a_tocar()
 
-            # Botões de ação reduzidos com classe customizada
+            # Botões de Ação idênticos à imagem de referência
             st.markdown('<div class="btn-acao">', unsafe_allow_html=True)
             b1, b2, b3 = st.columns(3)
             with b1:
@@ -212,11 +251,13 @@ def render():
                 if st.button("⏸ Parar", use_container_width=True, key="btn_parar"):
                     st.toast("Parado.")
             with b3:
-                if st.button("⏭ Próxima", use_container_width=True, key="btn_proxima"):
+                if st.button(
+                    "⏭ Próxima", use_container_width=True, key="btn_proxima"
+                ):
                     st.toast("Próxima.")
-            st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
 
-            st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 
             @st.fragment(run_every=3)
             def renderizar_fila_pedidos():
@@ -238,11 +279,10 @@ def render():
 
                 st.markdown(
                     f"""
-                        <div class="box-container" style="max-height: 200px; overflow-y: auto;">
-                            <div class="box-title" style="margin-bottom: 4px;">
-                                <span>📄 FILA DE PEDIDOS ({total_pedidos})</span>
+                        <div class="box-container" style="max-height: 250px; overflow-y: auto;">
+                            <div class="box-title" style="color: #c084fc; margin-bottom: 10px;">
+                                <span>🎵 FILA DE PEDIDOS ({total_pedidos})</span>
                             </div>
-                            <div class="box-content">
                     """,
                     unsafe_allow_html=True,
                 )
@@ -252,18 +292,19 @@ def render():
                         musica = pedido.get("musica", "Desconhecida")
                         cantor = pedido.get("cantor", "Convidado")
 
-                        col_txt, col_botoes = st.columns([5, 3])
+                        st.markdown(
+                            f"""
+                            <div style="background-color: #121215; border: 1px solid #27272a; border-radius: 6px; padding: 8px 12px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="background-color: #27272a; color: #c084fc; font-weight: bold; font-size: 12px; padding: 2px 6px; border-radius: 4px;">{idx+1}º</span>
+                                    <span style="color: #ffffff; font-size: 13px;">{musica} — <span style="color: #a1a1aa;">{cantor}</span></span>
+                                </div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True,
+                        )
 
-                        with col_txt:
-                            st.markdown(
-                                f"""
-                                        <div style="font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3;">
-                                            <b style="color: #eab308;">{idx+1}º</b> {musica} — <span style="color: #a1a1aa;">{cantor}</span>
-                                        </div>
-                                    """,
-                                unsafe_allow_html=True,
-                            )
-
+                        col_spacer, col_botoes = st.columns([3, 2])
                         with col_botoes:
                             b_up, b_down, b_del = st.columns(3)
                             with b_up:
@@ -286,22 +327,15 @@ def render():
                                 if st.button("❌", key=f"del_{idx}"):
                                     lista_pedidos.pop(idx)
                                     st.rerun()
-
-                        if idx < total_pedidos - 1:
-                            st.markdown(
-                                "<hr style='margin: 3px 0px; border: none; border-top: 1px solid #27272a;'>",
-                                unsafe_allow_html=True,
-                            )
                 else:
                     st.markdown(
-                        "<p style='color: #a1a1aa; margin: 0; font-size: 12px;'>Sem pedidos.</p>",
+                        "<p style='color: #a1a1aa; margin: 0; font-size: 12px;'>Sem pedidos na fila.</p>",
                         unsafe_allow_html=True,
                     )
 
                 st.markdown(
                     """
                         </div>
-                    </div>
                     """,
                     unsafe_allow_html=True,
                 )
@@ -312,15 +346,15 @@ def render():
             st.markdown(
                 f"""
                     <div class="box-container">
-                        <div class="box-title" style="margin-bottom: 4px;">
+                        <div class="box-title">
                             <span>🔗 LINKS E QR CODE</span>
                         </div>
-                        <div class="box-content" style="font-size: 11px; word-break: break-all; margin-bottom: 6px;">
-                            <span style="color: #eab308;">Cli:</span> {url_cliente}<br>
+                        <div class="box-content" style="font-size: 11px; word-break: break-all; margin-bottom: 8px;">
+                            <span style="color: #eab308;">Cliente:</span> {url_cliente}<br>
                             <span style="color: #3b82f6;">TV:</span> {url_tela}
                         </div>
-                        <div style="text-align: center; background: #ffffff; padding: 4px; border-radius: 4px;">
-                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=105x105&data={url_cliente}" width="105" />
+                        <div style="text-align: center; background: #ffffff; padding: 6px; border-radius: 6px;">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data={url_cliente}" width="120" />
                         </div>
                     </div>
                 """,
@@ -330,22 +364,16 @@ def render():
             col_bt_tv, col_bt_cli = st.columns(2)
             with col_bt_tv:
                 st.markdown(
-                    f'<a href="{url_tela}" target="_blank"><button style="width: 100%;'
-                    " background-color: #18181b; color: #ffffff; border: 1px solid"
-                    " #eab308; padding: 4px; border-radius: 4px; font-size:"
-                    ' 12px;">🖥️ TV</button></a>',
+                    f'<a href="{url_tela}" target="_blank"><button style="width: 100%; background-color: #121215; color: #ffffff; border: 1px solid #27272a; padding: 6px; border-radius: 6px; font-size: 12px; font-weight: 500;">🖥️ TV</button></a>',
                     unsafe_allow_html=True,
                 )
             with col_bt_cli:
                 st.markdown(
-                    f'<a href="{url_cliente}" target="_blank"><button style="width:'
-                    " 100%; background-color: #18181b; color: #ffffff; border: 1px solid"
-                    " #eab308; padding: 4px; border-radius: 4px; font-size:"
-                    ' 12px;">📱 Cliente</button></a>',
+                    f'<a href="{url_cliente}" target="_blank"><button style="width: 100%; background-color: #121215; color: #ffffff; border: 1px solid #27272a; padding: 6px; border-radius: 6px; font-size: 12px; font-weight: 500;">📱 Cliente</button></a>',
                     unsafe_allow_html=True,
                 )
 
-            st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
 
             videos_disponiveis = {
                 "- Sem vídeo -": "",
@@ -356,8 +384,16 @@ def render():
                 "Vídeo 5": "https://youtu.be/TmayKMV0bJY?si=Zb99BwXuFyDDJ-tN",
             }
 
-            # Envolvido numa div para o botão assumir exatamente a largura correta da coluna da direita
-            st.markdown('<div style="max-width: 100%;">', unsafe_allow_html=True)
+            st.markdown(
+                """
+                <div class="box-container">
+                    <div class="box-title">
+                        <span>🎬 VÍDEO DE FUNDO DA TV</span>
+                    </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
             video_escolhido = st.selectbox(
                 "Vídeo de fundo:",
                 list(videos_disponiveis.keys()),
@@ -365,7 +401,12 @@ def render():
             )
             url_video_selecionado = videos_disponiveis[video_escolhido]
 
-            if st.button("▶ Atualizar Vídeo", use_container_width=True, type="primary", key="btn_atualizar_video"):
+            if st.button(
+                "▶ Atualizar Vídeo",
+                use_container_width=True,
+                type="primary",
+                key="btn_atualizar_video",
+            ):
                 if st.session_state.token_prestador:
                     prestadores = obter_prestadores()
                     for p in prestadores:
@@ -373,7 +414,67 @@ def render():
                             p["video_fundo"] = url_video_selecionado
                             guardar_prestador(p)
                     st.success("Guardado!")
-            st.markdown('</div>', unsafe_allow_html=True)
+
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+
+        # 5. Adicionar os 4 campos / blocos informativos no rodapé idênticos à imagem
+        st.markdown(
+            """
+            <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 14px 16px; margin-top: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    
+                    <!-- Bloco 1 -->
+                    <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 220px;">
+                        <div style="width: 42px; height: 42px; border: 1px solid #c084fc; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <span style="color: #c084fc; font-size: 18px;">🚀</span>
+                        </div>
+                        <div>
+                            <div style="color: #c084fc; font-weight: bold; font-size: 11px; letter-spacing: 0.5px;">RÁPIDO E PRÁTICO</div>
+                            <div style="color: #a1a1aa; font-size: 11px; line-height: 1.2;">Controle a reprodução de forma rápida e fácil.</div>
+                        </div>
+                    </div>
+
+                    <!-- Bloco 2 -->
+                    <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 220px;">
+                        <div style="width: 42px; height: 42px; border: 1px solid #eab308; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 8px rgba(234, 179, 8, 0.2);">
+                            <span style="color: #eab308; font-size: 18px;">🛡️</span>
+                        </div>
+                        <div>
+                            <div style="color: #eab308; font-weight: bold; font-size: 11px; letter-spacing: 0.5px;">CONTROLE TOTAL</div>
+                            <div style="color: #a1a1aa; font-size: 11px; line-height: 1.2;">Gerencie a fila de pedidos e a exibição na TV.</div>
+                        </div>
+                    </div>
+
+                    <!-- Bloco 3 -->
+                    <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 220px;">
+                        <div style="width: 42px; height: 42px; border: 1px solid #c084fc; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <span style="color: #c084fc; font-size: 18px;">👥</span>
+                        </div>
+                        <div>
+                            <div style="color: #c084fc; font-weight: bold; font-size: 11px; letter-spacing: 0.5px;">CONECTADO</div>
+                            <div style="color: #a1a1aa; font-size: 11px; line-height: 1.2;">Links e QR Code para o acesso do cliente e da TV.</div>
+                        </div>
+                    </div>
+
+                    <!-- Bloco 4 -->
+                    <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 220px;">
+                        <div style="width: 42px; height: 42px; border: 1px solid #eab308; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 8px rgba(234, 179, 8, 0.2);">
+                            <span style="color: #eab308; font-size: 18px;">⭐</span>
+                        </div>
+                        <div>
+                            <div style="color: #eab308; font-weight: bold; font-size: 11px; letter-spacing: 0.5px;">FAZ A VOZ, FAZ A FESTA!</div>
+                            <div style="color: #a1a1aa; font-size: 11px; line-height: 1.2;">Obrigado por fazer parte do FF KARAOKE!</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
         return
 
     # 2. SE ESTIVER RECUSADO
