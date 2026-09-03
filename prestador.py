@@ -289,11 +289,15 @@ def render():
 
                 total_pedidos = len(lista_pedidos)
 
+                # Caixa exterior unificada com o ícone e título tal como na 2ª imagem
                 st.markdown(
                     f"""
-                        <div class="box-container" style="max-height: 250px; overflow-y: auto;">
-                            <div class="box-title" style="color: #c084fc; margin-bottom: 10px;">
-                                <span>🎵 FILA DE PEDIDOS ({total_pedidos})</span>
+                        <div class="box-container" style="max-height: 350px; overflow-y: auto;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid #27272a; padding-bottom: 8px;">
+                                <div style="width: 32px; height: 32px; border: 1px solid #c084fc; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <span style="color: #c084fc; font-size: 14px;">👥</span>
+                                </div>
+                                <span style="color: #c084fc; font-weight: bold; font-size: 13px; letter-spacing: 0.5px;">FILA DE PEDIDOS ({total_pedidos})</span>
                             </div>
                     """,
                     unsafe_allow_html=True,
