@@ -307,26 +307,24 @@ def render():
                         musica = pedido.get("musica", "Desconhecida")
                         cantor = pedido.get("cantor", "Convidado")
 
-                        # Bloco unificado do item da fila com os botões internos
-                        st.markdown(
-                            f"""
-                            <div style="background-color: #121215; border: 1px solid #27272a; border-radius: 6px; padding: 6px 12px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <span style="background-color: #27272a; color: #c084fc; font-weight: bold; font-size: 12px; padding: 2px 6px; border-radius: 4px;">{idx+1}º</span>
-                                    <span style="color: #ffffff; font-size: 13px;">{musica} — <span style="color: #a1a1aa;">{cantor}</span></span>
-                                </div>
-                            </div>
-                            """,
-                            unsafe_allow_html=True,
-                        )
+                        col_info, col_botoes = st.columns([3, 1.2])
 
-                        # Colunas invisíveis posicionadas por cima para alinhar os botões do lado direito dentro da mesma linha visual
-                        col_vazia, col_botoes = st.columns([2.2, 1.2])
+                        with col_info:
+                            st.markdown(
+                                f"""
+                                <div style="background-color: #121215; border: 1px solid #27272a; border-radius: 6px; padding: 8px 12px; display: flex; align-items: center; gap: 10px; height: 40px; margin-bottom: 6px;">
+                                    <span style="background-color: #27272a; color: #c084fc; font-weight: bold; font-size: 12px; padding: 2px 6px; border-radius: 4px;">{idx+1}º</span>
+                                    <span style="color: #ffffff; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{musica} — <span style="color: #a1a1aa;">{cantor}</span></span>
+                                </div>
+                                """,
+                                unsafe_allow_html=True,
+                            )
+
                         with col_botoes:
                             b_up, b_down, b_del = st.columns(3)
                             with b_up:
                                 if idx > 0:
-                                    if st.button("⬆️", key=f"up_{idx}"):
+                                    if st.button("⬆️", key=f"up_{idx}", use_container_width=True):
                                         lista_pedidos[idx], lista_pedidos[idx - 1] = (
                                             lista_pedidos[idx - 1],
                                             lista_pedidos[idx],
@@ -334,14 +332,14 @@ def render():
                                         st.rerun()
                             with b_down:
                                 if idx < total_pedidos - 1:
-                                    if st.button("⬇️", key=f"down_{idx}"):
+                                    if st.button("⬇️", key=f"down_{idx}", use_container_width=True):
                                         lista_pedidos[idx], lista_pedidos[idx + 1] = (
                                             lista_pedidos[idx + 1],
                                             lista_pedidos[idx],
                                         )
                                         st.rerun()
                             with b_del:
-                                if st.button("❌", key=f"del_{idx}"):
+                                if st.button("❌", key=f"del_{idx}", use_container_width=True):
                                     lista_pedidos.pop(idx)
                                     st.rerun()
                 else:
