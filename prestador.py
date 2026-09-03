@@ -30,7 +30,7 @@ def render():
             if status_atual == "aprovado":
                 st.session_state.aprovado = True
 
-    # 1. SE ESTIVER APROVADO: Painel Operacional Compacto (Aumentado ~20% mantendo colunas fixas)
+    # 1. SE ESTIVER APROVADO: Painel Operacional Compacto
     if (
         st.session_state.get("aprovado", False)
         or st.session_state.get("estado_pedido") == "aprovado"
@@ -90,12 +90,19 @@ def render():
                 div[data-testid="column"] {
                     padding: 0px !important;
                 }
-                /* Aumento geral de texto e controlos em ~20% mantendo colunas intactas */
+                /* Estilo geral de botões padrão */
                 .stButton button {
                     min-height: 28px !important;
                     height: 30px !important;
                     padding: 0px 6px !important;
                     font-size: 13px !important;
+                }
+                /* Classe específica para reduzir os botões Tocar, Parar, Próxima */
+                .btn-acao button {
+                    min-height: 22px !important;
+                    height: 24px !important;
+                    font-size: 11px !important;
+                    padding: 0px 4px !important;
                 }
             </style>
             """,
@@ -195,16 +202,19 @@ def render():
 
             renderizar_a_tocar()
 
+            # Botões de ação reduzidos com classe customizada
+            st.markdown('<div class="btn-acao">', unsafe_allow_html=True)
             b1, b2, b3 = st.columns(3)
             with b1:
-                if st.button("▶ Tocar", use_container_width=True):
+                if st.button("▶ Tocar", use_container_width=True, key="btn_tocar"):
                     st.toast("A tocar o primeiro...")
             with b2:
-                if st.button("⏸ Parar", use_container_width=True):
+                if st.button("⏸ Parar", use_container_width=True, key="btn_parar"):
                     st.toast("Parado.")
             with b3:
-                if st.button("⏭ Próxima", use_container_width=True):
+                if st.button("⏭ Próxima", use_container_width=True, key="btn_proxima"):
                     st.toast("Próxima.")
+            st.markdown('</div>', unsafe_allow_html=True)
 
             st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
 
@@ -346,6 +356,7 @@ def render():
             "Vídeo 5": "https://youtu.be/TmayKMV0bJY?si=Zb99BwXuFyDDJ-tN",
         }
 
+        # Bloco de vídeo mais compacto na coluna direita
         video_escolhido = st.selectbox(
             "Vídeo de fundo:",
             list(videos_disponiveis.keys()),
@@ -353,7 +364,7 @@ def render():
         )
         url_video_selecionado = videos_disponiveis[video_escolhido]
 
-        if st.button("▶ Atualizar Vídeo", use_container_width=True, type="primary"):
+        if st.button("▶ Atualizar Vídeo", use_container_width=True, type="primary", key="btn_atualizar_video"):
             if st.session_state.token_prestador:
                 prestadores = obter_prestadores()
                 for p in prestadores:
