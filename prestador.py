@@ -125,7 +125,9 @@ def render():
             unsafe_allow_html=True,
         )
 
-        col_logo, col_top_info, col_top_btn = st.columns([1.5, 4.5, 1])
+        # Cabeçalho dividido em 4 colunas: Logo | Nome | Relógio Grande | Botão Sair
+        col_logo, col_top_info, col_relogio, col_top_btn = st.columns([1.5, 3.5, 1.8, 1])
+        
         with col_logo:
             st.markdown(
                 """
@@ -147,37 +149,16 @@ def render():
             st.markdown(
                 f"""
                 <div style='text-align: center; padding-top: 4px;'>
-                    <span style='color: #eab308; font-size: 20px; font-weight: 900; letter-spacing: 0.5px;'>PRESTADOR:</span>
-                    <span style='color: #ffffff; font-size: 20px; font-weight: 900; letter-spacing: 0.5px;'> {nome_prestador}</span>
+                    <span style='color: #eab308; font-size: 18px; font-weight: 900; letter-spacing: 0.5px;'>PRESTADOR:</span>
+                    <span style='color: #ffffff; font-size: 18px; font-weight: 900; letter-spacing: 0.5px;'> {nome_prestador}</span>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
 
-        with col_top_btn:
-            if st.button("🚪 Sair", use_container_width=True):
-                st.session_state.pedido_submetido = False
-                st.session_state.token_prestador = None
-                st.session_state.estado_pedido = "pendente"
-                st.session_state.aprovado = False
-                st.rerun()
-
-        st.markdown(
-            """
-            <div style="margin: 8px 0px 14px 0px; text-align: center;">
-                <hr style="border: none; border-top: 1px solid #eab308; opacity: 0.6; margin: 0;">
-                <span style="position: relative; top: -10px; background-color: #08080a; padding: 0 10px; color: #eab308; font-size: 14px;">⭐</span>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-        col_esq, col_dir = st.columns([1.35, 1])
-
-        with col_esq:
-
+        with col_relogio:
             @st.fragment(run_every=3)
-            def renderizar_a_tocar():
+            def renderizar_relogio_topo():
                 nonlocal prestador_atual
                 if st.session_state.token_prestador:
                     prestadores = obter_prestadores()
@@ -213,6 +194,43 @@ def render():
 
                 st.markdown(
                     f"""
+                    <div style="background-color: #121215; border: 2px solid #eab308; padding: 6px 10px; border-radius: 8px; text-align: center; box-shadow: 0 0 10px rgba(234, 179, 8, 0.3);">
+                        <div style="color: #eab308; font-size: 9px; font-weight: bold; letter-spacing: 1px; margin-bottom: 2px;">⏳ TEMPO RESTANTE</div>
+                        <div style="color: #ffffff; font-family: monospace; font-size: 22px; font-weight: 900; letter-spacing: 1px;">{tempo_formatado}</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+            renderizar_relogio_topo()
+
+        with col_top_btn:
+            st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
+            if st.button("🚪 Sair", use_container_width=True):
+                st.session_state.pedido_submetido = False
+                st.session_state.token_prestador = None
+                st.session_state.estado_pedido = "pendente"
+                st.session_state.aprovado = False
+                st.rerun()
+
+        st.markdown(
+            """
+            <div style="margin: 8px 0px 14px 0px; text-align: center;">
+                <hr style="border: none; border-top: 1px solid #eab308; opacity: 0.6; margin: 0;">
+                <span style="position: relative; top: -10px; background-color: #08080a; padding: 0 10px; color: #eab308; font-size: 14px;">⭐</span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        col_esq, col_dir = st.columns([1.35, 1])
+
+        with col_esq:
+
+            @st.fragment(run_every=3)
+            def renderizar_a_tocar():
+                st.markdown(
+                    """
                         <div class="box-container" style="border: 1px solid #27272a;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                 <div style="display: flex; align-items: center; gap: 12px;">
@@ -224,9 +242,6 @@ def render():
                                         <div style="color: #ffffff; font-size: 18px; font-weight: bold;">Nada em reprodução</div>
                                         <div style="color: #a1a1aa; font-size: 11px;">(Apenas no ecrã de TV).</div>
                                     </div>
-                                </div>
-                                <div style="background-color: #121215; border: 1px solid #27272a; padding: 6px 12px; border-radius: 6px; color: #eab308; font-family: monospace; font-size: 14px; font-weight: bold;">
-                                    ⏳ {tempo_formatado}
                                 </div>
                             </div>
                             <div style="text-align: right; opacity: 0.7; margin-top: 4px;">
@@ -416,7 +431,7 @@ def render():
 
         st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
-        # 5. Rodapé estruturado com colunas nativas do Streamlit
+        # Rodapé estruturado com colunas nativas do Streamlit
         st.markdown(
             """
             <style>
