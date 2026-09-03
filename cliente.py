@@ -1,5 +1,6 @@
 import streamlit as st
 from datetime import datetime
+import time
 from db import guardar_pedido_musica, obter_pedidos_musicas, obter_prestadores
 
 def render():
@@ -243,6 +244,9 @@ def render():
     
     if "cliente_nome" not in st.session_state:
         st.session_state["cliente_nome"] = ""
+        
+    if "meu_pedido_timestamp" not in st.session_state:
+        st.session_state["meu_pedido_timestamp"] = None
 
     # CABEÇALHO VISUAL DO TOPO
     st.markdown("""
@@ -272,7 +276,7 @@ def render():
     else:
         cantor = st.session_state["cliente_nome"]
         
-        # Bloco de Identificação do Cantor (Aumentado em 50% e sem o token)
+        # Bloco de Identificação do Cantor
         st.markdown(f"""
             <div class="ff-cantor-box">
                 <div class="ff-cantor-label">🎤 Cantor(a) em Sessão</div>
@@ -280,7 +284,7 @@ def render():
             </div>
         """, unsafe_allow_html=True)
         
-        # 1. Obtém todos os pedidos da base de dados filtrados pelo prestador/geral
+        # 1. Obtém todos os pedidos pendentes da base de dados filtrados pelo prestador/geral
         todos_pedidos = obter_pedidos_musicas()
         
         pendentes_geral = []
@@ -292,34 +296,41 @@ def render():
                 if token_prestador == "geral" or not t_ped or t_ped == "geral" or t_ped == token_prestador:
                     pendentes_geral.append(p)
         
-        # Identifica todos os pedidos deste cliente específico na fila pendente (comparação flexível por nome)
-        pedidos_do_cliente = [
-            p for p in pendentes_geral 
-            if str(p.get("cantor", "")).strip().lower() == cantor.strip().lower()
-        ]
+        # Procura o pedido ativo do cliente usando o timestamp guardado na sessão
+        ts_ativo = st.session_state.get("meu_pedido_timestamp")
+        pedido_ativo = None
         
-        tem_pedido_ativo = len(pedidos_do_cliente) > 0
+        if ts_ativo:
+            for p in pendentes_geral:
+                if str(p.get("timestamp", "")) == str(ts_ativo):
+                    pedido_ativo = p
+                    break
         
-        if tem_pedido_ativo:
-            # Pega o primeiro pedido da lista do cliente
-            primeiro_pedido_cliente = pedidos_do_cliente[0]
-            
+        # Se não encontrar pelo timestamp exato mas o cantor tiver algum pedido pendente na fila, vincula o primeiro encontrado
+        if not pedido_ativo:
+            pedidos_do_cantor = [
+                p for p in pendentes_geral 
+                if str(p.get("cantor", "")).strip().lower() == cantor.strip().lower()
+            ]
+            if pedidos_do_cantor:
+                pedido_ativo = pedidos_do_cantor[0]
+                st.session_state["meu_pedido_timestamp"] = pedido_ativo.get("timestamp")
+
+        if pedido_ativo:
             # Descobre a posição exata (1-based index) na fila geral de pendentes
             posicao_real = -1
             for idx, p in enumerate(pendentes_geral):
-                if (str(p.get("cantor", "")).strip().lower() == str(primeiro_pedido_cliente.get("cantor", "")).strip().lower() and
-                    str(p.get("musica", "")).strip().lower() == str(primeiro_pedido_cliente.get("musica", "")).strip().lower()):
+                if str(p.get("timestamp", "")) == str(pedido_ativo.get("timestamp", "")):
                     posicao_real = idx + 1
                     break
             
-            # Fallback seguro caso ocorra alguma divergência temporária de índices
             if posicao_real == -1:
                 posicao_real = 1
                 
             musicas_acima = posicao_real - 1 if posicao_real > 0 else 0
+            musica_nome_atv = pedido_ativo.get('musica', '')
             
             # Bloco Visual 1: Posição do Pedido Atual
-            musica_nome_atv = primeiro_pedido_cliente.get('musica', '')
             st.markdown(f"""
                 <div class="ff-card-status">
                     <div class="ff-card-left">
@@ -369,28 +380,18 @@ def render():
                     </div>
                 """, unsafe_allow_html=True)
                 
-            st.markdown('<div class="ff-action-box">', unsafe_allow_html=True)
-            st.markdown("##### 🎤 PEDIR NOVA MÚSICA")
-            with st.form("form_cliente_novo", clear_on_submit=True):
-                musica_novo = st.text_input("Música ou Artista:", placeholder="Ex: Landrick, Matias Damásio...")
-                submitted_novo = st.form_submit_button("Enviar Novo Pedido")
-                
-                if submitted_novo:
-                    if musica_novo.strip():
-                        dados_novo_pedido = {
-                            "cantor": cantor,
-                            "musica": musica_novo.strip(),
-                            "token_prestador": token_prestador,
-                            "status": "pendente",
-                            "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-                        }
-                        guardar_pedido_musica(dados_novo_pedido)
-                        st.success("Pedido enviado com sucesso!")
-                        st.rerun()
-                    else:
-                        st.error("Por favor, preencha o nome da música.")
-            st.markdown('</div>', unsafe_allow_html=True)
+            st.info("🔄 A atualizar automaticamente a sua posição na fila...")
+            
+            # Atualização automática da tela a cada 5 segundos para refletir a saída de músicas
+            time.sleep(5)
+            st.rerun()
+            
         else:
+            # Se não tem pedido ativo ou o anterior já foi concluído/removido
+            if st.session_state["meu_pedido_timestamp"] is not None:
+                st.success("🎉 O seu pedido anterior já foi interpretado ou retirado da fila!")
+                st.session_state["meu_pedido_timestamp"] = None
+                
             total_fila_geral = len(pendentes_geral)
             st.info(f"ℹ️ Existem **{total_fila_geral} músicas** na fila de espera global.")
             
@@ -402,15 +403,17 @@ def render():
                 
                 if submitted_inicial:
                     if musica_inicial.strip():
+                        novo_ts = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                         dados_novo_pedido = {
                             "cantor": cantor,
                             "musica": musica_inicial.strip(),
                             "token_prestador": token_prestador,
                             "status": "pendente",
-                            "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                            "timestamp": novo_ts
                         }
                         guardar_pedido_musica(dados_novo_pedido)
-                        st.success("Pedido adicionado à fila!")
+                        st.session_state["meu_pedido_timestamp"] = novo_ts
+                        st.success("Pedido adicionado à fila com sucesso!")
                         st.rerun()
                     else:
                         st.error("Por favor, preencha o nome da música ou artista.")
@@ -441,9 +444,8 @@ def render():
         st.write("")
         if st.button("🔄 Alterar Nome / Sair"):
             st.session_state["cliente_nome"] = ""
+            st.session_state["meu_pedido_timestamp"] = None
             for key in list(st.session_state.keys()):
-                if key.startswith("form_") or key == "cliente_nome":
-                    if key != "cliente_nome":
-                        del st.session_state[key]
-            st.session_state["cliente_nome"] = ""
+                if key.startswith("form_") or key in ["cliente_nome", "meu_pedido_timestamp"]:
+                    pass
             st.rerun()
