@@ -57,6 +57,30 @@ def render():
             font-weight: 600;
         }
         
+        /* Caixa de Identificação do Cantor Ampliada em 50% */
+        .ff-cantor-box {
+            background: linear-gradient(135deg, #151026, #1e133a);
+            border: 1px solid rgba(138, 43, 226, 0.4);
+            border-radius: 14px;
+            padding: 18px 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+        .ff-cantor-label {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #b19cd9;
+            margin-bottom: 4px;
+        }
+        .ff-cantor-name {
+            font-size: 24px;
+            font-weight: 800;
+            color: #ffffff;
+            text-shadow: 0 2px 10px rgba(157, 78, 221, 0.5);
+        }
+        
         /* Blocos de Notificação Estilizados */
         .ff-card-status {
             background-color: #151026;
@@ -248,7 +272,13 @@ def render():
     else:
         cantor = st.session_state["cliente_nome"]
         
-        st.caption(f"Sessão vinculada: `{token_prestador}` | Cantor: **{cantor}**")
+        # Bloco de Identificação do Cantor (Aumentado em 50% e sem o token)
+        st.markdown(f"""
+            <div class="ff-cantor-box">
+                <div class="ff-cantor-label">🎤 Cantor(a) em Sessão</div>
+                <div class="ff-cantor-name">{cantor}</div>
+            </div>
+        """, unsafe_allow_html=True)
         
         # 1. Obtém todos os pedidos da base de dados
         todos_pedidos = obter_pedidos_musicas()
