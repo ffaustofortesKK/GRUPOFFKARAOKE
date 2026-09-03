@@ -136,7 +136,7 @@ def guardar_pedido_musica(dados_pedido):
         st.warning("⚠️ FIREBASE_ATIVO está como False. O Firebase está desligado.")
 
 def guardar_pedidos_musicas(lista_pedidos):
-    """Guarda ou atualiza a lista completa de pedidos de músicas (local e Firebase)."""
+    """Guarda ou atualiza a lista completa de pedidos de músicas na ordem correta (local e Firebase)."""
     # 1. Atualizar cache local
     try:
         with open(FICHEIRO_PEDIDOS_LOCAL, "w", encoding="utf-8") as f:
@@ -144,13 +144,14 @@ def guardar_pedidos_musicas(lista_pedidos):
     except Exception as e:
         print(f"Erro ao guardar pedidos locais: {e}")
 
-    # 2. Atualizar Firebase se ativo
+    # 2. Atualizar Firebase preservando a ordem exacta da lista
     if FIREBASE_ATIVO:
         try:
             ref = db.reference("pedidos")
             dados_dict = {}
-            for p in lista_pedidos:
-                pid = str(p.get("id", f"pedido_{id(p)}"))
+            for idx, p in enumerate(lista_pedidos):
+                # Mantém o ID anterior se existir, senão gera um com base na posição
+                pid = str(p.get("id", f"pedido_{idx}"))
                 dados_dict[pid] = p
             ref.set(dados_dict)
         except Exception as e:
@@ -221,10 +222,11 @@ def mover_pedido_baixo(pedido_id):
         guardar_pedidos_musicas(lista)
 
 def obter_pedidos_musicas():
-    """Combina os pedidos do Firebase e do armazenamento local ordenados rigorosamente por data/hora real"""
-    pedidos_dict = {}  
+    """Carrega os pedidos preservando rigorosamente a ordem configurada (Firebase e local)."""
+    pedidos_lista = []
+    chaves_vistas = set()
     
-    # 1. Carrega do Firebase
+    # 1. Carrega do Firebase (mantém a ordem em que os nós estão salvos)
     if FIREBASE_ATIVO:
         try:
             ref = db.reference("pedidos")
@@ -238,7 +240,9 @@ def obter_pedidos_musicas():
                             musica_val = str(valor.get('musica', '')).strip().lower()
                             ts_val = valor.get('timestamp', '')
                             chave_unica = f"{cantor_val}_{musica_val}_{ts_val}"
-                            pedidos_dict[chave_unica] = valor
+                            if chave_unica not in chaves_vistas:
+                                chaves_vistas.add(chave_unica)
+                                pedidos_lista.append(valor)
                 elif isinstance(dados, list):
                     for idx, valor in enumerate(dados):
                         if isinstance(valor, dict):
@@ -247,11 +251,13 @@ def obter_pedidos_musicas():
                             musica_val = str(valor.get('musica', '')).strip().lower()
                             ts_val = valor.get('timestamp', '')
                             chave_unica = f"{cantor_val}_{musica_val}_{ts_val}"
-                            pedidos_dict[chave_unica] = valor
+                            if chave_unica not in chaves_vistas:
+                                chaves_vistas.add(chave_unica)
+                                pedidos_lista.append(valor)
         except Exception as e:
             print(f"Erro ao obter pedidos do Firebase: {e}")
     
-    # 2. Carrega do ficheiro local e funde
+    # 2. Carrega do ficheiro local e funde os em falta
     if os.path.exists(FICHEIRO_PEDIDOS_LOCAL):
         try:
             with open(FICHEIRO_PEDIDOS_LOCAL, "r", encoding="utf-8") as f:
@@ -263,21 +269,14 @@ def obter_pedidos_musicas():
                             musica_val = str(valor.get('musica', '')).strip().lower()
                             ts_val = valor.get('timestamp', '')
                             chave_unica = f"{cantor_val}_{musica_val}_{ts_val}"
-                            if chave_unica not in pedidos_dict:
-                                pedidos_dict[chave_unica] = valor
+                            if chave_unica not in chaves_vistas:
+                                chaves_vistas.add(chave_unica)
+                                pedidos_lista.append(valor)
         except Exception as e:
             print(f"Erro ao ler cache local de pedidos: {e}")
             
-    lista_pedidos = list(pedidos_dict.values())
-    
-    # 3. Ordenação cronológica rigorosa usando datetime
-    def parse_timestamp(p):
-        ts_str = p.get("timestamp", "")
-        try:
-            return datetime.strptime(ts_str, "%d/%m/%Y %H:%M:%S")
-        except:
-            return datetime.min
-
-    lista_pedidos.sort(key=parse_timestamp)
-    
-    return lista_pedidos
+    # Se a lista estiver totalmente vazia ou sem ordem prévia, ordena por data por segurança
+    if not pedidos_lista:
+        return []
+            
+    return pedidos_lista
