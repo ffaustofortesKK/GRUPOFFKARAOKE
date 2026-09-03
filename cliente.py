@@ -3,27 +3,43 @@ from datetime import datetime
 from db import guardar_pedido_musica, obter_pedidos_musicas, obter_prestadores
 
 def render():
-    # Estilização CSS Global Inspirada no FF Karaoke (Tema Escuro / Roxo Premium)
+    # Estilização CSS Global Inspirada no FF Karaoke (Layout de Tablet / Mobile Centralizado)
     st.markdown("""
         <style>
         .stApp {
-            background-color: #0b0714;
+            background-color: #06040b;
             color: #ffffff;
         }
+        
+        /* Simulação de Moldura de Tablet / Tela Reduzida e Centralizada */
+        .block-container {
+            max-width: 480px !important;
+            padding-top: 2rem !important;
+            padding-bottom: 2rem !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+            background-color: #0b0714;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(138, 43, 226, 0.25);
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+
         /* Topo / Header Banner */
         .ff-header {
             background: linear-gradient(135deg, #1a1333 0%, #0b0714 100%);
             border: 1px solid rgba(138, 43, 226, 0.3);
-            padding: 15px 25px;
+            padding: 12px 20px;
             border-radius: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
         }
         .ff-logo-title {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 800;
             color: #ffffff;
             letter-spacing: 1px;
@@ -35,9 +51,9 @@ def render():
             background-color: rgba(46, 204, 113, 0.15);
             color: #2ecc71;
             border: 1px solid rgba(46, 204, 113, 0.4);
-            padding: 4px 12px;
+            padding: 3px 10px;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
         }
         
@@ -46,7 +62,7 @@ def render():
             background-color: #151026;
             border: 1px solid rgba(138, 43, 226, 0.25);
             border-radius: 12px;
-            padding: 20px;
+            padding: 15px;
             margin-bottom: 15px;
             display: flex;
             justify-content: space-between;
@@ -56,37 +72,38 @@ def render():
         .ff-card-left {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
         }
         .ff-icon-box {
             background: linear-gradient(135deg, #7b2cbf, #9d4edd);
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 18px;
             color: white;
             box-shadow: 0 0 10px rgba(123, 44, 191, 0.5);
+            flex-shrink: 0;
         }
         .ff-card-text h4 {
             margin: 0;
-            font-size: 16px;
+            font-size: 15px;
             color: #ffffff;
             font-weight: 600;
         }
         .ff-card-text p {
             margin: 4px 0 0 0;
-            font-size: 13px;
+            font-size: 12px;
             color: #b19cd9;
         }
         .ff-badge-circle {
             border: 2px solid #9d4edd;
             color: #ffffff;
             background: rgba(157, 78, 221, 0.1);
-            min-width: 65px;
-            height: 65px;
+            min-width: 55px;
+            height: 55px;
             border-radius: 50%;
             display: flex;
             flex-direction: column;
@@ -94,15 +111,16 @@ def render():
             justify-content: center;
             text-align: center;
             box-shadow: 0 0 12px rgba(157, 78, 221, 0.3);
+            flex-shrink: 0;
         }
         .ff-badge-circle .number {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 800;
             line-height: 1;
             color: #ffffff;
         }
         .ff-badge-circle .label {
-            font-size: 9px;
+            font-size: 8px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: #b19cd9;
@@ -114,57 +132,73 @@ def render():
             background-color: #120e21;
             border: 1px solid rgba(138, 43, 226, 0.3);
             border-radius: 12px;
-            padding: 25px;
-            margin-top: 20px;
+            padding: 20px;
+            margin-top: 15px;
         }
 
         /* Secção Como Funciona */
         .ff-how-it-works-title {
             text-align: center;
             color: #b19cd9;
-            font-size: 13px;
+            font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 1.5px;
-            margin: 35px 0 15px 0;
+            margin: 25px 0 12px 0;
             font-weight: 600;
         }
         .ff-steps-container {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             justify-content: space-between;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         .ff-step-card {
             background-color: #120e21;
             border: 1px solid rgba(138, 43, 226, 0.2);
             border-radius: 10px;
-            padding: 15px;
+            padding: 12px;
             flex: 1;
             text-align: left;
         }
         .ff-step-number {
             background: #7b2cbf;
             color: white;
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
         .ff-step-card h5 {
-            margin: 0 0 4px 0;
-            font-size: 14px;
+            margin: 0 0 3px 0;
+            font-size: 13px;
             color: #ffffff;
         }
         .ff-step-card p {
             margin: 0;
-            font-size: 11px;
+            font-size: 10px;
             color: #9a8c98;
-            line-height: 1.4;
+            line-height: 1.3;
+        }
+        
+        /* Ajustes visuais para botões e inputs estilo touch */
+        div.stButton > button {
+            width: 100%;
+            border-radius: 8px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #7b2cbf, #5a189a);
+            color: white;
+            border: none;
+            padding: 10px;
+        }
+        div.stButton > button:hover {
+            background: linear-gradient(135deg, #9d4edd, #7b2cbf);
+            border: none;
+            color: white;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -189,7 +223,7 @@ def render():
     # CABEÇALHO VISUAL DO TOPO
     st.markdown("""
         <div class="ff-header">
-            <div class="ff-logo-title">🎵 FF KARAOKE <span style="font-size:11px; font-weight:400; color:#b19cd9; display:block;">FAZ A VOZ, FAZ A FESTA!</span></div>
+            <div class="ff-logo-title">🎵 FF KARAOKE <span style="font-size:10px; font-weight:400; color:#b19cd9; display:block;">FAZ A VOZ, FAZ A FESTA!</span></div>
             <div><span class="ff-badge-online">● Online</span></div>
         </div>
     """, unsafe_allow_html=True)
@@ -214,7 +248,7 @@ def render():
     else:
         cantor = st.session_state["cliente_nome"]
         
-        st.caption(f"Sessão vinculada ao Prestador / Sessão: `{token_prestador}`")
+        st.caption(f"Sessão vinculada: `{token_prestador}` | Cantor: **{cantor}**")
         
         # 1. Obtém todos os pedidos da base de dados
         todos_pedidos = obter_pedidos_musicas()
@@ -264,8 +298,8 @@ def render():
                     <div class="ff-card-left">
                         <div class="ff-icon-box">🎵</div>
                         <div class="ff-card-text">
-                            <h4>O seu pedido ({musica_nome_atv}) está registado!</h4>
-                            <p>Encontra-se atualmente na <b>posição {posicao_real}</b> da fila.</p>
+                            <h4>Pedido registado!</h4>
+                            <p><b>{musica_nome_atv}</b><br>Posição atual: <b>#{posicao_real}</b></p>
                         </div>
                     </div>
                     <div class="ff-badge-circle">
@@ -281,8 +315,8 @@ def render():
                         <div class="ff-card-left">
                             <div class="ff-icon-box" style="background: linear-gradient(135deg, #c0392b, #e74c3c);">⏳</div>
                             <div class="ff-card-text">
-                                <h4>Aguarde a sua vez!</h4>
-                                <p>Ainda tem {musicas_acima} músicas à sua frente. Poderá pedir nova música quando restarem 4 ou menos.</p>
+                               <h4>Aguarde a sua vez</h4>
+                                <p>Ainda tem <b>{musicas_acima}</b> músicas à frente.</p>
                             </div>
                         </div>
                         <div class="ff-badge-circle" style="border-color: #e74c3c;">
@@ -297,8 +331,8 @@ def render():
                         <div class="ff-card-left">
                             <div class="ff-icon-box" style="background: linear-gradient(135deg, #27ae60, #2ecc71);">🔔</div>
                             <div class="ff-card-text">
-                                <h4>Pode enviar um novo pedido!</h4>
-                                <p>Faltam apenas {musicas_acima} músicas para a sua vez.</p>
+                                <h4>Quase a sua vez!</h4>
+                                <p>Faltam apenas <b>{musicas_acima}</b> músicas.</p>
                             </div>
                         </div>
                         <div class="ff-badge-circle" style="border-color: #2ecc71;">
@@ -309,9 +343,9 @@ def render():
                 """, unsafe_allow_html=True)
                 
                 st.markdown('<div class="ff-action-box">', unsafe_allow_html=True)
-                st.markdown("##### 🎤 PEÇA A SUA PRÓXIMA MÚSICA")
+                st.markdown("##### 🎤 PEDIR NOVA MÚSICA")
                 with st.form("form_cliente_novo", clear_on_submit=True):
-                    musica_novo = st.text_input("Digite o nome da próxima música ou artista:", placeholder="Ex: Landrick, Nani, Matias Damásio...")
+                    musica_novo = st.text_input("Música ou Artista:", placeholder="Ex: Landrick, Matias Damásio...")
                     submitted_novo = st.form_submit_button("Enviar Novo Pedido")
                     
                     if submitted_novo:
@@ -331,12 +365,12 @@ def render():
                 st.markdown('</div>', unsafe_allow_html=True)
         else:
             total_fila_geral = len(pendentes_geral)
-            st.info(f"ℹ️ Atualmente existem **{total_fila_geral} músicas** na fila de espera global.")
+            st.info(f"ℹ️ Existem **{total_fila_geral} músicas** na fila de espera global.")
             
             st.markdown('<div class="ff-action-box">', unsafe_allow_html=True)
-            st.markdown("##### 🔍 PESQUISAR / PEDIR MÚSICA")
+            st.markdown("##### 🔍 PEDIR MÚSICA")
             with st.form("form_cliente", clear_on_submit=True):
-                musica_inicial = st.text_input("Digite o nome da música ou artista:", placeholder="Ex: Kendrick Lamar, Bruno Mars, Matias Damásio...")
+                musica_inicial = st.text_input("Nome da música ou artista:", placeholder="Ex: Bruno Mars, Matias Damásio...")
                 submitted_inicial = st.form_submit_button("Pedir Música")
                 
                 if submitted_inicial:
@@ -362,23 +396,23 @@ def render():
                 <div class="ff-step-card">
                     <div class="ff-step-number">1</div>
                     <h5>Escolha</h5>
-                    <p>Digite o nome da música ou do artista.</p>
+                    <p>Digite o nome da música.</p>
                 </div>
                 <div class="ff-step-card">
                     <div class="ff-step-number">2</div>
                     <h5>Aguarde</h5>
-                    <p>Acompanhe a sua posição na fila em tempo real.</p>
+                    <p>Acompanhe a sua posição.</p>
                 </div>
                 <div class="ff-step-card">
                     <div class="ff-step-number">3</div>
                     <h5>Cante</h5>
-                    <p>Quando chegar a sua vez, é só dar o show!</p>
+                    <p>Dê o seu show na hora!</p>
                 </div>
             </div>
         """, unsafe_allow_html=True)
         
         st.write("")
-        if st.button("🔄 Alterar Nome"):
+        if st.button("🔄 Alterar Nome / Sair"):
             st.session_state["cliente_nome"] = ""
             for key in list(st.session_state.keys()):
                 if key.startswith("form_") or key == "cliente_nome":
