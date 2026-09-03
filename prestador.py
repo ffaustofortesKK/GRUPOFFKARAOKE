@@ -1,7 +1,7 @@
 from datetime import datetime
 import time
 import streamlit as st
-from db import guardar_prestador, obter_pedidos_musicas, obter_prestadores
+from db import guardar_prestador, obter_pedidos_musicas, obter_prestadores, guardar_pedido_musica, apagar_pedido_musica
 
 def render():
     if "pedido_submetido" not in st.session_state:
@@ -306,6 +306,7 @@ def render():
                     for idx, pedido in enumerate(lista_pedidos):
                         musica = pedido.get("musica", "Desconhecida")
                         cantor = pedido.get("cantor", "Convidado")
+                        pedido_id = pedido.get("id") or pedido.get("timestamp") or idx
 
                         col_info, col_botoes = st.columns([3, 1.2])
 
@@ -324,23 +325,27 @@ def render():
                             b_up, b_down, b_del = st.columns(3)
                             with b_up:
                                 if idx > 0:
-                                    if st.button("⬆️", key=f"up_{idx}", use_container_width=True):
-                                        lista_pedidos[idx], lista_pedidos[idx - 1] = (
-                                            lista_pedidos[idx - 1],
-                                            lista_pedidos[idx],
-                                        )
+                                    if st.button("⬆️", key=f"up_{pedido_id}", use_container_width=True):
+                                        # Trocar a ordem com o item anterior na lista global e guardar
+                                        global_idx_atual = next((i for i, item in enumerate(todos_pedidos) if (item.get("id") or item.get("timestamp") or i) == pedido_id), None)
+                                        if global_idx_atual is not None and global_idx_atual > 0:
+                                            # Encontrar o índice global do anterior válido visível
+                                            todos_pedidos[global_idx_atual], todos_pedidos[global_idx_atual - 1] = todos_pedidos[global_idx_atual - 1], todos_pedidos[global_idx_atual]
+                                            for item in todos_pedidos:
+                                                guardar_pedido_musica(item)
                                         st.rerun()
                             with b_down:
                                 if idx < total_pedidos - 1:
-                                    if st.button("⬇️", key=f"down_{idx}", use_container_width=True):
-                                        lista_pedidos[idx], lista_pedidos[idx + 1] = (
-                                            lista_pedidos[idx + 1],
-                                            lista_pedidos[idx],
-                                        )
+                                    if st.button("⬇️", key=f"down_{pedido_id}", use_container_width=True):
+                                        global_idx_atual = next((i for i, item in enumerate(todos_pedidos) if (item.get("id") or item.get("timestamp") or i) == pedido_id), None)
+                                        if global_idx_atual is not None and global_idx_atual < len(todos_pedidos) - 1:
+                                            todos_pedidos[global_idx_atual], todos_pedidos[global_idx_atual + 1] = todos_pedidos[global_idx_atual + 1], todos_pedidos[global_idx_atual]
+                                            for item in todos_pedidos:
+                                                guardar_pedido_musica(item)
                                         st.rerun()
                             with b_del:
-                                if st.button("❌", key=f"del_{idx}", use_container_width=True):
-                                    lista_pedidos.pop(idx)
+                                if st.button("❌", key=f"del_{pedido_id}", use_container_width=True):
+                                    apagar_pedido_musica(pedido_id)
                                     st.rerun()
                 else:
                     st.markdown(
