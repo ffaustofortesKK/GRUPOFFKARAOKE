@@ -1,6 +1,6 @@
 import json
 import os
-import streamlit as datetime
+import streamlit as st
 from datetime import datetime
 
 # Inicialização segura do Firebase
