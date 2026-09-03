@@ -96,9 +96,9 @@ def remover_prestador(token):
     _guardar_dados(prestadores)
 
 def guardar_pedido_musica(dados_pedido):
-    """Guarda o pedido de música com inserção correta no topo (local e Firebase)"""
+    """Guarda o pedido de música adicionando-o ao FIM da fila (local e Firebase)"""
     
-    # 1. Carregar cache local atual e inserir no topo
+    # 1. Carregar cache local atual e adicionar no fim (append)
     lista_local = []
     if os.path.exists(FICHEIRO_PEDIDOS_LOCAL):
         try:
@@ -109,7 +109,7 @@ def guardar_pedido_musica(dados_pedido):
         except:
             lista_local = []
     
-    lista_local.insert(0, dados_pedido)
+    lista_local.append(dados_pedido)
     try:
         with open(FICHEIRO_PEDIDOS_LOCAL, "w", encoding="utf-8") as f:
             json.dump(lista_local, f, ensure_ascii=False, indent=4)
@@ -124,7 +124,7 @@ def guardar_pedido_musica(dados_pedido):
             if valor_atual == "" or not isinstance(valor_atual, (dict, list)):
                 ref.set(None)
             
-            # Utiliza push para gerar ID único no Firebase
+            # Utiliza push para gerar ID único no Firebase (adiciona ao fim)
             ref.push(dados_pedido)
         except Exception as e:
             st.error(f"❌ ERRO CRÍTICO NO FIREBASE: {e}")
@@ -209,7 +209,7 @@ def mover_pedido_baixo(pedido_id):
         guardar_pedidos_musicas(lista)
 
 def obter_pedidos_musicas():
-    """Carrega os pedidos garantindo que o mais recente fique no topo da fila."""
+    """Carrega os pedidos ordenando cronologicamente (o primeiro a pedir fica no topo, o mais recente entra no fim)."""
     pedidos_lista = []
     chaves_vistas = set()
     
@@ -265,15 +265,14 @@ def obter_pedidos_musicas():
     if not pedidos_lista:
         return []
         
-    # Ordena por timestamp de forma decrescente (o mais recente criado aparece primeiro no topo)
+    # Ordena por timestamp de forma CRESCENTE (reverse=False): o pedido mais antigo (primeiro feito) fica no topo (#1)
     try:
         pedidos_lista.sort(
             key=lambda x: datetime.strptime(str(x.get("timestamp", "")), "%d/%m/%Y %H:%M:%S") 
             if x.get("timestamp") else datetime.min, 
-            reverse=True
+            reverse=False
         )
     except Exception:
-        # Fallback caso algum formato de data venha diferente
         pass
         
     return pedidos_lista
