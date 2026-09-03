@@ -1,7 +1,7 @@
 import json
 import os
 import streamlit as st
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Inicialização segura do Firebase
 FIREBASE_ATIVO = False
@@ -187,6 +187,42 @@ def apagar_pedido_musica(pedido_id):
                         break
         except Exception as e:
             print(f"Erro ao apagar pedido no Firebase: {e}")
+
+def _atualizar_posicao_pedido(pedido_id, direcao):
+    """Função auxiliar para mover um pedido para cima ou para baixo alterando o timestamp relacionalmente."""
+    lista = obter_pedidos_musicas()
+    pedido_id_str = str(pedido_id)
+    
+    # Encontrar o índice atual do pedido
+    idx_atual = -1
+    for i, p in enumerate(lista):
+        if str(p.get("id")) == pedido_id_str or str(p.get("timestamp")) == pedido_id_str:
+            idx_atual = i
+            break
+            
+    if idx_atual == -1:
+        return
+        
+    idx_troca = idx_atual - 1 if direcao == "cima" else idx_atual + 1
+    
+    if 0 <= idx_troca < len(lista):
+        # Trocar os timestamps para inverter a ordem na ordenação por data
+        ts_atual = lista[idx_atual].get("timestamp")
+        ts_troca = lista[idx_troca].get("timestamp")
+        
+        lista[idx_atual]["timestamp"] = ts_troca
+        lista[idx_troca]["timestamp"] = ts_atual
+        
+        # Salvar a lista atualizada inteira
+        guardar_pedidos_musicas(lista)
+
+def mover_pedido_cima(pedido_id):
+    """Move o pedido de música uma posição acima na tabela."""
+    _atualizar_posicao_pedido(pedido_id, "cima")
+
+def mover_pedido_baixo(pedido_id):
+    """Move o pedido de música uma posição abaixo na tabela."""
+    _atualizar_posicao_pedido(pedido_id, "baixo")
 
 def obter_pedidos_musicas():
     """Combina os pedidos do Firebase e do armazenamento local ordenados rigorosamente por data/hora real"""
