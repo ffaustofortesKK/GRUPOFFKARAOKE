@@ -339,14 +339,14 @@ def render():
                 </div>
             """, unsafe_allow_html=True)
             
-            if musicas_acima > 4:
+            if musicas_acima > 0:
                 st.markdown(f"""
                     <div class="ff-card-status" style="border-color: rgba(231, 76, 60, 0.4);">
                         <div class="ff-card-left">
                             <div class="ff-icon-box" style="background: linear-gradient(135deg, #c0392b, #e74c3c);">⏳</div>
                             <div class="ff-card-text">
-                               <h4>Aguarde a sua vez</h4>
-                                <p>Ainda tem <b>{musicas_acima}</b> músicas à frente.</p>
+                                <h4>Aguarde a sua vez</h4>
+                                <p>Ainda tem <b>{musicas_acima}</b> músicas à frente na fila.</p>
                             </div>
                         </div>
                         <div class="ff-badge-circle" style="border-color: #e74c3c;">
@@ -361,38 +361,38 @@ def render():
                         <div class="ff-card-left">
                             <div class="ff-icon-box" style="background: linear-gradient(135deg, #27ae60, #2ecc71);">🔔</div>
                             <div class="ff-card-text">
-                                <h4>Quase a sua vez!</h4>
-                                <p>Faltam apenas <b>{musicas_acima}</b> músicas.</p>
+                                <h4>É a sua vez de cantar!</h4>
+                                <p>Prepare-se para subir ao palco.</p>
                             </div>
                         </div>
                         <div class="ff-badge-circle" style="border-color: #2ecc71;">
-                            <span class="number">{musicas_acima}</span>
-                            <span class="label">Faltam</span>
+                            <span class="number">#1</span>
+                            <span class="label">Palco</span>
                         </div>
                     </div>
                 """, unsafe_allow_html=True)
                 
-                st.markdown('<div class="ff-action-box">', unsafe_allow_html=True)
-                st.markdown("##### 🎤 PEDIR NOVA MÚSICA")
-                with st.form("form_cliente_novo", clear_on_submit=True):
-                    musica_novo = st.text_input("Música ou Artista:", placeholder="Ex: Landrick, Matias Damásio...")
-                    submitted_novo = st.form_submit_button("Enviar Novo Pedido")
-                    
-                    if submitted_novo:
-                        if musica_novo.strip():
-                            dados_novo_pedido = {
-                                "cantor": cantor,
-                                "musica": musica_novo.strip(),
-                                "token_prestador": token_prestador,
-                                "status": "pendente",
-                                "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-                            }
-                            guardar_pedido_musica(dados_novo_pedido)
-                            st.success("Pedido enviado com sucesso!")
-                            st.rerun()
-                        else:
-                            st.error("Por favor, preencha o nome da música.")
-                st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown('<div class="ff-action-box">', unsafe_allow_html=True)
+            st.markdown("##### 🎤 PEDIR NOVA MÚSICA")
+            with st.form("form_cliente_novo", clear_on_submit=True):
+                musica_novo = st.text_input("Música ou Artista:", placeholder="Ex: Landrick, Matias Damásio...")
+                submitted_novo = st.form_submit_button("Enviar Novo Pedido")
+                
+                if submitted_novo:
+                    if musica_novo.strip():
+                        dados_novo_pedido = {
+                            "cantor": cantor,
+                            "musica": musica_novo.strip(),
+                            "token_prestador": token_prestador,
+                            "status": "pendente",
+                            "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                        }
+                        guardar_pedido_musica(dados_novo_pedido)
+                        st.success("Pedido enviado com sucesso!")
+                        st.rerun()
+                    else:
+                        st.error("Por favor, preencha o nome da música.")
+            st.markdown('</div>', unsafe_allow_html=True)
         else:
             total_fila_geral = len(pendentes_geral)
             st.info(f"ℹ️ Existem **{total_fila_geral} músicas** na fila de espera global.")
