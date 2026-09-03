@@ -96,7 +96,6 @@ def render():
                 div[data-testid="column"] {
                     padding: 0px !important;
                 }
-                /* Estilo geral de botões padrão do Streamlit */
                 .stButton button {
                     background-color: #121215 !important;
                     color: #ffffff !important;
@@ -110,7 +109,6 @@ def render():
                     border-color: #eab308 !important;
                     color: #eab308 !important;
                 }
-                /* Estilo personalizado para os botões de Ação Principal (Tocar, Parar, Próxima) */
                 .btn-acao button {
                     background-color: #121215 !important;
                     border: 1px solid #eab308 !important;
@@ -241,7 +239,6 @@ def render():
 
             renderizar_a_tocar()
 
-            # Botões de Ação idênticos à imagem de referência
             st.markdown('<div class="btn-acao">', unsafe_allow_html=True)
             b1, b2, b3 = st.columns(3)
             with b1:
@@ -419,7 +416,7 @@ def render():
 
         st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
-        # 5. Adicionar os 4 campos / blocos informativos no rodapé idênticos à imagem
+        # Rodapé com os 4 blocos devidamente estruturados
         st.markdown(
             """
             <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 14px 16px; margin-top: 10px;">
