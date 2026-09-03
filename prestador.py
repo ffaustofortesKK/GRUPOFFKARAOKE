@@ -356,6 +356,8 @@ def render():
                 "Vídeo 5": "https://youtu.be/TmayKMV0bJY?si=Zb99BwXuFyDDJ-tN",
             }
 
+            # Envolvido numa div para o botão assumir exatamente a largura correta da coluna da direita
+            st.markdown('<div style="max-width: 100%;">', unsafe_allow_html=True)
             video_escolhido = st.selectbox(
                 "Vídeo de fundo:",
                 list(videos_disponiveis.keys()),
@@ -371,6 +373,7 @@ def render():
                             p["video_fundo"] = url_video_selecionado
                             guardar_prestador(p)
                     st.success("Guardado!")
+            st.markdown('</div>', unsafe_allow_html=True)
         return
 
     # 2. SE ESTIVER RECUSADO
