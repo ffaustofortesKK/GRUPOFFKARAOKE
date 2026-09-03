@@ -345,33 +345,32 @@ def render():
                     unsafe_allow_html=True,
                 )
 
-        st.markdown("<div style='height: 2px;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
 
-        videos_disponiveis = {
-            "- Sem vídeo -": "",
-            "Vídeo 1 (Oficial)": "https://youtu.be/cQ4MD7gOBmc?si=5wzaxysiHSEwn9QT",
-            "Vídeo 2": "https://youtu.be/H_aniWehIYY?si=e9WzMGyFSy7PdrAj",
-            "Vídeo 3": "https://youtu.be/sGGlQ9yJQNg?si=LVeN5zjZ153uksLW",
-            "Vídeo 4": "https://youtu.be/sGGlQ9yJQNg?si=ZxjJ34_4Z13MUL-g",
-            "Vídeo 5": "https://youtu.be/TmayKMV0bJY?si=Zb99BwXuFyDDJ-tN",
-        }
+            videos_disponiveis = {
+                "- Sem vídeo -": "",
+                "Vídeo 1 (Oficial)": "https://youtu.be/cQ4MD7gOBmc?si=5wzaxysiHSEwn9QT",
+                "Vídeo 2": "https://youtu.be/H_aniWehIYY?si=e9WzMGyFSy7PdrAj",
+                "Vídeo 3": "https://youtu.be/sGGlQ9yJQNg?si=LVeN5zjZ153uksLW",
+                "Vídeo 4": "https://youtu.be/sGGlQ9yJQNg?si=ZxjJ34_4Z13MUL-g",
+                "Vídeo 5": "https://youtu.be/TmayKMV0bJY?si=Zb99BwXuFyDDJ-tN",
+            }
 
-        # Bloco de vídeo mais compacto na coluna direita
-        video_escolhido = st.selectbox(
-            "Vídeo de fundo:",
-            list(videos_disponiveis.keys()),
-            label_visibility="collapsed",
-        )
-        url_video_selecionado = videos_disponiveis[video_escolhido]
+            video_escolhido = st.selectbox(
+                "Vídeo de fundo:",
+                list(videos_disponiveis.keys()),
+                label_visibility="collapsed",
+            )
+            url_video_selecionado = videos_disponiveis[video_escolhido]
 
-        if st.button("▶ Atualizar Vídeo", use_container_width=True, type="primary", key="btn_atualizar_video"):
-            if st.session_state.token_prestador:
-                prestadores = obter_prestadores()
-                for p in prestadores:
-                    if p.get("token") == st.session_state.token_prestador:
-                        p["video_fundo"] = url_video_selecionado
-                        guardar_prestador(p)
-                st.success("Guardado!")
+            if st.button("▶ Atualizar Vídeo", use_container_width=True, type="primary", key="btn_atualizar_video"):
+                if st.session_state.token_prestador:
+                    prestadores = obter_prestadores()
+                    for p in prestadores:
+                        if p.get("token") == st.session_state.token_prestador:
+                            p["video_fundo"] = url_video_selecionado
+                            guardar_prestador(p)
+                    st.success("Guardado!")
         return
 
     # 2. SE ESTIVER RECUSADO
