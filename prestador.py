@@ -289,10 +289,9 @@ def render():
 
                 total_pedidos = len(lista_pedidos)
 
-                # Caixa exterior unificada com o ícone e título tal como na 2ª imagem
                 st.markdown(
                     f"""
-                        <div class="box-container" style="max-height: 350px; overflow-y: auto;">
+                        <div class="box-container" style="max-height: 400px; overflow-y: auto;">
                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid #27272a; padding-bottom: 8px;">
                                 <div style="width: 32px; height: 32px; border: 1px solid #c084fc; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
                                     <span style="color: #c084fc; font-size: 14px;">👥</span>
@@ -308,9 +307,10 @@ def render():
                         musica = pedido.get("musica", "Desconhecida")
                         cantor = pedido.get("cantor", "Convidado")
 
+                        # Bloco unificado do item da fila com os botões internos
                         st.markdown(
                             f"""
-                            <div style="background-color: #121215; border: 1px solid #27272a; border-radius: 6px; padding: 8px 12px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+                            <div style="background-color: #121215; border: 1px solid #27272a; border-radius: 6px; padding: 6px 12px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
                                 <div style="display: flex; align-items: center; gap: 10px;">
                                     <span style="background-color: #27272a; color: #c084fc; font-weight: bold; font-size: 12px; padding: 2px 6px; border-radius: 4px;">{idx+1}º</span>
                                     <span style="color: #ffffff; font-size: 13px;">{musica} — <span style="color: #a1a1aa;">{cantor}</span></span>
@@ -320,7 +320,8 @@ def render():
                             unsafe_allow_html=True,
                         )
 
-                        col_spacer, col_botoes = st.columns([3, 2])
+                        # Colunas invisíveis posicionadas por cima para alinhar os botões do lado direito dentro da mesma linha visual
+                        col_vazia, col_botoes = st.columns([2.2, 1.2])
                         with col_botoes:
                             b_up, b_down, b_del = st.columns(3)
                             with b_up:
