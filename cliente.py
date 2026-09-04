@@ -272,7 +272,7 @@ def render():
                 else:
                     st.error("Por favor, insira um nome ou alcunha válido.")
                     
-    # ESTADO 2: Painel do Cliente
+    # ESTADO 2: Painel do Cliente (Usando st.fragment para atualizar a fila de fundo a cada 5s sem piscar a tela inteira)
     else:
         cantor = st.session_state["cliente_nome"]
         
@@ -284,140 +284,133 @@ def render():
             </div>
         """, unsafe_allow_html=True)
         
-        # 1. Obtém todos os pedidos pendentes da base de dados filtrados pelo prestador/geral
-        todos_pedidos = obter_pedidos_musicas()
-        
-        pendentes_geral = []
-        for p in todos_pedidos:
-            status = str(p.get("status", "pendente")).strip().lower()
-            t_ped = str(p.get("token_prestador", "geral")).strip()
+        @st.fragment(run_every=5)
+        def renderizar_painel_fila(cantor_atual, token_p):
+            todos_pedidos = obter_pedidos_musicas()
             
-            if status == "pendente":
-                if token_prestador == "geral" or not t_ped or t_ped == "geral" or t_ped == token_prestador:
-                    pendentes_geral.append(p)
-        
-        # Procura o pedido ativo do cliente usando o timestamp guardado na sessão
-        ts_ativo = st.session_state.get("meu_pedido_timestamp")
-        pedido_ativo = None
-        
-        if ts_ativo:
-            for p in pendentes_geral:
-                if str(p.get("timestamp", "")) == str(ts_ativo):
-                    pedido_ativo = p
-                    break
-        
-        # Se não encontrar pelo timestamp exato mas o cantor tiver algum pedido pendente na fila, vincula o primeiro encontrado
-        if not pedido_ativo:
-            pedidos_do_cantor = [
-                p for p in pendentes_geral 
-                if str(p.get("cantor", "")).strip().lower() == cantor.strip().lower()
-            ]
-            if pedidos_do_cantor:
-                pedido_ativo = pedidos_do_cantor[0]
-                st.session_state["meu_pedido_timestamp"] = pedido_ativo.get("timestamp")
+            pendentes_geral = []
+            for p in todos_pedidos:
+                status = str(p.get("status", "pendente")).strip().lower()
+                t_ped = str(p.get("token_prestador", "geral")).strip()
+                
+                if status == "pendente":
+                    if token_p == "geral" or not t_ped or t_ped == "geral" or t_ped == token_p:
+                        pendentes_geral.append(p)
+            
+            ts_ativo = st.session_state.get("meu_pedido_timestamp")
+            pedido_ativo = None
+            
+            if ts_ativo:
+                for p in pendentes_geral:
+                    if str(p.get("timestamp", "")) == str(ts_ativo):
+                        pedido_ativo = p
+                        break
+            
+            if not pedido_ativo:
+                pedidos_do_cantor = [
+                    p for p in pendentes_geral 
+                    if str(p.get("cantor", "")).strip().lower() == cantor_atual.strip().lower()
+                ]
+                if pedidos_do_cantor:
+                    pedido_ativo = pedidos_do_cantor[0]
+                    st.session_state["meu_pedido_timestamp"] = pedido_ativo.get("timestamp")
 
-        if pedido_ativo:
-            # Descobre a posição exata (1-based index) na fila geral de pendentes
-            posicao_real = -1
-            for idx, p in enumerate(pendentes_geral):
-                if str(p.get("timestamp", "")) == str(pedido_ativo.get("timestamp", "")):
-                    posicao_real = idx + 1
-                    break
-            
-            if posicao_real == -1:
-                posicao_real = 1
+            if pedido_ativo:
+                posicao_real = -1
+                for idx, p in enumerate(pendentes_geral):
+                    if str(p.get("timestamp", "")) == str(pedido_ativo.get("timestamp", "")):
+                        posicao_real = idx + 1
+                        break
                 
-            musicas_acima = posicao_real - 1 if posicao_real > 0 else 0
-            musica_nome_atv = pedido_ativo.get('musica', '')
-            
-            # Bloco Visual 1: Posição do Pedido Atual
-            st.markdown(f"""
-                <div class="ff-card-status">
-                    <div class="ff-card-left">
-                        <div class="ff-icon-box">🎵</div>
-                        <div class="ff-card-text">
-                            <h4>Pedido registado!</h4>
-                            <p><b>{musica_nome_atv}</b><br>Posição atual: <b>#{posicao_real}</b></p>
-                        </div>
-                    </div>
-                    <div class="ff-badge-circle">
-                        <span class="number">#{posicao_real}</span>
-                        <span class="label">Na Fila</span>
-                    </div>
-                </div>
-            """, unsafe_allow_html=True)
-            
-            if musicas_acima > 0:
+                if posicao_real == -1:
+                    posicao_real = 1
+                    
+                musicas_acima = posicao_real - 1 if posicao_real > 0 else 0
+                musica_nome_atv = pedido_ativo.get('musica', '')
+                
                 st.markdown(f"""
-                    <div class="ff-card-status" style="border-color: rgba(231, 76, 60, 0.4);">
+                    <div class="ff-card-status">
                         <div class="ff-card-left">
-                            <div class="ff-icon-box" style="background: linear-gradient(135deg, #c0392b, #e74c3c);">⏳</div>
+                            <div class="ff-icon-box">🎵</div>
                             <div class="ff-card-text">
-                                <h4>Aguarde a sua vez</h4>
-                                <p>Ainda tem <b>{musicas_acima}</b> músicas à frente na fila.</p>
+                                <h4>Pedido registado!</h4>
+                                <p><b>{musica_nome_atv}</b><br>Posição atual: <b>#{posicao_real}</b></p>
                             </div>
                         </div>
-                        <div class="ff-badge-circle" style="border-color: #e74c3c;">
-                            <span class="number">{musicas_acima}</span>
-                            <span class="label">Restam</span>
+                        <div class="ff-badge-circle">
+                            <span class="number">#{posicao_real}</span>
+                            <span class="label">Na Fila</span>
                         </div>
                     </div>
                 """, unsafe_allow_html=True)
+                
+                if musicas_acima > 0:
+                    st.markdown(f"""
+                        <div class="ff-card-status" style="border-color: rgba(231, 76, 60, 0.4);">
+                            <div class="ff-card-left">
+                                <div class="ff-icon-box" style="background: linear-gradient(135deg, #c0392b, #e74c3c);">⏳</div>
+                                <div class="ff-card-text">
+                                    <h4>Aguarde a sua vez</h4>
+                                    <p>Ainda tem <b>{musicas_acima}</b> músicas à frente na fila.</p>
+                                </div>
+                            </div>
+                            <div class="ff-badge-circle" style="border-color: #e74c3c;">
+                                <span class="number">{musicas_acima}</span>
+                                <span class="label">Restam</span>
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.markdown(f"""
+                        <div class="ff-card-status" style="border-color: rgba(46, 204, 113, 0.4);">
+                            <div class="ff-card-left">
+                                <div class="ff-icon-box" style="background: linear-gradient(135deg, #27ae60, #2ecc71);">🔔</div>
+                                <div class="ff-card-text">
+                                    <h4>É a sua vez de cantar!</h4>
+                                    <p>Prepare-se para subir ao palco.</p>
+                                </div>
+                            </div>
+                            <div class="ff-badge-circle" style="border-color: #2ecc71;">
+                                <span class="number">#1</span>
+                                <span class="label">Palco</span>
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
             else:
-                st.markdown(f"""
-                    <div class="ff-card-status" style="border-color: rgba(46, 204, 113, 0.4);">
-                        <div class="ff-card-left">
-                            <div class="ff-icon-box" style="background: linear-gradient(135deg, #27ae60, #2ecc71);">🔔</div>
-                            <div class="ff-card-text">
-                                <h4>É a sua vez de cantar!</h4>
-                                <p>Prepare-se para subir ao palco.</p>
-                            </div>
-                        </div>
-                        <div class="ff-badge-circle" style="border-color: #2ecc71;">
-                            <span class="number">#1</span>
-                            <span class="label">Palco</span>
-                        </div>
-                    </div>
-                """, unsafe_allow_html=True)
+                if st.session_state["meu_pedido_timestamp"] is not None:
+                    st.success("🎉 O seu pedido anterior já foi interpretado ou retirado da fila!")
+                    st.session_state["meu_pedido_timestamp"] = None
+                    st.rerun()
+                    
+                total_fila_geral = len(pendentes_geral)
+                st.info(f"ℹ️ Existem **{total_fila_geral} músicas** na fila de espera global.")
                 
-            st.info("🔄 A atualizar automaticamente a sua posição na fila...")
-            
-            # Atualização automática da tela a cada 5 segundos para refletir a saída de músicas
-            time.sleep(5)
-            st.rerun()
-            
-        else:
-            # Se não tem pedido ativo ou o anterior já foi concluído/removido
-            if st.session_state["meu_pedido_timestamp"] is not None:
-                st.success("🎉 O seu pedido anterior já foi interpretado ou retirado da fila!")
-                st.session_state["meu_pedido_timestamp"] = None
-                
-            total_fila_geral = len(pendentes_geral)
-            st.info(f"ℹ️ Existem **{total_fila_geral} músicas** na fila de espera global.")
-            
-            st.markdown('<div class="ff-action-box">', unsafe_allow_html=True)
-            st.markdown("##### 🔍 PEDIR MÚSICA")
-            with st.form("form_cliente", clear_on_submit=True):
-                musica_inicial = st.text_input("Nome da música ou artista:", placeholder="Ex: Bruno Mars, Matias Damásio...")
-                submitted_inicial = st.form_submit_button("Pedir Música")
-                
-                if submitted_inicial:
-                    if musica_inicial.strip():
-                        novo_ts = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-                        dados_novo_pedido = {
-                            "cantor": cantor,
-                            "musica": musica_inicial.strip(),
-                            "token_prestador": token_prestador,
-                            "status": "pendente",
-                            "timestamp": novo_ts
-                        }
-                        guardar_pedido_musica(dados_novo_pedido)
-                        st.session_state["meu_pedido_timestamp"] = novo_ts
-                        st.success("Pedido adicionado à fila com sucesso!")
-                        st.rerun()
-                    else:
-                        st.error("Por favor, preencha o nome da música ou artista.")
-            st.markdown('</div>', unsafe_allow_html=True)
+                st.markdown('<div class="ff-action-box">', unsafe_allow_html=True)
+                st.markdown("##### 🔍 PEDIR MÚSICA")
+                with st.form("form_cliente", clear_on_submit=True):
+                    musica_inicial = st.text_input("Nome da música ou artista:", placeholder="Ex: Bruno Mars, Matias Damásio...")
+                    submitted_inicial = st.form_submit_button("Pedir Música")
+                    
+                    if submitted_inicial:
+                        if musica_inicial.strip():
+                            novo_ts = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                            dados_novo_pedido = {
+                                "cantor": cantor_atual,
+                                "musica": musica_inicial.strip(),
+                                "token_prestador": token_p,
+                                "status": "pendente",
+                                "timestamp": novo_ts
+                            }
+                            guardar_pedido_musica(dados_novo_pedido)
+                            st.session_state["meu_pedido_timestamp"] = novo_ts
+                            st.success("Pedido adicionado à fila com sucesso!")
+                            st.rerun()
+                        else:
+                            st.error("Por favor, preencha o nome da música ou artista.")
+                st.markdown('</div>', unsafe_allow_html=True)
+
+        # Executa o painel com atualização interna automática sem oscilar a tela principal
+        renderizar_painel_fila(cantor, token_prestador)
             
         # SECÇÃO COMO FUNCIONA
         st.markdown('<div class="ff-how-it-works-title">🎧 COMO FUNCIONA?</div>', unsafe_allow_html=True)
