@@ -4,7 +4,7 @@ import time
 from db import guardar_pedido_musica, obter_pedidos_musicas, obter_prestadores
 
 def render():
-    # Estilização CSS Global Inspirada no FF Karaoke (Layout de Tablet / Mobile Centralizado)
+    # Estilização CSS Global Inspirada no FF Karaoke (Layout de Tablet / Compacto Centralizado)
     st.markdown("""
         <style>
         .stApp {
@@ -12,19 +12,19 @@ def render():
             color: #ffffff;
         }
         
-        /* Simulação de Moldura de Tablet / Tela Reduzida e Centralizada */
+        /* Simulação de Moldura de Tablet / Tela Reduzida e Centralizada (800px) */
         .block-container {
-            max-width: 480px !important;
-            padding-top: 2rem !important;
+            max-width: 800px !important;
+            padding-top: 1.5rem !important;
             padding-bottom: 2rem !important;
-            padding-left: 1rem !important;
-            padding-right: 1rem !important;
+            padding-left: 1.5rem !important;
+            padding-right: 1.5rem !important;
             background-color: #0b0714;
             border-radius: 20px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
             border: 1px solid rgba(138, 43, 226, 0.25);
-            margin-top: 1rem;
-            margin-bottom: 1rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
         }
 
         /* Topo / Header Banner */
@@ -58,7 +58,7 @@ def render():
             font-weight: 600;
         }
         
-        /* Caixa de Identificação do Cantor Ampliada em 50% */
+        /* Caixa de Identificação do Cantor Ampliada */
         .ff-cantor-box {
             background: linear-gradient(135deg, #151026, #1e133a);
             border: 1px solid rgba(138, 43, 226, 0.4);
@@ -272,7 +272,7 @@ def render():
                 else:
                     st.error("Por favor, insira um nome ou alcunha válido.")
                     
-    # ESTADO 2: Painel do Cliente (Usando st.fragment para atualizar a fila de fundo a cada 5s sem piscar a tela inteira)
+    # ESTADO 2: Painel do Cliente com Fragmento Isolado (Atualização em tempo real sem piscar a tela inteira)
     else:
         cantor = st.session_state["cliente_nome"]
         
@@ -409,7 +409,7 @@ def render():
                             st.error("Por favor, preencha o nome da música ou artista.")
                 st.markdown('</div>', unsafe_allow_html=True)
 
-        # Executa o painel com atualização interna automática sem oscilar a tela principal
+        # Executa a renderização dinâmica isolada
         renderizar_painel_fila(cantor, token_prestador)
             
         # SECÇÃO COMO FUNCIONA
