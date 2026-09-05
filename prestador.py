@@ -115,7 +115,7 @@ def render():
                     background-color: transparent !important;
                 }
                 .block-container {
-                    max-width: 1150px !important;
+                    max-width: 1400px !important;
                     padding-top: 0.2rem !important;
                     padding-bottom: 0.4rem !important;
                     padding-left: 0.8rem !important;
