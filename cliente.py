@@ -364,16 +364,15 @@ def render():
                 musicas_acima = posicao_real - 1 if posicao_real > 0 else 0
                 musica_nome_atv = pedido_ativo.get('musica', '')
                 
-                # Identificar quem está imediatamente acima na fila
                 cantor_acima = "Ninguém"
                 if posicao_real > 1 and len(pendentes_geral) >= (posicao_real - 1):
                     cantor_acima = pendentes_geral[posicao_real - 2].get('cantor', 'outro cantor')
 
-                # Preparar lista legível de cantores na fila para exibir no retângulo de rodapé
+                # Montar string limpa para o rodapé da fila
                 lista_itens_fila = [f"#{i+1} — {item.get('cantor', 'Cantor')} ({item.get('musica', 'Música')})" for i, item in enumerate(pendentes_geral)]
                 texto_fila_resumo = "  |  ".join(lista_itens_fila) if lista_itens_fila else "A fila está vazia no momento."
 
-                # CARTÃO 1: A SUA POSIÇÃO ACTUAL É (Sem círculo, número negrito e oscilante)
+                # CARTÃO 1: A SUA POSIÇÃO ACTUAL É
                 st.markdown(f"""
                     <div class="ff-card-status-centered">
                         <div class="ff-card-title-yellow">A SUA POSIÇÃO ACTUAL É</div>
@@ -383,7 +382,7 @@ def render():
                     </div>
                 """, unsafe_allow_html=True)
                 
-                # CARTÃO 2: AGUARDE A SUA VEZ (Com o texto exato e retângulo inferior estilizado)
+                # CARTÃO 2: AGUARDE A SUA VEZ (Com o HTML do rodapé explicitamente ativado via unsafe_allow_html=True)
                 if musicas_acima > 0:
                     st.markdown(f"""
                         <div class="ff-card-status-centered" style="border-color: rgba(231, 76, 60, 0.4);">
