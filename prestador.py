@@ -56,6 +56,9 @@ def render():
                 f"https://grupoffkaraoke.streamlit.app/?page=tela&token={token_ativo}"
             )
 
+        # ==========================================
+        # 🎨 É AQUI QUE ENTRA O CÓDIGO DO CSS (ESTILO TABLET)
+        # ==========================================
         st.markdown(
             """
             <style>
@@ -63,14 +66,22 @@ def render():
                 .stApp {
                     background-color: #08080a !important;
                 }
+                
+                /* Moldura centralizada estilo tablet (largura máxima de 1120px) */
                 .block-container {
+                    max-width: 1120px !important;
                     padding-top: 1.5rem !important;
-                    padding-bottom: 1rem !important;
-                    padding-left: 1rem !important;
-                    padding-right: 1rem !important;
-                    max-width: 100% !important;
-                    background-color: #08080a !important;
+                    padding-bottom: 2rem !important;
+                    padding-left: 1.5rem !important;
+                    padding-right: 1.5rem !important;
+                    background-color: #0b0714 !important;
+                    border-radius: 20px;
+                    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+                    border: 1px solid rgba(138, 43, 226, 0.25);
+                    margin-top: 1.5rem;
+                    margin-bottom: 1.5rem;
                 }
+
                 .box-container {
                     background-color: #0c0c0e;
                     border: 1px solid #27272a;
@@ -109,52 +120,10 @@ def render():
                     border-color: #eab308 !important;
                     color: #eab308 !important;
                 }
-                .btn-acao button {
-                    background-color: #121215 !important;
-                    border: 1px solid #eab308 !important;
-                    color: #ffffff !important;
-                    border-radius: 8px !important;
-                    height: 42px !important;
-                    font-weight: 600 !important;
-                }
-                .btn-acao button:hover {
-                    background-color: #18181b !important;
-                }
             </style>
             """,
             unsafe_allow_html=True,
         )
-
-        # Cabeçalho dividido em 4 colunas: Logo | Nome | Relógio Grande | Botão Sair
-        col_logo, col_top_info, col_relogio, col_top_btn = st.columns([1.5, 3.5, 1.8, 1])
-        
-        with col_logo:
-            st.markdown(
-                """
-                <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <span style="font-size: 28px;">⭐</span>
-                    <div>
-                        <span style="color: #eab308; font-weight: 900; font-size: 16px; display: block; line-height: 1.1; letter-spacing: 0.5px;">FF KARAOKE</span>
-                        <span style="color: #a1a1aa; font-size: 9px; letter-spacing: 1px;">FAZ A VOZ, FAZ A FESTA!</span>
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-        with col_top_info:
-            nome_prestador = (
-                prestador_atual.get("nome", "").upper() if prestador_atual else ""
-            )
-            st.markdown(
-                f"""
-                <div style='text-align: center; padding-top: 4px;'>
-                    <span style='color: #eab308; font-size: 18px; font-weight: 900; letter-spacing: 0.5px;'>PRESTADOR:</span>
-                    <span style='color: #ffffff; font-size: 18px; font-weight: 900; letter-spacing: 0.5px;'> {nome_prestador}</span>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
 
         with col_relogio:
             @st.fragment(run_every=3)
