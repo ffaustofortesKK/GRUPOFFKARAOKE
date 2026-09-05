@@ -368,9 +368,9 @@ def render():
                 if posicao_real > 1 and len(pendentes_geral) >= (posicao_real - 1):
                     cantor_acima = pendentes_geral[posicao_real - 2].get('cantor', 'outro cantor')
 
-                # Montar string limpa para o rodapé da fila
-                lista_itens_fila = [f"#{i+1} — {item.get('cantor', 'Cantor')} ({item.get('musica', 'Música')})" for i, item in enumerate(pendentes_geral)]
-                texto_fila_resumo = "  |  ".join(lista_itens_fila) if lista_itens_fila else "A fila está vazia no momento."
+                # Montar string limpa para o rodapé da fila em linha reta única (sem quebras de linha brutas)
+                lista_itens_fila = [f"<b>#{i+1}</b> — {item.get('cantor', 'Cantor')} ({item.get('musica', 'Música')})" for i, item in enumerate(pendentes_geral)]
+                texto_fila_resumo = " &nbsp;&nbsp;|&nbsp;&nbsp; ".join(lista_itens_fila) if lista_itens_fila else "A fila está vazia no momento."
 
                 # CARTÃO 1: A SUA POSIÇÃO ACTUAL É
                 st.markdown(f"""
@@ -382,38 +382,13 @@ def render():
                     </div>
                 """, unsafe_allow_html=True)
                 
-                # CARTÃO 2: AGUARDE A SUA VEZ (Com o HTML do rodapé explicitamente ativado via unsafe_allow_html=True)
+                # CARTÃO 2: AGUARDE A SUA VEZ (Usando linha única na string HTML para evitar falhas do Streamlit)
                 if musicas_acima > 0:
-                    st.markdown(f"""
-                        <div class="ff-card-status-centered" style="border-color: rgba(231, 76, 60, 0.4);">
-                            <div class="ff-card-title-orange">AGUARDE A SUA VEZ</div>
-                            <div class="ff-card-main-text" style="font-size: 14px; color: #f1c40f; margin-bottom: 6px;">
-                                Assim que cantar o cantor <b>{cantor_acima}</b> será a sua vez!
-                            </div>
-                            <div class="ff-card-subtitle" style="font-size: 10px; margin-bottom: 10px;">({musicas_acima} músicas à sua frente)</div>
-                            
-                            <div style="background: linear-gradient(90deg, #18122c, #22183d, #18122c); border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 8px; padding: 10px; text-align: left; box-shadow: inset 0 2px 5px rgba(0,0,0,0.4);">
-                                <div style="font-size: 9px; color: #b19cd9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; text-align: center;">🎶 Fila de Espera Atual 🎶</div>
-                                <div style="font-size: 11px; color: #ffffff; font-weight: 600; overflow-x: auto; white-space: nowrap; padding-bottom: 2px;">
-                                    {texto_fila_resumo}
-                                </div>
-                            </div>
-                        </div>
-                    """, unsafe_allow_html=True)
+                    html_cartao_espera = f'<div class="ff-card-status-centered" style="border-color: rgba(231, 76, 60, 0.4);"><div class="ff-card-title-orange">AGUARDE A SUA VEZ</div><div class="ff-card-main-text" style="font-size: 14px; color: #f1c40f; margin-bottom: 6px;">Assim que cantar o cantor <b>{cantor_acima}</b> será a sua vez!</div><div class="ff-card-subtitle" style="font-size: 10px; margin-bottom: 10px;">({musicas_acima} músicas à sua frente)</div><div style="background: linear-gradient(90deg, #18122c, #22183d, #18122c); border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 8px; padding: 10px; text-align: left; box-shadow: inset 0 2px 5px rgba(0,0,0,0.4);"><div style="font-size: 9px; color: #b19cd9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; text-align: center;">🎶 Fila de Espera Atual 🎶</div><div style="font-size: 11px; color: #ffffff; font-weight: 600; overflow-x: auto; white-space: nowrap; padding-bottom: 2px;">{texto_fila_resumo}</div></div></div>'
+                    st.markdown(html_cartao_espera, unsafe_allow_html=True)
                 else:
-                    st.markdown(f"""
-                        <div class="ff-card-status-centered" style="border-color: rgba(46, 204, 113, 0.4);">
-                            <div class="ff-card-title-green">É A SUA VEZ DE CANTAR!</div>
-                            <div class="ff-card-main-text" style="color: #2ecc71; margin-bottom: 10px;">Prepare-se para subir ao palco agora.</div>
-                            
-                            <div style="background: linear-gradient(90deg, #18122c, #22183d, #18122c); border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 8px; padding: 10px; text-align: left; box-shadow: inset 0 2px 5px rgba(0,0,0,0.4);">
-                                <div style="font-size: 9px; color: #b19cd9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; text-align: center;">🎶 Fila de Espera Atual 🎶</div>
-                                <div style="font-size: 11px; color: #ffffff; font-weight: 600; overflow-x: auto; white-space: nowrap; padding-bottom: 2px;">
-                                    {texto_fila_resumo}
-                                </div>
-                            </div>
-                        </div>
-                    """, unsafe_allow_html=True)
+                    html_cartao_vez = f'<div class="ff-card-status-centered" style="border-color: rgba(46, 204, 113, 0.4);"><div class="ff-card-title-green">É A SUA VEZ DE CANTAR!</div><div class="ff-card-main-text" style="color: #2ecc71; margin-bottom: 10px;">Prepare-se para subir ao palco agora.</div><div style="background: linear-gradient(90deg, #18122c, #22183d, #18122c); border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 8px; padding: 10px; text-align: left; box-shadow: inset 0 2px 5px rgba(0,0,0,0.4);"><div style="font-size: 9px; color: #b19cd9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; text-align: center;">🎶 Fila de Espera Atual 🎶</div><div style="font-size: 11px; color: #ffffff; font-weight: 600; overflow-x: auto; white-space: nowrap; padding-bottom: 2px;">{texto_fila_resumo}</div></div></div>'
+                    st.markdown(html_cartao_vez, unsafe_allow_html=True)
             else:
                 if st.session_state["meu_pedido_timestamp"] is not None:
                     st.success("🎉 O seu pedido anterior já foi interpretado ou retirado da fila!")
