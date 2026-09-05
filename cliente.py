@@ -183,42 +183,6 @@ def render():
             margin: 4px 0 0 0;
         }
 
-        /* Retângulo em Rodapé com Letreiro Animado (Marquee) */
-        .ff-marquee-container {
-            background: linear-gradient(90deg, #120e21, #1a1333, #120e21);
-            border: 1px solid rgba(138, 43, 226, 0.4);
-            border-radius: 8px;
-            overflow: hidden;
-            padding: 8px 10px;
-            margin-top: 12px;
-            box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
-            white-space: nowrap;
-        }
-        .ff-marquee-title {
-            font-size: 9px;
-            color: #b19cd9;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 3px;
-            font-weight: 700;
-            text-align: center;
-        }
-        .ff-marquee-track {
-            display: inline-block;
-            white-space: nowrap;
-            animation: marquee 22s linear infinite;
-            font-size: 12px;
-            color: #ffffff;
-            font-weight: 600;
-        }
-        @keyframes marquee {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
-        .ff-marquee-container:hover .ff-marquee-track {
-            animation-play-state: paused;
-        }
-
         /* Caixa de Ação Compacta */
         .ff-action-box {
             background-color: #120e21;
@@ -405,11 +369,9 @@ def render():
                 if posicao_real > 1 and len(pendentes_geral) >= (posicao_real - 1):
                     cantor_acima = pendentes_geral[posicao_real - 2].get('cantor', 'outro cantor')
 
-                # Preparar texto da fila para o rodapé animado
-                lista_formatada = [f"#{i+1} — {item.get('cantor', 'Cantor')} ({item.get('musica', 'Música')})" for i, item in enumerate(pendentes_geral)]
-                itens_fila_str = " &nbsp;&nbsp;&bull;&nbsp;&nbsp; ".join(lista_formatada)
-                if not itens_fila_str:
-                    itens_fila_str = "A fila está vazia no momento."
+                # Preparar lista legível de cantores na fila para exibir no retângulo de rodapé
+                lista_itens_fila = [f"#{i+1} — {item.get('cantor', 'Cantor')} ({item.get('musica', 'Música')})" for i, item in enumerate(pendentes_geral)]
+                texto_fila_resumo = "  |  ".join(lista_itens_fila) if lista_itens_fila else "A fila está vazia no momento."
 
                 # CARTÃO 1: A SUA POSIÇÃO ACTUAL É (Sem círculo, número negrito e oscilante)
                 st.markdown(f"""
@@ -421,20 +383,20 @@ def render():
                     </div>
                 """, unsafe_allow_html=True)
                 
-                # CARTÃO 2: AGUARDE A SUA VEZ (Com o texto exato e retângulo de rodapé para a fila)
+                # CARTÃO 2: AGUARDE A SUA VEZ (Com o texto exato e retângulo inferior estilizado)
                 if musicas_acima > 0:
                     st.markdown(f"""
                         <div class="ff-card-status-centered" style="border-color: rgba(231, 76, 60, 0.4);">
                             <div class="ff-card-title-orange">AGUARDE A SUA VEZ</div>
-                            <div class="ff-card-main-text" style="font-size: 14px; color: #f1c40f; margin-bottom: 8px;">
+                            <div class="ff-card-main-text" style="font-size: 14px; color: #f1c40f; margin-bottom: 6px;">
                                 Assim que cantar o cantor <b>{cantor_acima}</b> será a sua vez!
                             </div>
-                            <div class="ff-card-subtitle" style="font-size: 10px;">({musicas_acima} músicas à sua frente)</div>
+                            <div class="ff-card-subtitle" style="font-size: 10px; margin-bottom: 10px;">({musicas_acima} músicas à sua frente)</div>
                             
-                            <div class="ff-marquee-container">
-                                <div class="ff-marquee-title">🎶 Fila de Espera em Direto 🎶</div>
-                                <div style="overflow: hidden; width: 100%;">
-                                    <div class="ff-marquee-track">{itens_fila_str}</div>
+                            <div style="background: linear-gradient(90deg, #18122c, #22183d, #18122c); border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 8px; padding: 10px; text-align: left; box-shadow: inset 0 2px 5px rgba(0,0,0,0.4);">
+                                <div style="font-size: 9px; color: #b19cd9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; text-align: center;">🎶 Fila de Espera Atual 🎶</div>
+                                <div style="font-size: 11px; color: #ffffff; font-weight: 600; overflow-x: auto; white-space: nowrap; padding-bottom: 2px;">
+                                    {texto_fila_resumo}
                                 </div>
                             </div>
                         </div>
@@ -443,12 +405,12 @@ def render():
                     st.markdown(f"""
                         <div class="ff-card-status-centered" style="border-color: rgba(46, 204, 113, 0.4);">
                             <div class="ff-card-title-green">É A SUA VEZ DE CANTAR!</div>
-                            <div class="ff-card-main-text" style="color: #2ecc71; margin-bottom: 8px;">Prepare-se para subir ao palco agora.</div>
+                            <div class="ff-card-main-text" style="color: #2ecc71; margin-bottom: 10px;">Prepare-se para subir ao palco agora.</div>
                             
-                            <div class="ff-marquee-container">
-                                <div class="ff-marquee-title">🎶 Fila de Espera em Direto 🎶</div>
-                                <div style="overflow: hidden; width: 100%;">
-                                    <div class="ff-marquee-track">{itens_fila_str}</div>
+                            <div style="background: linear-gradient(90deg, #18122c, #22183d, #18122c); border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 8px; padding: 10px; text-align: left; box-shadow: inset 0 2px 5px rgba(0,0,0,0.4);">
+                                <div style="font-size: 9px; color: #b19cd9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; text-align: center;">🎶 Fila de Espera Atual 🎶</div>
+                                <div style="font-size: 11px; color: #ffffff; font-weight: 600; overflow-x: auto; white-space: nowrap; padding-bottom: 2px;">
+                                    {texto_fila_resumo}
                                 </div>
                             </div>
                         </div>
