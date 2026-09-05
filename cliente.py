@@ -117,19 +117,13 @@ def render():
         .ff-cantor-name span:nth-child(5n+4) { color: #b19cd9; animation-delay: 0.6s; }
         .ff-cantor-name span:nth-child(5n+5) { color: #2ecc71; animation-delay: 0.8s; }
         
-        /* Animação de Oscilação para o Número de Posição sem Círculo */
-        @keyframes oscillate {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-6px) scale(1.08); }
-        }
-
-        .ff-number-oscillate {
+        /* Número Fixo em Amarelo Sem Animação */
+        .ff-number-static {
             display: inline-block;
             font-size: 32px;
             font-weight: 900;
-            color: #ffffff;
-            text-shadow: 0 0 15px rgba(157, 78, 221, 0.8);
-            animation: oscillate 1.8s infinite ease-in-out;
+            color: #eab308;
+            text-shadow: 0 0 15px rgba(234, 179, 8, 0.5);
             margin: 4px 0;
             line-height: 1;
         }
@@ -391,22 +385,29 @@ def render():
                 if posicao_real > 1 and len(pendentes_geral) >= (posicao_real - 1):
                     cantor_acima = pendentes_geral[posicao_real - 2].get('cantor', 'outro cantor')
 
-                # Montar string em loop duplo para o efeito de letreiro contínuo (marquee) perfeito
-                lista_itens_fila = [f"<b>#{i+1}</b> — {item.get('cantor', 'Cantor')} ({item.get('musica', 'Música')})" for i, item in enumerate(pendentes_geral)]
+                # Formatar a lista de espera apenas com posição (ex: 1º, 2º) e nome do cantor
+                lista_itens_fila = []
+                for i, item in enumerate(pendentes_geral):
+                    pos_num = i + 1
+                    pos_str = "1º" if pos_num == 1 else f"{pos_num}º"
+                    nome_c = item.get('cantor', 'Cantor')
+                    lista_itens_fila.append(f"<b>{pos_str}</b> — {nome_c}")
+                
                 texto_base = " &nbsp;&nbsp;&bull;&nbsp;&nbsp; ".join(lista_itens_fila) if lista_itens_fila else "A fila está vazia no momento."
                 texto_fila_resumo = f"{texto_base} &nbsp;&nbsp;&bull;&nbsp;&nbsp; {texto_base}"
 
-                # CARTÃO 1: A SUA POSIÇÃO ACTUAL É
+                # CARTÃO 1: A SUA POSIÇÃO ACTUAL É (Fixo em amarelo, sem animação)
+                pos_atual_str = "1º" if posicao_real == 1 else f"{posicao_real}º"
                 st.markdown(f"""
                     <div class="ff-card-status-centered">
                         <div class="ff-card-title-yellow">A SUA POSIÇÃO ACTUAL É</div>
-                        <div class="ff-number-oscillate">#{posicao_real}</div>
+                        <div class="ff-number-static">{pos_atual_str}</div>
                         <div class="ff-card-subtitle" style="margin-top: 4px;">Título da Música que escolheu</div>
                         <div class="ff-card-main-text">🎵 {musica_nome_atv}</div>
                     </div>
                 """, unsafe_allow_html=True)
                 
-                # CARTÃO 2: AGUARDE A SUA VEZ (Com o letreiro animado em movimento contínuo)
+                # CARTÃO 2: AGUARDE A SUA VEZ (Com letreiro contínuo)
                 if musicas_acima > 0:
                     html_cartao_espera = f'<div class="ff-card-status-centered" style="border-color: rgba(231, 76, 60, 0.4);"><div class="ff-card-title-orange">AGUARDE A SUA VEZ</div><div class="ff-card-main-text" style="font-size: 14px; color: #f1c40f; margin-bottom: 6px;">Assim que cantar o cantor <b>{cantor_acima}</b> será a sua vez!</div><div class="ff-card-subtitle" style="font-size: 10px; margin-bottom: 10px;">({musicas_acima} músicas à sua frente)</div><div style="background: linear-gradient(90deg, #18122c, #22183d, #18122c); border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 8px; padding: 10px; text-align: left; box-shadow: inset 0 2px 5px rgba(0,0,0,0.4);"><div style="font-size: 9px; color: #b19cd9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; text-align: center;">🎶 Fila de Espera Atual 🎶</div><div class="ff-marquee-container"><div class="ff-marquee-content" style="font-size: 11px; color: #ffffff; font-weight: 600;">{texto_fila_resumo}</div></div></div></div>'
                     st.markdown(html_cartao_espera, unsafe_allow_html=True)
