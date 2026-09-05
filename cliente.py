@@ -80,7 +80,7 @@ def render():
             border: 1px solid rgba(138, 43, 226, 0.4);
             border-radius: 12px;
             padding: 10px 15px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.4);
         }
@@ -227,7 +227,7 @@ def render():
             font-size: 10px;
             text-transform: uppercase;
             letter-spacing: 1.5px;
-            margin: 10px 0 6px 0;
+            margin: 6px 0 4px 0;
             font-weight: 600;
         }
         .ff-steps-container {
@@ -347,6 +347,28 @@ def render():
                 <div class="ff-cantor-name">{letras_html}</div>
             </div>
         """, unsafe_allow_html=True)
+
+        # SECÇÃO COMO FUNCIONA COMPACTA (Logótipo / Rodapé logo após o registo do nome)
+        st.markdown('<div class="ff-how-it-works-title">🎧 COMO FUNCIONA?</div>', unsafe_allow_html=True)
+        st.markdown("""
+            <div class="ff-steps-container">
+                <div class="ff-step-card">
+                    <div class="ff-step-number">1</div>
+                    <h5>Escolha</h5>
+                    <p>Digite o nome da música.</p>
+                </div>
+                <div class="ff-step-card">
+                    <div class="ff-step-number">2</div>
+                    <h5>Aguarde</h5>
+                    <p>Acompanhe a sua posição.</p>
+                </div>
+                <div class="ff-step-card">
+                    <div class="ff-step-number">3</div>
+                    <h5>Cante</h5>
+                    <p>Dê o seu show na hora!</p>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
         
         @st.fragment(run_every=5)
         def renderizar_painel_fila(cantor_atual, token_p):
@@ -411,7 +433,8 @@ def render():
                 st.markdown(f"""
                     <div class="ff-card-status-centered">
                         <div class="ff-card-title-yellow">A SUA POSIÇÃO ACTUAL É</div>
-                        <div class="ff-number-fixed">#{posicao_real}</div>
+                        <div class="ff-number-fixed">{posicao_real}º" style="display:none;"</div> <!-- Mantém estrutura interna limpa -->
+                        <div class="ff-number-fixed">{posicao_real}</div>
                         <div class="ff-card-subtitle" style="margin-top: 4px;">Título da Música que escolheu</div>
                         <div class="ff-card-main-text">🎵 {musica_nome_atv}</div>
                     </div>
@@ -458,28 +481,6 @@ def render():
                 st.markdown('</div>', unsafe_allow_html=True)
 
         renderizar_painel_fila(cantor, token_prestador)
-            
-        # SECÇÃO COMO FUNCIONA COMPACTA
-        st.markdown('<div class="ff-how-it-works-title">🎧 COMO FUNCIONA?</div>', unsafe_allow_html=True)
-        st.markdown("""
-            <div class="ff-steps-container">
-                <div class="ff-step-card">
-                    <div class="ff-step-number">1</div>
-                    <h5>Escolha</h5>
-                    <p>Digite o nome da música.</p>
-                </div>
-                <div class="ff-step-card">
-                    <div class="ff-step-number">2</div>
-                    <h5>Aguarde</h5>
-                    <p>Acompanhe a sua posição.</p>
-                </div>
-                <div class="ff-step-card">
-                    <div class="ff-step-number">3</div>
-                    <h5>Cante</h5>
-                    <p>Dê o seu show na hora!</p>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
         
         if st.button("🔄 Alterar Nome / Sair"):
             st.session_state["cliente_nome"] = ""
