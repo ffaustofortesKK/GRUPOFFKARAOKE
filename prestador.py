@@ -1,7 +1,13 @@
 from datetime import datetime
 import time
 import streamlit as st
-from db import guardar_prestador, obter_pedidos_musicas, obter_prestadores, guardar_pedido_musica, apagar_pedido_musica
+from db import (
+    guardar_prestador, 
+    obter_pedidos_musicas, 
+    obter_prestadores, 
+    guardar_pedido_musica, 
+    apagar_pedido_musica
+)
 
 def render():
     if "pedido_submetido" not in st.session_state:
@@ -57,7 +63,7 @@ def render():
             )
 
         # ==========================================
-        # 🎨 É AQUI QUE ENTRA O CÓDIGO DO CSS (ESTILO TABLET)
+        # 🎨 ESTILO CSS (ESTILO TABLET / DARK MODE)
         # ==========================================
         st.markdown(
             """
@@ -404,7 +410,7 @@ def render():
 
         st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
-        # Rodapé estruturado com colunas nativas do Streamlit
+        # Rodapé estruturado com colunas nativas do Streamlit (Totalmente restaurado)
         st.markdown(
             """
             <style>
@@ -421,9 +427,7 @@ def render():
         )
 
         with st.container():
-            st.markdown(
-                '<div class="footer-box">', unsafe_allow_html=True
-            )
+            st.markdown('<div class="footer-box">', unsafe_allow_html=True)
             f1, f2, f3, f4 = st.columns(4)
 
             with f1:
@@ -462,12 +466,12 @@ def render():
                 st.markdown(
                     """
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 38px; height: 38px; border: 1px solid #c084fc; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <span style="color: #c084fc; font-size: 16px;">👥</span>
+                        <div style="width: 38px; height: 38px; border: 1px solid #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <span style="color: #3b82f6; font-size: 16px;">🎵</span>
                         </div>
                         <div>
-                            <div style="color: #c084fc; font-weight: bold; font-size: 10px; letter-spacing: 0.5px;">CONECTADO</div>
-                            <div style="color: #a1a1aa; font-size: 10px; line-height: 1.2;">Links e QR Code ativos.</div>
+                            <div style="color: #3b82f6; font-weight: bold; font-size: 10px; letter-spacing: 0.5px;">KARAOKE AO VIVO</div>
+                            <div style="color: #a1a1aa; font-size: 10px; line-height: 1.2;">Experiência interativa.</div>
                         </div>
                     </div>
                     """,
@@ -478,214 +482,16 @@ def render():
                 st.markdown(
                     """
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 38px; height: 38px; border: 1px solid #eab308; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 6px rgba(234, 179, 8, 0.2);">
-                            <span style="color: #eab308; font-size: 16px;">⭐</span>
+                        <div style="width: 38px; height: 38px; border: 1px solid #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <span style="color: #10b981; font-size: 16px;">⭐</span>
                         </div>
                         <div>
-                            <div style="color: #eab308; font-weight: bold; font-size: 10px; letter-spacing: 0.5px;">FAZ A VOZ!</div>
-                            <div style="color: #a1a1aa; font-size: 10px; line-height: 1.2;">Obrigado por fazer parte!</div>
+                            <div style="color: #10b981; font-weight: bold; font-size: 10px; letter-spacing: 0.5px;">GRUPO FF</div>
+                            <div style="color: #a1a1aa; font-size: 10px; line-height: 1.2;">Qualidade garantida.</div>
                         </div>
                     </div>
                     """,
                     unsafe_allow_html=True,
                 )
-            st.markdown("</div>", unsafe_allow_html=True)
-
-        return
-
-    # 2. SE ESTIVER RECUSADO
-    if (
-        st.session_state.pedido_submetido
-        and st.session_state.estado_pedido == "recusado"
-    ):
-        st.markdown(
-            """
-                <div style="background-color: #0f0f11; border: 1px solid #ef4444; padding: 20px; text-align: center; border-radius: 8px; max-width: 500px; margin: 30px auto;">
-                    <div style="font-size: 35px; margin-bottom: 8px;">❌</div>
-                    <h3 style="color: #ef4444; font-size: 18px; margin-bottom: 8px;">Pedido Recusado</h3>
-                    <p style="color: #d4d4d8; font-size: 14px; margin-bottom: 12px;">O seu pedido foi recusado pelo Administrador.</p>
-                </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            if st.button("Tentar Novamente", use_container_width=True):
-                st.session_state.pedido_submetido = False
-                st.session_state.token_prestador = None
-                st.session_state.estado_pedido = "pendente"
-                st.session_state.aprovado = False
-                st.rerun()
-        return
-
-    # 3. SE ESTIVER PENDENTE
-    if st.session_state.pedido_submetido:
-        st.markdown(
-            """
-                <div style="background-color: #0f0f11; padding: 25px; text-align: center; border-radius: 8px; max-width: 500px; margin: 30px auto;">
-                    <h3 style="color: #ffffff; font-size: 18px; margin-bottom: 8px;">Aguardando Aprovação</h3>
-                    <p style="color: #d4d4d8; font-size: 14px; margin-bottom: 6px;">O seu registo está a aguardar validação do Administrador.</p>
-                </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        time.sleep(3)
-        st.rerun()
-        return
-
-    # 4. TELA INICIAL: REGISTO OU LOGIN
-    st.markdown(
-        """
-            <style>
-                .prestador-wrapper {
-                    background: #0f0f13;
-                    border: 1px solid #8b5cf6;
-                    border-radius: 10px;
-                    padding: 16px 20px;
-                    max-width: 700px;
-                    margin: 0 auto;
-                }
-                .prestador-title {
-                    color: #eab308;
-                    font-size: 20px;
-                    font-weight: 800;
-                    margin-top: 4px;
-                    margin-bottom: 2px;
-                    text-align: center;
-                }
-                .prestador-subtitle {
-                    color: #a1a1aa;
-                    font-size: 13px;
-                    text-align: center;
-                    margin-bottom: 10px;
-                }
-            </style>
-            <div class="prestador-wrapper">
-                <div style="text-align: center;">
-                    <span style="font-size: 28px;">👤</span>
-                    <div class="prestador-title">ÁREA DO PRESTADOR</div>
-                    <div class="prestador-subtitle">Registe-se ou entre com a sua sessão ativa.</div>
-                </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    modo_acesso = st.radio(
-        "Modo:",
-        ["Novo Registo", "Entrar com Sessão Ativa"],
-        horizontal=True,
-        label_visibility="collapsed",
-    )
-
-    if modo_acesso == "Novo Registo":
-        with st.form("form_registo_prestador_compacto"):
-            c1, c2 = st.columns(2)
-            with c1:
-                nome = st.text_input(
-                    "Nome", placeholder="Nome Completo", label_visibility="collapsed"
-                )
-                estabelecimento = st.text_input(
-                    "Local",
-                    placeholder="Nome do Estabelecimento",
-                    label_visibility="collapsed",
-                )
-            with c2:
-                telefone = st.text_input(
-                    "Telefone",
-                    placeholder="Telemóvel / Telefone",
-                    label_visibility="collapsed",
-                )
-                contrato = st.selectbox(
-                    "Plano",
-                    [
-                        "1 Hora - 12.000,00 Kz",
-                        "2 Horas - 17.000,00 Kz",
-                        "3 Horas - 20.000,00 Kz",
-                    ],
-                    label_visibility="collapsed",
-                )
-
-            submitted = st.form_submit_button(
-                "🚀 SUBMETER PEDIDO", use_container_width=True
-            )
-
-            if submitted:
-                if nome.strip() and telefone.strip():
-                    token_gerado = f"token_{int(time.time())}"
-                    segundos_contrato = (
-                        3600
-                        if "1 Hora" in contrato
-                        else (7200 if "2 Horas" in contrato else 10800)
-                    )
-
-                    novo_prestador = {
-                        "nome": nome.strip(),
-                        "telefone": telefone.strip(),
-                        "estabelecimento": estabelecimento.strip(),
-                        "plano": contrato,
-                        "contrato": contrato,
-                        "status_str": "pendente",
-                        "approved": False,
-                        "token": token_gerado,
-                        "segundos_restantes": segundos_contrato,
-                        "data_pedido": datetime.now().strftime("%d/%m/%Y %H:%M"),
-                        "video_fundo": "",
-                    }
-
-                    guardar_prestador(novo_prestador)
-
-                    st.session_state.pedido_submetido = True
-                    st.session_state.token_prestador = token_gerado
-                    st.session_state.estado_pedido = "pendente"
-                    st.session_state.aprovado = False
-                    st.rerun()
-                else:
-                    st.error("Preencha pelo menos o Nome e o Telefone.")
-    else:
-        with st.form("form_login_prestador_compacto"):
-            c1, c2 = st.columns(2)
-            with c1:
-                login_nome = st.text_input(
-                    "Nome",
-                    placeholder="Nome registado",
-                    label_visibility="collapsed",
-                )
-            with c2:
-                login_telefone = st.text_input(
-                    "Telefone",
-                    placeholder="Telefone registado",
-                    label_visibility="collapsed",
-                )
-
-            btn_entrar = st.form_submit_button(
-                "🔑 ACEDER AO PAINEL", use_container_width=True
-            )
             
-            if btn_entrar:
-                if login_nome.strip() and login_telefone.strip():
-                    prestadores = obter_prestadores()
-                    prestador_encontrado = next(
-                        (
-                            p
-                            for p in prestadores
-                            if p.get("nome", "").strip().lower()
-                            == login_nome.strip().lower()
-                            and p.get("telefone", "").strip() == login_telefone.strip()
-                        ),
-                        None,
-                    )
-
-                    if prestador_encontrado:
-                        st.session_state.pedido_submetido = True
-                        st.session_state.token_prestador = prestador_encontrado.get(
-                            "token"
-                        )
-                        status_db = prestador_encontrado.get("status_str", "pendente")
-                        st.session_state.estado_pedido = status_db
-                        if status_db == "aprovado":
-                            st.session_state.aprovado = True
-                        st.rerun()
-                    else:
-                        st.error("Registo não encontrado.")
-                else:
-                    st.error("Preencha os campos de Nome e Telefone.")
+            st.markdown('</div>', unsafe_allow_html=True)
