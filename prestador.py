@@ -45,7 +45,6 @@ def render():
         
         @st.fragment(run_every=3)
         def verificar_aprovacao_em_segundo_plano():
-            # Esta função corre a cada 3 segundos em segundo plano para ver se o admin aprovou
             if st.session_state.token_prestador:
                 prestadores_db = obter_prestadores() or []
                 p_atual = next((p for p in prestadores_db if p.get("token") == st.session_state.token_prestador), None)
@@ -87,7 +86,7 @@ def render():
             st.session_state.aprovado = False
             st.rerun()
             
-        return  # INTERROMPE A EXECUÇÃO AQUI
+        return
 
     # ==========================================
     # 4. SE ESTIVER APROVADO: Painel Operacional
@@ -381,6 +380,18 @@ def render():
                                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=75x75&data={url_cliente}" width="75" />
                             </div>
                         </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+                # NOTAS IMPORTANTES SOBRE A TELA DO CÓDIGO QR E O ÍCONE CLIENTE
+                st.markdown(
+                    """
+                    <div style="background-color: #0d0d10; border: 1px solid #3b2c60; padding: 6px 8px; border-radius: 4px; margin-bottom: 4px; font-size: 9px; color: #d4d4d8; line-height: 1.3;">
+                        <div style="color: #c084fc; font-weight: bold; margin-bottom: 2px;">📌 NOTAS IMPORTANTES:</div>
+                        <div>• <b>Tela do Código QR:</b> Abra o link/botão "TV" num projetor ou ecrã secundário para os clientes verem o QR Code em tamanho grande.</div>
+                        <div style="margin-top: 3px;">• <b>Ícone Cliente:</b> O link/botão "Cliente" serve para os clientes lerem o código ou abrirem no telemóvel para pedirem músicas.</div>
+                    </div>
                     """,
                     unsafe_allow_html=True,
                 )
