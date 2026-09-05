@@ -43,7 +43,7 @@ def render():
             video_id = video_fundo.split("watch?v=")[1].split("&")[0]
             embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=0&loop=1&playlist={video_id}&controls=0"
 
-    # 1. VÍDEO DE FUNDO FIXO (Comandado pelo Prestador)
+    # 1. VÍDEO DE FUNDO FIXO (Comandado pelo Prestador) - Só renderiza uma vez
     if embed_url:
         st.markdown(f"""
             <iframe src="{embed_url}" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; border: none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
@@ -55,7 +55,7 @@ def render():
             </div>
         """, unsafe_allow_html=True)
 
-    # 2. PLAYLIST NO CENTRO (Atualiza em segundo plano sem recarregar o vídeo)
+    # 2. PLAYLIST NO CENTRO (Atualizada via Fragmento com recálculo limpo)
     @st.fragment(run_every=3)
     def renderizar_playlist_centro():
         try:
@@ -90,7 +90,9 @@ def render():
             </div>
             """
 
+        # Usamos uma estrutura HTML única e limpa injetada por componentes
         html_conteudo = f"""
+        <!DOCTYPE html>
         <html>
         <head>
         <style>
@@ -102,21 +104,22 @@ def render():
                 overflow: hidden;
             }}
             .playlist-overlay {{
-                position: absolute;
+                position: fixed;
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
                 width: 440px;
                 max-height: 70vh;
-                background: rgba(18, 18, 22, 0.88);
+                background: rgba(18, 18, 22, 0.92);
                 border: 2px solid #eab308;
                 border-radius: 12px;
                 padding: 20px;
                 box-shadow: 0 0 40px rgba(0,0,0,0.95);
-                backdrop-filter: blur(10px);
+                backdrop-filter: blur(12px);
                 display: flex;
                 flex-direction: column;
                 box-sizing: border-box;
+                z-index: 9999;
             }}
             .playlist-scroll {{
                 overflow-y: auto;
@@ -144,6 +147,7 @@ def render():
         </body>
         </html>
         """
-        components.html(html_conteudo, height=650, scrolling=False)
+        # Altura fixa do iframe para evitar redimensionamentos que causam o efeito de oscilação/piscagem
+        components.html(html_conteudo, height=700, scrolling=False)
 
     renderizar_playlist_centro()
