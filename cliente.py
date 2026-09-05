@@ -183,6 +183,29 @@ def render():
             margin: 4px 0 0 0;
         }
 
+        /* Animação de Letreiro Contínuo (Marquee) */
+        @keyframes marquee-anim {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .ff-marquee-container {
+            overflow: hidden;
+            width: 100%;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .ff-marquee-content {
+            display: inline-block;
+            white-space: nowrap;
+            animation: marquee-anim 25s linear infinite;
+        }
+
+        .ff-marquee-content:hover {
+            animation-play-state: paused;
+        }
+
         /* Caixa de Ação Compacta */
         .ff-action-box {
             background-color: #120e21;
@@ -368,9 +391,10 @@ def render():
                 if posicao_real > 1 and len(pendentes_geral) >= (posicao_real - 1):
                     cantor_acima = pendentes_geral[posicao_real - 2].get('cantor', 'outro cantor')
 
-                # Montar string limpa para o rodapé da fila em linha reta única (sem quebras de linha brutas)
+                # Montar string em loop duplo para o efeito de letreiro contínuo (marquee) perfeito
                 lista_itens_fila = [f"<b>#{i+1}</b> — {item.get('cantor', 'Cantor')} ({item.get('musica', 'Música')})" for i, item in enumerate(pendentes_geral)]
-                texto_fila_resumo = " &nbsp;&nbsp;|&nbsp;&nbsp; ".join(lista_itens_fila) if lista_itens_fila else "A fila está vazia no momento."
+                texto_base = " &nbsp;&nbsp;&bull;&nbsp;&nbsp; ".join(lista_itens_fila) if lista_itens_fila else "A fila está vazia no momento."
+                texto_fila_resumo = f"{texto_base} &nbsp;&nbsp;&bull;&nbsp;&nbsp; {texto_base}"
 
                 # CARTÃO 1: A SUA POSIÇÃO ACTUAL É
                 st.markdown(f"""
@@ -382,12 +406,12 @@ def render():
                     </div>
                 """, unsafe_allow_html=True)
                 
-                # CARTÃO 2: AGUARDE A SUA VEZ (Usando linha única na string HTML para evitar falhas do Streamlit)
+                # CARTÃO 2: AGUARDE A SUA VEZ (Com o letreiro animado em movimento contínuo)
                 if musicas_acima > 0:
-                    html_cartao_espera = f'<div class="ff-card-status-centered" style="border-color: rgba(231, 76, 60, 0.4);"><div class="ff-card-title-orange">AGUARDE A SUA VEZ</div><div class="ff-card-main-text" style="font-size: 14px; color: #f1c40f; margin-bottom: 6px;">Assim que cantar o cantor <b>{cantor_acima}</b> será a sua vez!</div><div class="ff-card-subtitle" style="font-size: 10px; margin-bottom: 10px;">({musicas_acima} músicas à sua frente)</div><div style="background: linear-gradient(90deg, #18122c, #22183d, #18122c); border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 8px; padding: 10px; text-align: left; box-shadow: inset 0 2px 5px rgba(0,0,0,0.4);"><div style="font-size: 9px; color: #b19cd9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; text-align: center;">🎶 Fila de Espera Atual 🎶</div><div style="font-size: 11px; color: #ffffff; font-weight: 600; overflow-x: auto; white-space: nowrap; padding-bottom: 2px;">{texto_fila_resumo}</div></div></div>'
+                    html_cartao_espera = f'<div class="ff-card-status-centered" style="border-color: rgba(231, 76, 60, 0.4);"><div class="ff-card-title-orange">AGUARDE A SUA VEZ</div><div class="ff-card-main-text" style="font-size: 14px; color: #f1c40f; margin-bottom: 6px;">Assim que cantar o cantor <b>{cantor_acima}</b> será a sua vez!</div><div class="ff-card-subtitle" style="font-size: 10px; margin-bottom: 10px;">({musicas_acima} músicas à sua frente)</div><div style="background: linear-gradient(90deg, #18122c, #22183d, #18122c); border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 8px; padding: 10px; text-align: left; box-shadow: inset 0 2px 5px rgba(0,0,0,0.4);"><div style="font-size: 9px; color: #b19cd9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; text-align: center;">🎶 Fila de Espera Atual 🎶</div><div class="ff-marquee-container"><div class="ff-marquee-content" style="font-size: 11px; color: #ffffff; font-weight: 600;">{texto_fila_resumo}</div></div></div></div>'
                     st.markdown(html_cartao_espera, unsafe_allow_html=True)
                 else:
-                    html_cartao_vez = f'<div class="ff-card-status-centered" style="border-color: rgba(46, 204, 113, 0.4);"><div class="ff-card-title-green">É A SUA VEZ DE CANTAR!</div><div class="ff-card-main-text" style="color: #2ecc71; margin-bottom: 10px;">Prepare-se para subir ao palco agora.</div><div style="background: linear-gradient(90deg, #18122c, #22183d, #18122c); border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 8px; padding: 10px; text-align: left; box-shadow: inset 0 2px 5px rgba(0,0,0,0.4);"><div style="font-size: 9px; color: #b19cd9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; text-align: center;">🎶 Fila de Espera Atual 🎶</div><div style="font-size: 11px; color: #ffffff; font-weight: 600; overflow-x: auto; white-space: nowrap; padding-bottom: 2px;">{texto_fila_resumo}</div></div></div>'
+                    html_cartao_vez = f'<div class="ff-card-status-centered" style="border-color: rgba(46, 204, 113, 0.4);"><div class="ff-card-title-green">É A SUA VEZ DE CANTAR!</div><div class="ff-card-main-text" style="color: #2ecc71; margin-bottom: 10px;">Prepare-se para subir ao palco agora.</div><div style="background: linear-gradient(90deg, #18122c, #22183d, #18122c); border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 8px; padding: 10px; text-align: left; box-shadow: inset 0 2px 5px rgba(0,0,0,0.4);"><div style="font-size: 9px; color: #b19cd9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; text-align: center;">🎶 Fila de Espera Atual 🎶</div><div class="ff-marquee-container"><div class="ff-marquee-content" style="font-size: 11px; color: #ffffff; font-weight: 600;">{texto_fila_resumo}</div></div></div></div>'
                     st.markdown(html_cartao_vez, unsafe_allow_html=True)
             else:
                 if st.session_state["meu_pedido_timestamp"] is not None:
