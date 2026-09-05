@@ -33,7 +33,38 @@ def render():
                 st.session_state.aprovado = True
 
     # ==========================================
-    # 1. SE ESTIVER APROVADO: Painel Operacional Ultra-Compacto
+    # 1. BLOQUEIO TOTAL SE ESTIVER PENDENTE
+    # ==========================================
+    if st.session_state.pedido_submetido and st.session_state.get("estado_pedido", "pendente") == "pendente":
+        st.markdown(
+            """
+            <style>
+                .stApp {
+                    background-color: #000000 !important;
+                }
+                header[data-testid="stHeader"] {
+                    background-color: transparent !important;
+                }
+                .block-container {
+                    max-width: 600px !important;
+                    padding-top: 5rem !important;
+                    background-color: #000000 !important;
+                }
+            </style>
+            <div style="background-color: #050507; border: 1px solid #3b2c60; padding: 25px; text-align: center; border-radius: 8px; margin: auto;">
+                <div style="font-size: 32px; margin-bottom: 10px;">⏳</div>
+                <h3 style="color: #ffffff; font-size: 18px; margin-bottom: 8px;">Aguardando Aprovação</h3>
+                <p style="color: #d4d4d8; font-size: 12px; margin-bottom: 0;">O seu registo está a aguardar validação do Administrador.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        time.sleep(3)
+        st.rerun()
+        return
+
+    # ==========================================
+    # 2. SE ESTIVER APROVADO: Painel Operacional
     # ==========================================
     if (
         st.session_state.get("aprovado", False)
@@ -391,7 +422,7 @@ def render():
         return
 
     # ==========================================
-    # 2. SE ESTIVER RECUSADO
+    # 3. SE ESTIVER RECUSADO
     # ==========================================
     if st.session_state.pedido_submetido and st.session_state.estado_pedido == "recusado":
         st.markdown(
@@ -413,24 +444,7 @@ def render():
         return
 
     # ==========================================
-    # 3. SE ESTIVER PENDENTE (GARANTE QUE O FORMULÁRIO SUME)
-    # ==========================================
-    if st.session_state.pedido_submetido and st.session_state.get("estado_pedido", "pendente") == "pendente":
-        st.markdown(
-            """
-                <div style="background-color: #050507; padding: 15px; text-align: center; border-radius: 4px; max-width: 400px; margin: 15px auto; border: 1px solid #3b2c60;">
-                    <h3 style="color: #ffffff; font-size: 15px; margin-bottom: 2px;">Aguardando Aprovação</h3>
-                    <p style="color: #d4d4d8; font-size: 11px; margin-bottom: 2px;">O seu registo está a aguardar validação do Administrador.</p>
-                </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        time.sleep(3)
-        st.rerun()
-        return
-
-    # ==========================================
-    # 🎨 4. TELA INICIAL: REGISTO / LOGIN AJUSTADO
+    # 🎨 4. TELA INICIAL: REGISTO / LOGIN 
     # ==========================================
     st.markdown(
         f"""
