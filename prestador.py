@@ -59,7 +59,7 @@ def render():
             )
 
         # ==========================================
-        # 🎨 ESTILO COM LARGURA AUMENTADA EM 20% (1344px)
+        # 🎨 ESTILO COM LARGURA AUMENTADA E ANIMAÇÃO DE RODAPÉ
         # ==========================================
         st.markdown(
             """
@@ -69,7 +69,7 @@ def render():
                     background-color: #08080a !important;
                 }
                 
-                /* Moldura centralizada (Largura aumentada em 20%: 1120px -> 1344px) */
+                /* Moldura centralizada (Largura 1344px) */
                 .block-container {
                     max-width: 1344px !important;
                     padding-top: 1.8rem !important;
@@ -121,6 +121,30 @@ def render():
                 .stButton button:hover {
                     border-color: #eab308 !important;
                     color: #eab308 !important;
+                }
+
+                /* Efeito de Rodapé em Movimento (Marquee) */
+                @keyframes scrollRodape {
+                    0% { transform: translateX(100%); }
+                    100% { transform: translateX(-100%); }
+                }
+                .wave-footer-container {
+                    width: 100%;
+                    overflow: hidden;
+                    background: #121215;
+                    border: 1px solid #27272a;
+                    border-radius: 6px;
+                    padding: 6px 0;
+                    margin-top: 4px;
+                    white-space: nowrap;
+                }
+                .wave-footer-content {
+                    display: inline-block;
+                    animation: scrollRodape 12s linear infinite;
+                    color: #eab308;
+                    font-size: 15px;
+                    font-weight: bold;
+                    letter-spacing: 3px;
                 }
             </style>
             """,
@@ -211,11 +235,11 @@ def render():
                 st.session_state.aprovado = False
                 st.rerun()
 
-            # 4. Logotipo por baixo do botão Sair
+            # 4. Logotipo Aumentado em 50% (de 140px para 210px) por baixo do botão Sair
             st.markdown(
                 f"""
                 <div style="text-align: center; margin-top: 10px; margin-bottom: 10px;">
-                    <img src="{LINK_LOGO}" style="max-width: 100%; width: 140px; border-radius: 8px;" />
+                    <img src="{LINK_LOGO}" style="max-width: 100%; width: 210px; border-radius: 8px;" />
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -245,8 +269,11 @@ def render():
                                         </div>
                                     </div>
                                 </div>
-                                <div style="text-align: right; opacity: 0.7; margin-top: 4px;">
-                                    <span style="font-size: 11px; color: #eab308; letter-spacing: 2px;">▂▃▄▅▆▇█▇▆▅▄▃▂ ▂▃▄▅▆▇█</span>
+                                <!-- Onda em Efeito de Rodapé Animado -->
+                                <div class="wave-footer-container">
+                                    <div class="wave-footer-content">
+                                        ▂▃▄▅▆▇█▇▆▅▄▃▂ ▂▃▄▅▆▇█▇▆▅▄▃▂ ▂▃▄▅▆▇█▇▆▅▄▃▂
+                                    </div>
                                 </div>
                             </div>
                         """,
