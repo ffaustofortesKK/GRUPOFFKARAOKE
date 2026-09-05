@@ -125,6 +125,8 @@ def render():
             unsafe_allow_html=True,
         )
 
+        col_relogio, col_top_btn = st.columns([1, 1])
+
         with col_relogio:
             @st.fragment(run_every=3)
             def renderizar_relogio_topo():
@@ -155,7 +157,7 @@ def render():
                         )
                     except Exception:
                         segundos_restantes = segundos_contrato_inicial
-
+                
                 horas = segundos_restantes // 3600
                 minutos = (segundos_restantes % 3600) // 60
                 segundos = segundos_restantes % 60
@@ -220,7 +222,6 @@ def render():
                     """,
                     unsafe_allow_html=True,
                 )
-
             renderizar_a_tocar()
 
             st.markdown('<div class="btn-acao">', unsafe_allow_html=True)
@@ -232,9 +233,7 @@ def render():
                 if st.button("⏸ Parar", use_container_width=True, key="btn_parar"):
                     st.toast("Parado.")
             with b3:
-                if st.button(
-                    "⏭ Próxima", use_container_width=True, key="btn_proxima"
-                ):
+                if st.button("⏭ Próxima", use_container_width=True, key="btn_proxima"):
                     st.toast("Próxima.")
             st.markdown("</div>", unsafe_allow_html=True)
 
@@ -289,16 +288,13 @@ def render():
                                 """,
                                 unsafe_allow_html=True,
                             )
-
                         with col_botoes:
                             b_up, b_down, b_del = st.columns(3)
                             with b_up:
                                 if idx > 0:
                                     if st.button("⬆️", key=f"up_{pedido_id}", use_container_width=True):
-                                        # Trocar a ordem com o item anterior na lista global e guardar
                                         global_idx_atual = next((i for i, item in enumerate(todos_pedidos) if (item.get("id") or item.get("timestamp") or i) == pedido_id), None)
                                         if global_idx_atual is not None and global_idx_atual > 0:
-                                            # Encontrar o índice global do anterior válido visível
                                             todos_pedidos[global_idx_atual], todos_pedidos[global_idx_atual - 1] = todos_pedidos[global_idx_atual - 1], todos_pedidos[global_idx_atual]
                                             for item in todos_pedidos:
                                                 guardar_pedido_musica(item)
@@ -664,7 +660,7 @@ def render():
             btn_entrar = st.form_submit_button(
                 "🔑 ACEDER AO PAINEL", use_container_width=True
             )
-
+            
             if btn_entrar:
                 if login_nome.strip() and login_telefone.strip():
                     prestadores = obter_prestadores()
@@ -692,6 +688,4 @@ def render():
                     else:
                         st.error("Registo não encontrado.")
                 else:
-                    st.error("Preencha os campos.")
-
-    st.markdown("</div>", unsafe_allow_html=True)
+                    st.error("Preencha os campos de Nome e Telefone.")
