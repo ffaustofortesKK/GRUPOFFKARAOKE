@@ -190,7 +190,7 @@ def render():
             border-radius: 8px;
             overflow: hidden;
             padding: 8px 10px;
-            margin-top: 10px;
+            margin-top: 12px;
             box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
             white-space: nowrap;
         }
@@ -203,9 +203,10 @@ def render():
             font-weight: 700;
             text-align: center;
         }
-        .ff-marquee-content {
+        .ff-marquee-track {
             display: inline-block;
-            animation: marquee 20s linear infinite;
+            white-space: nowrap;
+            animation: marquee 22s linear infinite;
             font-size: 12px;
             color: #ffffff;
             font-weight: 600;
@@ -214,7 +215,7 @@ def render():
             0% { transform: translateX(100%); }
             100% { transform: translateX(-100%); }
         }
-        .ff-marquee-container:hover .ff-marquee-content {
+        .ff-marquee-container:hover .ff-marquee-track {
             animation-play-state: paused;
         }
 
@@ -405,7 +406,8 @@ def render():
                     cantor_acima = pendentes_geral[posicao_real - 2].get('cantor', 'outro cantor')
 
                 # Preparar texto da fila para o rodapé animado
-                itens_fila_str = " &nbsp;&nbsp;|&nbsp;&nbsp; ".join([f"#{i+1} - {item.get('cantor', 'Cantor')} ({item.get('musica', 'Música')})" for i, item in enumerate(pendentes_geral)])
+                lista_formatada = [f"#{i+1} — {item.get('cantor', 'Cantor')} ({item.get('musica', 'Música')})" for i, item in enumerate(pendentes_geral)]
+                itens_fila_str = " &nbsp;&nbsp;&bull;&nbsp;&nbsp; ".join(lista_formatada)
                 if not itens_fila_str:
                     itens_fila_str = "A fila está vazia no momento."
 
@@ -432,7 +434,7 @@ def render():
                             <div class="ff-marquee-container">
                                 <div class="ff-marquee-title">🎶 Fila de Espera em Direto 🎶</div>
                                 <div style="overflow: hidden; width: 100%;">
-                                    <div class="ff-marquee-content">{itens_fila_str}</div>
+                                    <div class="ff-marquee-track">{itens_fila_str}</div>
                                 </div>
                             </div>
                         </div>
@@ -446,7 +448,7 @@ def render():
                             <div class="ff-marquee-container">
                                 <div class="ff-marquee-title">🎶 Fila de Espera em Direto 🎶</div>
                                 <div style="overflow: hidden; width: 100%;">
-                                    <div class="ff-marquee-content">{itens_fila_str}</div>
+                                    <div class="ff-marquee-track">{itens_fila_str}</div>
                                 </div>
                             </div>
                         </div>
