@@ -1,5 +1,5 @@
 import streamlit as st
-import streamlit.components.v1 as components
+import time
 from db import obter_prestadores, obter_pedidos_musicas
 
 def render():
@@ -15,6 +15,37 @@ def render():
             .block-container {
                 max-width: 100% !important;
                 padding: 0 !important;
+            }
+            /* Container centralizado fixo para a playlist */
+            .playlist-central {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 440px;
+                max-height: 70vh;
+                background: rgba(18, 18, 22, 0.94);
+                border: 2px solid #eab308;
+                border-radius: 12px;
+                padding: 20px;
+                box-shadow: 0 0 50px rgba(0,0,0,0.95);
+                backdrop-filter: blur(12px);
+                z-index: 99999;
+                display: flex;
+                flex-direction: column;
+                box-sizing: border-box;
+            }
+            .playlist-scroll {
+                overflow-y: auto;
+                max-height: 52vh;
+                padding-right: 4px;
+            }
+            .playlist-scroll::-webkit-scrollbar {
+                width: 6px;
+            }
+            .playlist-scroll::-webkit-scrollbar-thumb {
+                background: #3f3f46;
+                border-radius: 4px;
             }
         </style>
     """, unsafe_allow_html=True)
@@ -43,7 +74,7 @@ def render():
             video_id = video_fundo.split("watch?v=")[1].split("&")[0]
             embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=0&loop=1&playlist={video_id}&controls=0"
 
-    # 1. VÍDEO DE FUNDO FIXO (Comandado pelo Prestador) - Só renderiza uma vez
+    # 1. VÍDEO DE FUNDO FIXO (Comandado pelo Prestador)
     if embed_url:
         st.markdown(f"""
             <iframe src="{embed_url}" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; border: none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
@@ -55,7 +86,7 @@ def render():
             </div>
         """, unsafe_allow_html=True)
 
-    # 2. PLAYLIST NO CENTRO (Atualizada via Fragmento com recálculo limpo)
+    # 2. PLAYLIST NO CENTRO (Atualizada via Fragmento Nativamente)
     @st.fragment(run_every=3)
     def renderizar_playlist_centro():
         try:
@@ -75,7 +106,7 @@ def render():
                 musica = pedido.get("musica", "Desconhecida")
                 cantor = pedido.get("cantor", "Convidado")
                 itens_html += f"""
-                <div style="background-color: rgba(28, 28, 36, 0.90); border: 1px solid #3f3f46; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; text-align: left;">
+                <div style="background-color: rgba(28, 28, 36, 0.92); border: 1px solid #3f3f46; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; text-align: left;">
                     <div style="color: #eab308; font-size: 11px; font-weight: bold;">#{idx+1} na Fila</div>
                     <div style="color: #ffffff; font-size: 14px; font-weight: bold; margin-top: 2px;">🎵 {musica}</div>
                     <div style="color: #c084fc; font-size: 12px; margin-top: 2px;">🎤 Cantor: <b>{cantor}</b></div>
@@ -90,64 +121,16 @@ def render():
             </div>
             """
 
-        # Usamos uma estrutura HTML única e limpa injetada por componentes
-        html_conteudo = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-        <style>
-            body {{
-                background-color: transparent;
-                margin: 0;
-                padding: 0;
-                font-family: sans-serif;
-                overflow: hidden;
-            }}
-            .playlist-overlay {{
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                width: 440px;
-                max-height: 70vh;
-                background: rgba(18, 18, 22, 0.92);
-                border: 2px solid #eab308;
-                border-radius: 12px;
-                padding: 20px;
-                box-shadow: 0 0 40px rgba(0,0,0,0.95);
-                backdrop-filter: blur(12px);
-                display: flex;
-                flex-direction: column;
-                box-sizing: border-box;
-                z-index: 9999;
-            }}
-            .playlist-scroll {{
-                overflow-y: auto;
-                max-height: 52vh;
-                padding-right: 4px;
-            }}
-            .playlist-scroll::-webkit-scrollbar {{
-                width: 6px;
-            }}
-            .playlist-scroll::-webkit-scrollbar-thumb {{
-                background: #3f3f46;
-                border-radius: 4px;
-            }}
-        </style>
-        </head>
-        <body>
-            <div class="playlist-overlay">
-                <div style="color: #eab308; font-weight: bold; font-size: 16px; margin-bottom: 12px; border-bottom: 2px solid #3f3f46; padding-bottom: 8px; text-align: center; text-transform: uppercase;">
-                    🎶 Playlist · Fila ({len(lista_pedidos)})
-                </div>
-                <div class="playlist-scroll">
-                    {itens_html}
-                </div>
+        html_playlist = f"""
+        <div class="playlist-central">
+            <div style="color: #eab308; font-weight: bold; font-size: 16px; margin-bottom: 12px; border-bottom: 2px solid #3f3f46; padding-bottom: 8px; text-align: center; text-transform: uppercase;">
+                🎶 Playlist · Fila ({len(lista_pedidos)})
             </div>
-        </body>
-        </html>
+            <div class="playlist-scroll">
+                {itens_html}
+            </div>
+        </div>
         """
-        # Altura fixa do iframe para evitar redimensionamentos que causam o efeito de oscilação/piscagem
-        components.html(html_conteudo, height=700, scrolling=False)
+        st.markdown(html_playlist, unsafe_allow_html=True)
 
     renderizar_playlist_centro()
