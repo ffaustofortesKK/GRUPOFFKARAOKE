@@ -112,6 +112,18 @@ def render():
                     border-color: #eab308 !important;
                     color: #eab308 !important;
                 }
+                /* Estilo específico para corrigir os botões de ação da fila (Subir, Descer, Remover) */
+                div[data-testid="column"] button {
+                    background-color: #18181b !important;
+                    color: #ffffff !important;
+                    border: 1px solid #3f3f46 !important;
+                    font-size: 11px !important;
+                }
+                div[data-testid="column"] button:hover {
+                    background-color: #27272a !important;
+                    border-color: #eab308 !important;
+                    color: #eab308 !important;
+                }
                 @keyframes equalizer {
                     0% { height: 2px; }
                     50% { height: 12px; }
@@ -206,8 +218,25 @@ def render():
 
             st.markdown(
                 f"""
-                <div style="text-align: center; margin-top: 4px;">
-                    <img src="{LINK_LOGO}" style="max-width: 100%; width: 150px; border-radius: 4px;" />
+                <div style="text-align: center; margin-top: 4px; margin-bottom: 6px;">
+                    <img src="{LINK_LOGO}" style="max-width: 100%; width: 130px; border-radius: 4px;" />
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+            # CAMPO DE EXPLICAÇÃO / AJUDA
+            st.markdown(
+                """
+                <div style="background-color: #0d0d10; border: 1px solid #3b2c60; padding: 8px; border-radius: 6px; font-size: 10px; color: #d4d4d8; line-height: 1.3;">
+                    <div style="color: #eab308; font-weight: bold; font-size: 11px; margin-bottom: 4px; text-align: center;">💡 GUIA DE AJUDA</div>
+                    <div style="margin-bottom: 4px;">🖥️ <b>Ícone TV:</b> Abrirá uma nova página onde abrirá uma tela que irá apresentar os pedidos de karaokê dos clientes assim que clicar no TOCAR.</div>
+                    <div style="margin-bottom: 4px;">📱 <b>Ícone Cliente:</b> Abrirá uma nova página onde o cliente fará o seu registo e pedido da sua música de karaokê e onde acompanhará também a posição dos demais clientes.</div>
+                    <div style="margin-bottom: 4px;">🎬 <b>Vídeo TV:</b> Escolherá o vídeo que irá passar na tela enquanto não houver pedido ou enquanto o prestador não puser a música de karaokê.</div>
+                    <div style="border-top: 1px solid #27272a; margin-top: 6px; padding-top: 4px; text-align: center; color: #a1a1aa; font-size: 9px;">
+                        Para mais informações acesse o WhatsApp:<br>
+                        <b style="color: #eab308;">921204050 / 955099159</b>
+                    </div>
                 </div>
                 """,
                 unsafe_allow_html=True,
