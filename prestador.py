@@ -115,7 +115,7 @@ def render():
                     background-color: transparent !important;
                 }
                 .block-container {
-                    max-width: 960px !important;
+                    max-width: 1150px !important;
                     padding-top: 0.2rem !important;
                     padding-bottom: 0.4rem !important;
                     padding-left: 0.8rem !important;
@@ -247,21 +247,34 @@ def render():
                 unsafe_allow_html=True,
             )
 
+            # LOGOTIPO
+            st.markdown(
+                f"""
+                <div style="text-align: center; margin-top: 2px; margin-bottom: 4px;">
+                    <img src="{LINK_LOGO}" style="max-width: 100%; width: 130px; border-radius: 4px;" />
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+            # NOTA INFORMATIVA LOGO ABAIXO DO LOGOTIPO
+            st.markdown(
+                """
+                <div style="background-color: #0d0d10; border: 1px solid #3b2c60; padding: 6px 8px; border-radius: 4px; margin-bottom: 4px; font-size: 9px; color: #d4d4d8; line-height: 1.3;">
+                    <div style="color: #c084fc; font-weight: bold; margin-bottom: 2px;">📌 NOTAS IMPORTANTES:</div>
+                    <div>• <b>Tela do Código QR:</b> Abra o link/botão "TV" num projetor ou ecrã secundário para os clientes verem o QR Code em tamanho grande.</div>
+                    <div style="margin-top: 3px;">• <b>Ícone Cliente:</b> O link/botão "Cliente" serve para os clientes lerem o código ou abrirem no telemóvel para pedirem músicas.</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
             if st.button("🚪 Sair", use_container_width=True):
                 st.session_state.pedido_submetido = False
                 st.session_state.token_prestador = None
                 st.session_state.estado_pedido = "pendente"
                 st.session_state.aprovado = False
                 st.rerun()
-
-            st.markdown(
-                f"""
-                <div style="text-align: center; margin-top: 4px; margin-bottom: 6px;">
-                    <img src="{LINK_LOGO}" style="max-width: 100%; width: 130px; border-radius: 4px;" />
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
 
         with col_principal:
             col_esq, col_dir = st.columns([1.4, 1])
@@ -380,18 +393,6 @@ def render():
                                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=75x75&data={url_cliente}" width="75" />
                             </div>
                         </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-
-                # NOTAS IMPORTANTES SOBRE A TELA DO CÓDIGO QR E O ÍCONE CLIENTE
-                st.markdown(
-                    """
-                    <div style="background-color: #0d0d10; border: 1px solid #3b2c60; padding: 6px 8px; border-radius: 4px; margin-bottom: 4px; font-size: 9px; color: #d4d4d8; line-height: 1.3;">
-                        <div style="color: #c084fc; font-weight: bold; margin-bottom: 2px;">📌 NOTAS IMPORTANTES:</div>
-                        <div>• <b>Tela do Código QR:</b> Abra o link/botão "TV" num projetor ou ecrã secundário para os clientes verem o QR Code em tamanho grande.</div>
-                        <div style="margin-top: 3px;">• <b>Ícone Cliente:</b> O link/botão "Cliente" serve para os clientes lerem o código ou abrirem no telemóvel para pedirem músicas.</div>
-                    </div>
                     """,
                     unsafe_allow_html=True,
                 )
