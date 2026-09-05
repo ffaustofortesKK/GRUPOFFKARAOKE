@@ -299,6 +299,25 @@ def render():
                     total_pedidos = len(lista_pedidos)
 
                     st.markdown(
+                        """
+                        <style>
+                            /* Força o fundo branco nos botões específicos desta área / gerais */
+                            div[data-testid="column"] button {
+                                background-color: #ffffff !important;
+                                color: #000000 !important;
+                                border: 1px solid #d4d4d8 !important;
+                            }
+                            div[data-testid="column"] button:hover {
+                                background-color: #f4f4f5 !important;
+                                border-color: #eab308 !important;
+                                color: #000000 !important;
+                            }
+                        </style>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+
+                    st.markdown(
                         f"""
                             <div class="box-container" style="max-height: 140px; overflow-y: auto;">
                                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; border-bottom: 1px solid #27272a; padding-bottom: 2px;">
