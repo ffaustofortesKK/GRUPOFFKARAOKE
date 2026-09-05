@@ -1,7 +1,13 @@
 from datetime import datetime
 import time
 import streamlit as st
-from db import guardar_prestador, obter_pedidos_musicas, obter_prestadores, guardar_pedido_musica, apagar_pedido_musica
+from db import (
+    guardar_prestador,
+    obter_pedidos_musicas,
+    obter_prestadores,
+    guardar_pedido_musica,
+    apagar_pedido_musica,
+)
 
 def render():
     if "pedido_submetido" not in st.session_state:
@@ -409,122 +415,6 @@ def render():
 
                 col_bt_tv, col_bt_cli = st.columns(2)
                 with col_bt_tv:
-                    st.markdown(
-                        f'<a href="{url_tela}" target="_blank"><button style="width: 100%; background-color: #121215; color: #ffffff; border: 1px solid #27272a; padding: 6px; border-radius: 6px; font-size: 12px; font-weight: 500;">🖥️ TV</button></a>',
-                        unsafe_allow_html=True,
-                    )
+                    st.link_button("📺 Abrir TV", url_tela, use_container_width=True)
                 with col_bt_cli:
-                    st.markdown(
-                        f'<a href="{url_cliente}" target="_blank"><button style="width: 100%; background-color: #121215; color: #ffffff; border: 1px solid #27272a; padding: 6px; border-radius: 6px; font-size: 12px; font-weight: 500;">📱 Cliente</button></a>',
-                        unsafe_allow_html=True,
-                    )
-
-                st.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
-
-                videos_disponiveis = {
-                    "- Sem vídeo -": "",
-                    "Vídeo 1 (Oficial)": "https://youtu.be/cQ4MD7gOBmc?si=5wzaxysiHSEwn9QT",
-                    "Vídeo 2": "https://youtu.be/H_aniWehIYY?si=e9WzMGyFSy7PdrAj",
-                    "Vídeo 3": "https://youtu.be/sGGlQ9yJQNg?si=LVeN5zjZ153uksLW",
-                    "Vídeo 4": "https://youtu.be/sGGlQ9yJQNg?si=ZxjJ34_4Z13MUL-g",
-                    "Vídeo 5": "https://youtu.be/TmayKMV0bJY?si=Zb99BwXuFyDDJ-tN",
-                }
-
-                st.markdown(
-                    """
-                    <div class="box-container">
-                        <div class="box-title">
-                            <span>🎬 VÍDEO DE FUNDO DA TV</span>
-                        </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-
-                video_escolhido = st.selectbox(
-                    "Vídeo de fundo:",
-                    list(videos_disponiveis.keys()),
-                    label_visibility="collapsed",
-                )
-                url_video_selecionado = videos_disponiveis[video_escolhido]
-
-                if st.button(
-                    "▶ Atualizar Vídeo",
-                    use_container_width=True,
-                    type="primary",
-                    key="btn_atualizar_video",
-                ):
-                    if st.session_state.token_prestador:
-                        prestadores = obter_prestadores()
-                        for p in prestadores:
-                            if p.get("token") == st.session_state.token_prestador:
-                                p["video_fundo"] = url_video_selecionado
-                                guardar_prestador(p)
-                        st.success("Guardado!")
-
-                st.markdown("</div>", unsafe_allow_html=True)
-
-        return
-
-    # 2. SE ESTIVER RECUSADO
-    if (
-        st.session_state.pedido_submetido
-        and st.session_state.estado_pedido == "recusado"
-    ):
-        st.markdown(
-            """
-                <div style="background-color: #0f0f11; border: 1px solid #ef4444; padding: 20px; text-align: center; border-radius: 8px; max-width: 500px; margin: 30px auto;">
-                    <div style="font-size: 35px; margin-bottom: 8px;">❌</div>
-                    <h3 style="color: #ef4444; font-size: 18px; margin-bottom: 8px;">Pedido Recusado</h3>
-                    <p style="color: #d4d4d8; font-size: 14px; margin-bottom: 12px;">O seu pedido foi recusado pelo Administrador.</p>
-                </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            if st.button("Tentar Novamente", use_container_width=True):
-                st.session_state.pedido_submetido = False
-                st.session_state.token_prestador = None
-                st.session_state.estado_pedido = "pendente"
-                st.session_state.aprovado = False
-                st.rerun()
-        return
-
-    # 3. SE ESTIVER PENDENTE
-    if st.session_state.pedido_submetido:
-        st.markdown(
-            """
-                <div style="background-color: #0f0f11; padding: 25px; text-align: center; border-radius: 8px; max-width: 500px; margin: 30px auto;">
-                    <h3 style="color: #ffffff; font-size: 18px; margin-bottom: 8px;">Aguardando Aprovação</h3>
-                    <p style="color: #d4d4d8; font-size: 14px; margin-bottom: 6px;">O seu registo está a aguardar validação do Administrador.</p>
-                </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        time.sleep(3)
-        st.rerun()
-        return
-
-    # 4. TELA INICIAL: REGISTO OU LOGIN
-    st.markdown(
-        """
-            <style>
-                .prestador-wrapper {
-                    background: #0f0f13;
-                    border: 1px solid #8b5cf6;
-                    border-radius: 10px;
-                    padding: 16px 20px;
-                    max-width: 700px;
-                    margin: 0 auto;
-                }
-                .prestador-title {
-                    color: #eab308;
-                    font-size: 20px;
-                    font-weight: 800;
-                    margin-top: 4px;
-                    margin-bottom: 2px;
-                }
-            </style>
-        """,
-        unsafe_allow_html=True,
-    )
+                    st.link_button("📱 Abrir Cliente", url_cliente, use_container_width=True)
