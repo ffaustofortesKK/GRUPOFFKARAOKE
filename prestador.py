@@ -59,7 +59,7 @@ def render():
             )
 
         # ==========================================
-        # 🎨 ESTILO COM LARGURA AUMENTADA E ANIMAÇÃO DE RODAPÉ
+        # 🎨 ESTILO COM LARGURA AUMENTADA E ANIMAÇÃO DA ONDA
         # ==========================================
         st.markdown(
             """
@@ -123,29 +123,35 @@ def render():
                     color: #eab308 !important;
                 }
 
-                /* Efeito de Rodapé em Movimento (Marquee) */
-                @keyframes scrollRodape {
-                    0% { transform: translateX(100%); }
-                    100% { transform: translateX(-100%); }
+                /* Animação das Barras de Equalizador (Onda a Mexer) */
+                @keyframes ondaAnimada {
+                    0% { height: 6px; }
+                    50% { height: 22px; }
+                    100% { height: 6px; }
                 }
-                .wave-footer-container {
-                    width: 100%;
-                    overflow: hidden;
-                    background: #121215;
-                    border: 1px solid #27272a;
-                    border-radius: 6px;
-                    padding: 6px 0;
-                    margin-top: 4px;
-                    white-space: nowrap;
+                .equalizer-wave {
+                    display: flex;
+                    align-items: flex-end;
+                    justify-content: flex-end;
+                    gap: 3px;
+                    height: 25px;
                 }
-                .wave-footer-content {
-                    display: inline-block;
-                    animation: scrollRodape 12s linear infinite;
-                    color: #eab308;
-                    font-size: 15px;
-                    font-weight: bold;
-                    letter-spacing: 3px;
+                .eq-bar {
+                    width: 4px;
+                    background-color: #eab308;
+                    border-radius: 2px;
+                    animation: ondaAnimada 1.2s infinite ease-in-out;
                 }
+                .eq-bar:nth-child(1) { animation-delay: 0.1s; }
+                .eq-bar:nth-child(2) { animation-delay: 0.3s; }
+                .eq-bar:nth-child(3) { animation-delay: 0.5s; }
+                .eq-bar:nth-child(4) { animation-delay: 0.2s; }
+                .eq-bar:nth-child(5) { animation-delay: 0.6s; }
+                .eq-bar:nth-child(6) { animation-delay: 0.4s; }
+                .eq-bar:nth-child(7) { animation-delay: 0.7s; }
+                .eq-bar:nth-child(8) { animation-delay: 0.2s; }
+                .eq-bar:nth-child(9) { animation-delay: 0.5s; }
+                .eq-bar:nth-child(10) { animation-delay: 0.3s; }
             </style>
             """,
             unsafe_allow_html=True,
@@ -235,11 +241,11 @@ def render():
                 st.session_state.aprovado = False
                 st.rerun()
 
-            # 4. Logotipo Aumentado em 50% (de 140px para 210px) por baixo do botão Sair
+            # 4. Logotipo Aumentado em 80% (por baixo do botão Sair)
             st.markdown(
                 f"""
                 <div style="text-align: center; margin-top: 10px; margin-bottom: 10px;">
-                    <img src="{LINK_LOGO}" style="max-width: 100%; width: 210px; border-radius: 8px;" />
+                    <img src="{LINK_LOGO}" style="max-width: 100%; width: 252px; border-radius: 8px;" />
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -269,10 +275,18 @@ def render():
                                         </div>
                                     </div>
                                 </div>
-                                <!-- Onda em Efeito de Rodapé Animado -->
-                                <div class="wave-footer-container">
-                                    <div class="wave-footer-content">
-                                        ▂▃▄▅▆▇█▇▆▅▄▃▂ ▂▃▄▅▆▇█▇▆▅▄▃▂ ▂▃▄▅▆▇█▇▆▅▄▃▂
+                                <div style="margin-top: 4px;">
+                                    <div class="equalizer-wave">
+                                        <div class="eq-bar"></div>
+                                        <div class="eq-bar"></div>
+                                        <div class="eq-bar"></div>
+                                        <div class="eq-bar"></div>
+                                        <div class="eq-bar"></div>
+                                        <div class="eq-bar"></div>
+                                        <div class="eq-bar"></div>
+                                        <div class="eq-bar"></div>
+                                        <div class="eq-bar"></div>
+                                        <div class="eq-bar"></div>
                                     </div>
                                 </div>
                             </div>
