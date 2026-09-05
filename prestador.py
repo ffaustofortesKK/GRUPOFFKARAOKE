@@ -16,7 +16,7 @@ def render():
     if "aprovado" not in st.session_state:
         st.session_state.aprovado = False
 
-    # Verificar estado atual no banco de dados se houver um token ativo
+    # Sincronizar com a base de dados se houver um token ativo
     if st.session_state.token_prestador:
         prestadores = obter_prestadores() or []
         prestador_atual = next(
@@ -404,7 +404,6 @@ def render():
 
     # ==========================================
     # CASO 4: TELA INICIAL (REGISTO / LOGIN)
-    # (Este bloco só existe se NÃO houver submissão ativa)
     # ==========================================
     else:
         st.markdown(
@@ -441,6 +440,7 @@ def render():
             "Escolha a opção:",
             ["Novo Registo", "Já estou online / Entrar com Nome e Telefone"],
             horizontal=True,
+            key="radio_modo_acesso_prestador"
         )
 
         if modo_acesso == "Novo Registo":
@@ -499,6 +499,7 @@ def render():
 
                         guardar_prestador(novo_prestador)
 
+                        # Atribuir estado e forçar rerun imediato com interrupção de fluxo
                         st.session_state.pedido_submetido = True
                         st.session_state.token_prestador = token_gerado
                         st.session_state.estado_pedido = "pendente"
