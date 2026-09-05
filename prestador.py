@@ -273,13 +273,13 @@ def render():
                         time.sleep(0.5)
                         st.rerun()
 
-            # NOTA INFORMATIVA
+            # NOTA INFORMATIVA ATUALIZADA
             st.markdown(
                 """
                 <div style="background-color: #0d0d10; border: 1px solid #3b2c60; padding: 10px 10px; border-radius: 4px; margin-top: 6px; margin-bottom: 6px; font-size: 10px; color: #d4d4d8; line-height: 1.3;">
                     <div style="color: #c084fc; font-weight: bold; margin-bottom: 3px;">📌 NOTAS IMPORTANTES:</div>
-                    <div>• <b>Tela do Código QR:</b> Abra o link/botão "TV" num projetor ou ecrã secundário.</div>
-                    <div style="margin-top: 4px;">• <b>Ícone Cliente:</b> O link/botão "Cliente" serve para os clientes pedirem músicas.</div>
+                    <div>• <b>Código QR e Link Cliente:</b> O cliente deve apontar a câmara do telemóvel para o QR Code (ou clicar no botão "Cliente") para aceder, fazer o seu registo e enviar o pedido de música.</div>
+                    <div style="margin-top: 4px;">• <b>Tela do Código QR:</b> Abra o link/botão "TV" num projetor ou ecrã secundário.</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -348,49 +348,51 @@ def render():
                     lista_pedidos = [p for p in todos_pedidos if p.get("status", "pendente") == "pendente" and (str(p.get("token_prestador", "")) in ["", "None", token_ativo])]
                     total_pedidos = len(lista_pedidos)
 
-                    st.markdown(
-                        f"""
+                    # INÍCIO DO RETÂNGULO DA FILA DE PEDIDOS (CONTAINER ÚNICO)
+                    with st.container():
+                        st.markdown(
+                            f"""
                             <div class="box-container" style="max-height: 350px; min-height: 220px; overflow-y: auto;">
                                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid #27272a; padding-bottom: 4px;">
                                     <span style="color: #c084fc; font-weight: bold; font-size: 11px;">👥 FILA DE PEDIDOS ({total_pedidos})</span>
                                 </div>
-                        """,
-                        unsafe_allow_html=True,
-                    )
+                            """,
+                            unsafe_allow_html=True,
+                        )
 
-                    if total_pedidos > 0:
-                        for idx, pedido in enumerate(lista_pedidos):
-                            musica = pedido.get("musica", "Desconhecida")
-                            cantor = pedido.get("cantor", "Convidado")
-                            pedido_id = pedido.get("id") or pedido.get("timestamp") or idx
+                        if total_pedidos > 0:
+                            for idx, pedido in enumerate(lista_pedidos):
+                                musica = pedido.get("musica", "Desconhecida")
+                                cantor = pedido.get("cantor", "Convidado")
+                                pedido_id = pedido.get("id") or pedido.get("timestamp") or idx
 
-                            col_info, col_botoes = st.columns([2.3, 1.7])
-                            with col_info:
-                                st.markdown(
-                                    f"""
-                                    <div style="background-color: #0d0d10; border: 1px solid #27272a; border-radius: 3px; padding: 6px 8px; display: flex; align-items: center; gap: 6px; height: 34px; margin-bottom: 4px;">
-                                        <span style="color: #c084fc; font-weight: bold; font-size: 11px;">{idx+1}º</span>
-                                        <span style="color: #ffffff; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{musica} — <span style="color: #a1a1aa;">{cantor}</span></span>
-                                    </div>
-                                    """,
-                                    unsafe_allow_html=True,
-                                )
-                            with col_botoes:
-                                b_up, b_down, b_del = st.columns(3)
-                                with b_up:
-                                    if idx > 0 and st.button("⬆", key=f"up_{pedido_id}", use_container_width=True):
-                                        pass
-                                with b_down:
-                                    if idx < total_pedidos - 1 and st.button("⬇", key=f"down_{pedido_id}", use_container_width=True):
-                                        pass
-                                with b_del:
-                                    if st.button("✕", key=f"del_{pedido_id}", use_container_width=True):
-                                        apagar_pedido_musica(pedido_id)
-                                        st.rerun()
-                    else:
-                        st.markdown("<p style='color: #a1a1aa; margin: 8px 0; font-size: 11px;'>Sem pedidos na fila.</p>", unsafe_allow_html=True)
+                                col_info, col_botoes = st.columns([2.3, 1.7])
+                                with col_info:
+                                    st.markdown(
+                                        f"""
+                                        <div style="background-color: #0d0d10; border: 1px solid #27272a; border-radius: 3px; padding: 6px 8px; display: flex; align-items: center; gap: 6px; height: 34px; margin-bottom: 4px;">
+                                            <span style="color: #c084fc; font-weight: bold; font-size: 11px;">{idx+1}º</span>
+                                            <span style="color: #ffffff; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{musica} — <span style="color: #a1a1aa;">{cantor}</span></span>
+                                        </div>
+                                        """,
+                                        unsafe_allow_html=True,
+                                    )
+                                with col_botoes:
+                                    b_up, b_down, b_del = st.columns(3)
+                                    with b_up:
+                                        if idx > 0 and st.button("⬆", key=f"up_{pedido_id}", use_container_width=True):
+                                            pass
+                                    with b_down:
+                                        if idx < total_pedidos - 1 and st.button("⬇", key=f"down_{pedido_id}", use_container_width=True):
+                                            pass
+                                    with b_del:
+                                        if st.button("✕", key=f"del_{pedido_id}", use_container_width=True):
+                                            apagar_pedido_musica(pedido_id)
+                                            st.rerun()
+                        else:
+                            st.markdown("<p style='color: #a1a1aa; margin: 8px 0; font-size: 11px;'>Sem pedidos na fila.</p>", unsafe_allow_html=True)
 
-                    st.markdown("</div>", unsafe_allow_html=True)
+                        st.markdown("</div>", unsafe_allow_html=True)
 
                 renderizar_fila_pedidos()
         
@@ -549,7 +551,6 @@ def render():
                     label_visibility="collapsed",
                 )
 
-            # CAMPO DE VÍDEO CLIPE / FUNDO RESTAURADO NO REGISTO
             c_emo5, c_inp5 = st.columns([0.08, 0.92])
             with c_emo5:
                 st.markdown('<div style="font-size: 18px; text-align: center; line-height: 1.5;">🎬</div>', unsafe_allow_html=True)
