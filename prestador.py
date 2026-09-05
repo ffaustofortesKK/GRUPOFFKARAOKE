@@ -125,31 +125,27 @@ def render():
             unsafe_allow_html=True,
         )
 
-        # Layout Principal com Coluna Lateral Reduzida (~30 menor proporção: 0.7 para a lateral e 2.9 para o principal)
+        # Layout Principal com Coluna Lateral Reduzida
         col_lateral, col_principal = st.columns([0.7, 2.9])
 
         with col_lateral:
             # 1. Relógio / Tempo Restante
             @st.fragment(run_every=3)
             def renderizar_relogio_topo():
-                nonlocal prestador_atual
-                if st.session_state.token_prestador:
-                    prestadores = obter_prestadores()
-                    prestador_atual = next(
-                        (
-                            p
-                            for p in prestadores
-                            if p.get("token") == st.session_state.token_prestador
-                        ),
-                        None,
-                    )
+                prestadores_local = obter_prestadores()
+                p_atual = next(
+                    (
+                        p
+                        for p in prestadores_local
+                        if p.get("token") == st.session_state.token_prestador
+                    ),
+                    None,
+                )
 
                 segundos_restantes = 7200
-                if prestador_atual:
-                    segundos_contrato_inicial = prestador_atual.get(
-                        "segundos_restantes", 7200
-                    )
-                    data_pedido_str = prestador_atual.get("data_pedido", "")
+                if p_atual:
+                    segundos_contrato_inicial = p_atual.get("segundos_restantes", 7200)
+                    data_pedido_str = p_atual.get("data_pedido", "")
 
                     try:
                         dt_pedido = datetime.strptime(data_pedido_str, "%d/%m/%Y %H:%M")
@@ -211,7 +207,7 @@ def render():
 
             st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 
-            # 4. Informações Corrigidas Exatamente Conforme a Segunda Imagem
+            # 4. Informações fixas na barra lateral
             st.markdown(
                 """
                 <div style="display: flex; flex-direction: column; gap: 8px;">
@@ -263,7 +259,6 @@ def render():
             col_esq, col_dir = st.columns([1.35, 1])
 
             with col_esq:
-
                 @st.fragment(run_every=3)
                 def renderizar_a_tocar():
                     st.markdown(
@@ -312,13 +307,13 @@ def render():
                     except Exception:
                         todos_pedidos = []
 
-                    token_ativo = str(st.session_state.get("token_prestador", ""))
+                    token_ativo_local = str(st.session_state.get("token_prestador", ""))
 
                     lista_pedidos = []
                     for p in todos_pedidos:
                         if p.get("status", "pendente") == "pendente":
                             p_token = str(p.get("token_prestador", ""))
-                            if not p_token or p_token == "None" or p_token == token_ativo:
+                            if not p_token or p_token == "None" or p_token == token_ativo_local:
                                 lista_pedidos.append(p)
 
                     total_pedidos = len(lista_pedidos)
@@ -528,141 +523,8 @@ def render():
                     font-weight: 800;
                     margin-top: 4px;
                     margin-bottom: 2px;
-                    text-align: center;
-                }
-                .prestador-subtitle {
-                    color: #a1a1aa;
-                    font-size: 13px;
-                    text-align: center;
-                    margin-bottom: 10px;
                 }
             </style>
-            <div class="prestador-wrapper">
-                <div style="text-align: center;">
-                    <span style="font-size: 28px;">👤</span>
-                    <div class="prestador-title">ÁREA DO PRESTADOR</div>
-                    <div class="prestador-subtitle">Registe-se ou entre com a sua sessão ativa.</div>
-                </div>
         """,
         unsafe_allow_html=True,
     )
-
-    modo_acesso = st.radio(
-        "Modo:",
-        ["Novo Registo", "Entrar com Sessão Ativa"],
-        horizontal=True,
-        label_visibility="collapsed",
-    )
-
-    if modo_acesso == "Novo Registo":
-        with st.form("form_registo_prestador_compacto"):
-            c1, c2 = st.columns(2)
-            with c1:
-                nome = st.text_input(
-                    "Nome", placeholder="Nome Completo", label_visibility="collapsed"
-                )
-                estabelecimento = st.text_input(
-                    "Local",
-                    placeholder="Nome do Estabelecimento",
-                    label_visibility="collapsed",
-                )
-            with c2:
-                telefone = st.text_input(
-                    "Telefone",
-                    placeholder="Telemóvel / Telefone",
-                    label_visibility="collapsed",
-                )
-                contrato = st.selectbox(
-                    "Plano",
-                    [
-                        "1 Hora - 12.000,00 Kz",
-                        "2 Horas - 17.000,00 Kz",
-                        "3 Horas - 20.000,00 Kz",
-                    ],
-                    label_visibility="collapsed",
-                )
-
-            submitted = st.form_submit_button(
-                "🚀 SUBMETER PEDIDO", use_container_width=True
-            )
-
-            if submitted:
-                if nome.strip() and telefone.strip():
-                    token_gerado = f"token_{int(time.time())}"
-                    segundos_contrato = (
-                        3600
-                        if "1 Hora" in contrato
-                        else (7200 if "2 Horas" in contrato else 10800)
-                    )
-
-                    novo_prestador = {
-                        "nome": nome.strip(),
-                        "telefone": telefone.strip(),
-                        "estabelecimento": estabelecimento.strip(),
-                        "plano": contrato,
-                        "contrato": contrato,
-                        "status_str": "pendente",
-                        "approved": False,
-                        "token": token_gerado,
-                        "segundos_restantes": segundos_contrato,
-                        "data_pedido": datetime.now().strftime("%d/%m/%Y %H:%M"),
-                        "video_fundo": "",
-                    }
-
-                    guardar_prestador(novo_prestador)
-
-                    st.session_state.pedido_submetido = True
-                    st.session_state.token_prestador = token_gerado
-                    st.session_state.estado_pedido = "pendente"
-                    st.session_state.aprovado = False
-                    st.rerun()
-                else:
-                    st.error("Preencha pelo menos o Nome e o Telefone.")
-    else:
-        with st.form("form_login_prestador_compacto"):
-            c1, c2 = st.columns(2)
-            with c1:
-                login_nome = st.text_input(
-                    "Nome",
-                    placeholder="Nome registado",
-                    label_visibility="collapsed",
-                )
-            with c2:
-                login_telefone = st.text_input(
-                    "Telefone",
-                    placeholder="Telefone registado",
-                    label_visibility="collapsed",
-                )
-
-            btn_entrar = st.form_submit_button(
-                "🔑 ACEDER AO PAINEL", use_container_width=True
-            )
-            
-            if btn_entrar:
-                if login_nome.strip() and login_telefone.strip():
-                    prestadores = obter_prestadores()
-                    prestador_encontrado = next(
-                        (
-                            p
-                            for p in prestadores
-                            if p.get("nome", "").strip().lower()
-                            == login_nome.strip().lower()
-                            and p.get("telefone", "").strip() == login_telefone.strip()
-                        ),
-                        None,
-                    )
-
-                    if prestador_encontrado:
-                        st.session_state.pedido_submetido = True
-                        st.session_state.token_prestador = prestador_encontrado.get(
-                            "token"
-                        )
-                        status_db = prestador_encontrado.get("status_str", "pendente")
-                        st.session_state.estado_pedido = status_db
-                        if status_db == "aprovado":
-                            st.session_state.aprovado = True
-                        st.rerun()
-                    else:
-                        st.error("Registo não encontrado.")
-                else:
-                    st.error("Preencha os campos de Nome e Telefone.")
