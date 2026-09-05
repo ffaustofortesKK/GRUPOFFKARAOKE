@@ -203,51 +203,10 @@ def render():
 
             st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 
-            # 4. Informações fixas na barra lateral (Fechadas corretamente sem risco de quebra)
-            st.markdown(
-                """
-                <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                    <div style="width: 28px; height: 28px; border: 1px solid #c084fc; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                        <span style="color: #c084fc; font-size: 12px;">🚀</span>
-                    </div>
-                    <div>
-                        <div style="color: #c084fc; font-weight: bold; font-size: 9px; letter-spacing: 0.5px;">RÁPIDO E PRÁTICO</div>
-                        <div style="color: #a1a1aa; font-size: 9px; line-height: 1.1;">Controle a reprodução fácil.</div>
-                    </div>
-                </div>
-
-                <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                    <div style="width: 28px; height: 28px; border: 1px solid #eab308; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 6px rgba(234, 179, 8, 0.2);">
-                        <span style="color: #eab308; font-size: 12px;">🛡️</span>
-                    </div>
-                    <div>
-                        <div style="color: #eab308; font-weight: bold; font-size: 9px; letter-spacing: 0.5px;">CONTROLE TOTAL</div>
-                        <div style="color: #a1a1aa; font-size: 9px; line-height: 1.1;">Gerencie a fila e a TV.</div>
-                    </div>
-                </div>
-
-                <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                    <div style="width: 28px; height: 28px; border: 1px solid #c084fc; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                        <span style="color: #c084fc; font-size: 12px;">👥</span>
-                    </div>
-                    <div>
-                        <div style="color: #c084fc; font-weight: bold; font-size: 9px; letter-spacing: 0.5px;">CONECTADO</div>
-                        <div style="color: #a1a1aa; font-size: 9px; line-height: 1.1;">Links e QR Code ativos.</div>
-                    </div>
-                </div>
-
-                <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; gap: 8px;">
-                    <div style="width: 28px; height: 28px; border: 1px solid #eab308; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 6px rgba(234, 179, 8, 0.2);">
-                        <span style="color: #eab308; font-size: 12px;">⭐</span>
-                    </div>
-                    <div>
-                        <div style="color: #eab308; font-weight: bold; font-size: 9px; letter-spacing: 0.5px;">FAZ A VOZ!</div>
-                        <div style="color: #a1a1aa; font-size: 9px; line-height: 1.1;">Obrigado por fazer parte!</div>
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+            # 4. Informações fixas na barra lateral com segurança total contra erros de layout
+            st.info("🚀 **RÁPIDO E PRÁTICO**\n\nControle a reprodução fácil.")
+            st.success("🛡️ **CONTROLE TOTAL**\n\nGerencie a fila e a TV.")
+            st.warning("👥 **CONECTADO**\n\nLinks e QR Code ativos.")
 
         with col_principal:
             col_esq, col_dir = st.columns([1.35, 1])
