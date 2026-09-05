@@ -261,15 +261,15 @@ def render():
                 unsafe_allow_html=True,
             )
 
-            # SECÇÃO DE CONFIGURAÇÃO DO VÍDEO CLIPE NO PAINEL LATERAL
+           # SECÇÃO DE CONFIGURAÇÃO DO VÍDEO CLIPE NO PAINEL LATERAL
             with st.container():
                 st.markdown('<div style="color: #c084fc; font-size: 10px; font-weight: bold; margin-bottom: 3px;">🎬 VÍDEO CLIPE DE FUNDO (TV)</div>', unsafe_allow_html=True)
                 novo_video_fundo = st.text_input("Vídeo Clipe de Fundo", value=video_fundo_atual, placeholder="Cole o link do vídeo...", label_visibility="collapsed", key="input_atualizar_video")
-                if st.button("💾 Guardar Vídeo", use_container_width=True):
+                if st.button("Iniciar Video Clipe", use_container_width=True, type="primary"):
                     if prestador_atual:
                         prestador_atual["video_fundo"] = novo_video_fundo.strip()
                         guardar_prestador(prestador_atual)
-                        st.success("Vídeo de fundo atualizado com sucesso!")
+                        st.success("Vídeo clipe iniciado com sucesso na TV!")
                         time.sleep(0.5)
                         st.rerun()
 
