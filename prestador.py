@@ -16,7 +16,7 @@ def render():
     if "aprovado" not in st.session_state:
         st.session_state.aprovado = False
 
-    # 2. SINCRONIZAÇÃO DE DADOS DO PRESTADOR NA BASE DE DADOS
+    # 2. SINCRONIZAÇÃO DE DADOS NA BASE DE DADOS
     prestador_atual = None
     if st.session_state.token_prestador:
         prestadores = obter_prestadores() or []
@@ -39,9 +39,9 @@ def render():
             st.session_state.estado_pedido = "pendente"
 
     # =========================================================================
-    # 3. BLOQUEIO ABSOLUTO (SE ESTIVER PENDENTE) - IMPEDE O FORMULÁRIO DE APARECER
+    # 3. SE ESTIVER PENDENTE: BLOQUEIO TOTAL (NÃO DEIXA O REGISTO APARECER)
     # =========================================================================
-    if st.session_state.pedido_submetido and st.session_state.get("estado_pedido", "pendente") == "pendente":
+    if st.session_state.pedido_submetido and st.session_state.estado_pedido == "pendente":
         st.markdown(
             """
             <style>
@@ -60,19 +60,26 @@ def render():
             <div style="background-color: #050507; border: 1px solid #3b2c60; padding: 25px; text-align: center; border-radius: 8px; margin: auto;">
                 <div style="font-size: 32px; margin-bottom: 10px;">⏳</div>
                 <h3 style="color: #ffffff; font-size: 18px; margin-bottom: 8px;">Aguardando Aprovação</h3>
-                <p style="color: #d4d4d8; font-size: 12px; margin-bottom: 0;">O seu registo está a aguardar validação do Administrador.</p>
+                <p style="color: #d4d4d8; font-size: 12px; margin-bottom: 15px;">O seu registo está a aguardar validação do Administrador.</p>
             </div>
             """,
             unsafe_allow_html=True,
         )
-        time.sleep(3)
-        st.rerun()
-        st.stop()  # Para a execução aqui garantindo que o formulário abaixo nunca é renderizado
+        
+        # Botão para o utilizador poder sair/voltar atrás se quiser trocar de conta
+        if st.button("🚪 Terminar Sessão / Voltar", use_container_width=True):
+            st.session_state.pedido_submetido = False
+            st.session_state.token_prestador = None
+            st.session_state.estado_pedido = "pendente"
+            st.session_state.aprovado = False
+            st.rerun()
+            
+        return  # INTERROMPE A EXECUÇÃO AQUI DE FORMA DEFINITIVA
 
     # ==========================================
     # 4. SE ESTIVER APROVADO: Painel Operacional
     # ==========================================
-    if st.session_state.get("aprovado", False) or st.session_state.get("estado_pedido") == "aprovado":
+    if st.session_state.aprovado or st.session_state.estado_pedido == "aprovado":
         token_ativo = st.session_state.get("token_prestador", "")
         try:
             base_url = st.context.headers.get("Host", "")
@@ -244,21 +251,6 @@ def render():
                 unsafe_allow_html=True,
             )
 
-            st.markdown(
-                """
-                <div style="background-color: #0d0d10; border: 1px solid #3b2c60; padding: 8px; border-radius: 6px; font-size: 10px; color: #d4d4d8; line-height: 1.3;">
-                    <div style="color: #eab308; font-weight: bold; font-size: 11px; margin-bottom: 4px; text-align: center;">💡 GUIA DE AJUDA</div>
-                    <div style="margin-bottom: 4px;">🖥️ <b>Ícone TV:</b> Abrirá uma nova página com a tela de pedidos de karaokê.</div>
-                    <div style="margin-bottom: 4px;">📱 <b>Ícone Cliente:</b> Abrirá a página onde o cliente faz o seu pedido.</div>
-                    <div style="margin-bottom: 4px;">📷 <b>QR Code:</b> Aponte a câmera do telefone ao código QR para o cliente ter acesso às músicas de Karaoke.</div>
-                    <div style="border-top: 1px solid #27272a; margin-top: 6px; padding-top: 4px; text-align: center; color: #a1a1aa; font-size: 9px;">
-                        WhatsApp:<br><b style="color: #eab308;">921204050 / 955099159</b>
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
         with col_principal:
             col_esq, col_dir = st.columns([1.4, 1])
 
@@ -386,25 +378,6 @@ def render():
                 with col_bt_cli:
                     st.markdown(f'<a href="{url_cliente}" target="_blank"><button style="width: 100%; background-color: #0d0d10; color: #ffffff; border: 1px solid #27272a; padding: 2px; border-radius: 3px; font-size: 10px;">📱 Cliente</button></a>', unsafe_allow_html=True)
 
-                videos_disponiveis = {
-                    "- Sem vídeo -": "",
-                    "Vídeo 1": "https://youtu.be/cQ4MD7gOBmc?si=5wzaxysiHSEwn9QT",
-                    "Vídeo 2": "https://youtu.be/H_aniWehIYY?si=e9WzMGyFSy7PdrAj",
-                    "Vídeo 3": "https://youtu.be/sGGlQ9yJQNg?si=LVeN5zjZ153uksLW",
-                }
-
-                st.markdown('<div class="box-container" style="margin-top: 4px;"><div class="box-title"><span>🎬 VÍDEO TV</span></div>', unsafe_allow_html=True)
-                video_escolhido = st.selectbox("Vídeo de fundo:", list(videos_disponiveis.keys()), label_visibility="collapsed")
-                if st.button("▶ Atualizar", use_container_width=True, type="primary"):
-                    if st.session_state.token_prestador:
-                        prestadores = obter_prestadores() or []
-                        for p in prestadores:
-                            if p.get("token") == st.session_state.token_prestador:
-                                p["video_fundo"] = videos_disponiveis[video_escolhido]
-                                guardar_prestador(p)
-                        st.success("Guardado!")
-                st.markdown("</div>", unsafe_allow_html=True)
-
         return
 
     # ==========================================
@@ -430,7 +403,7 @@ def render():
         return
 
     # =========================================================================
-    # 🎨 6. TELA DE REGISTO / LOGIN (APENAS SE NENHUM PEDIDO FOI SUBMETIDO)
+    # 🎨 6. TELA DE REGISTO / LOGIN (SÓ APARECE SE NENHUM PEDIDO FOI SUBMETIDO)
     # =========================================================================
     st.markdown(
         f"""
