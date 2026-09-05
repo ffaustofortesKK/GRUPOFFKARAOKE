@@ -295,28 +295,39 @@ def render():
     # ==========================================
     # CASO 2: RECUSADO
     # ==========================================
-    elif st.session_state.pedido_submetido and st.session_state.estado_pedido == "recusado":
+    elif st.session_state.get("pedido_submetido") and st.session_state.get("estado_pedido") == "recusado":
         st.markdown(
             """
-            <div style="background-color: #050507; border: 1px solid #ef4444; padding: 12px; text-align: center; border-radius: 4px; max-width: 400px; margin: 15px auto;">
-                <div style="font-size: 24px; margin-bottom: 2px;">❌</div>
-                <h3 style="color: #ef4444; font-size: 15px; margin-bottom: 2px;">Pedido Recusado</h3>
-                <p style="color: #d4d4d8; font-size: 11px; margin-bottom: 6px;">O seu pedido foi recusado pelo Administrador.</p>
+            <style>
+                .stApp { background-color: #000000 !important; }
+                header[data-testid="stHeader"] { background-color: transparent !important; }
+                .block-container {
+                    background-color: #000000 !important;
+                    max-width: 500px !important;
+                    padding-top: 4rem !important;
+                }
+            </style>
+            <div style="background-color: #050507; border: 1px solid #ef4444; padding: 20px; text-align: center; border-radius: 6px; max-width: 450px; margin: 0 auto;">
+                <div style="font-size: 32px; margin-bottom: 8px;">❌</div>
+                <h3 style="color: #ef4444; font-size: 18px; margin-bottom: 6px;">Pedido Recusado</h3>
+                <p style="color: #d4d4d8; font-size: 13px; margin-bottom: 0px;">O seu pedido foi recusado pelo Administrador.</p>
             </div>
             """,
             unsafe_allow_html=True,
         )
-        if st.button("Tentar Novamente", use_container_width=True):
+        st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
+        if st.button("🔄 Tentar Novamente", use_container_width=True):
             st.session_state.pedido_submetido = False
             st.session_state.token_prestador = None
             st.session_state.estado_pedido = "pendente"
             st.session_state.aprovado = False
             st.rerun()
+            st.stop()
 
     # ==========================================
     # CASO 3: PENDENTE (AGUARDANDO APROVAÇÃO)
     # ==========================================
-    elif st.session_state.pedido_submetido and st.session_state.estado_pedido == "pendente":
+    elif st.session_state.get("pedido_submetido") and st.session_state.get("estado_pedido") == "pendente":
         st.markdown(
             """
             <style>
@@ -399,7 +410,8 @@ def render():
             unsafe_allow_html=True,
         )
         
-        time.sleep(3)
+        # Recarregar automaticamente a página a cada 4 segundos para verificar aprovação/recusa sem bloquear o script
+        time.sleep(4)
         st.rerun()
 
     # ==========================================
@@ -499,7 +511,6 @@ def render():
 
                         guardar_prestador(novo_prestador)
 
-                        # Atribuir estado e forçar rerun com interrupção imediata
                         st.session_state.pedido_submetido = True
                         st.session_state.token_prestador = token_gerado
                         st.session_state.estado_pedido = "pendente"
@@ -517,7 +528,7 @@ def render():
                 with c_inp_l1: login_nome = st.text_input("Nome", placeholder="Digite o seu nome cadastrado", label_visibility="collapsed")
 
                 c_emo_l2, c_inp_l2 = st.columns([0.08, 0.92])
-                with c_emo_l2: st.markdown('<div style="font-size: 20px; text-align: center; line-class: 1.5;">📞</div>', unsafe_allow_html=True)
+                with c_emo_l2: st.markdown('<div style="font-size: 20px; text-align: center; line-height: 1.5;">📞</div>', unsafe_allow_html=True)
                 with c_inp_l2: login_telefone = st.text_input("Telemóvel / Telefone", placeholder="Digite o seu número de telefone", label_visibility="collapsed")
 
                 st.markdown("<div style='height: 2px;'></div>", unsafe_allow_html=True)
