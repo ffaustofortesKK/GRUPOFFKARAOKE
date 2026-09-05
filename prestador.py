@@ -39,9 +39,23 @@ def render():
             st.session_state.estado_pedido = "pendente"
 
     # =========================================================================
-    # 3. SE ESTIVER PENDENTE: BLOQUEIO TOTAL (NÃO DEIXA O REGISTO APARECER)
+    # 3. SE ESTIVER PENDENTE: BLOQUEIO COM ATUALIZAÇÃO AUTOMÁTICA (POLLING)
     # =========================================================================
     if st.session_state.pedido_submetido and st.session_state.estado_pedido == "pendente":
+        
+        @st.fragment(run_every=3)
+        def verificar_aprovacao_em_segundo_plano():
+            # Esta função corre a cada 3 segundos em segundo plano para ver se o admin aprovou
+            if st.session_state.token_prestador:
+                prestadores_db = obter_prestadores() or []
+                p_atual = next((p for p in prestadores_db if p.get("token") == st.session_state.token_prestador), None)
+                if p_atual and p_atual.get("status_str") == "aprovado":
+                    st.session_state.aprovado = True
+                    st.session_state.estado_pedido = "aprovado"
+                    st.rerun()
+
+        verificar_aprovacao_em_segundo_plano()
+
         st.markdown(
             """
             <style>
@@ -60,13 +74,12 @@ def render():
             <div style="background-color: #050507; border: 1px solid #3b2c60; padding: 25px; text-align: center; border-radius: 8px; margin: auto;">
                 <div style="font-size: 32px; margin-bottom: 10px;">⏳</div>
                 <h3 style="color: #ffffff; font-size: 18px; margin-bottom: 8px;">Aguardando Aprovação</h3>
-                <p style="color: #d4d4d8; font-size: 12px; margin-bottom: 15px;">O seu registo está a aguardar validação do Administrador.</p>
+                <p style="color: #d4d4d8; font-size: 12px; margin-bottom: 15px;">O seu registo está a aguardar validação do Administrador. A tela abrirá automaticamente assim que for aprovado.</p>
             </div>
             """,
             unsafe_allow_html=True,
         )
         
-        # Botão para o utilizador poder sair/voltar atrás se quiser trocar de conta
         if st.button("🚪 Terminar Sessão / Voltar", use_container_width=True):
             st.session_state.pedido_submetido = False
             st.session_state.token_prestador = None
@@ -74,7 +87,7 @@ def render():
             st.session_state.aprovado = False
             st.rerun()
             
-        return  # INTERROMPE A EXECUÇÃO AQUI DE FORMA DEFINITIVA
+        return  # INTERROMPE A EXECUÇÃO AQUI
 
     # ==========================================
     # 4. SE ESTIVER APROVADO: Painel Operacional
@@ -403,7 +416,7 @@ def render():
         return
 
     # =========================================================================
-    # 🎨 6. TELA DE REGISTO / LOGIN (SÓ APARECE SE NENHUM PEDIDO FOI SUBMETIDO)
+    # 🎨 6. TELA DE REGISTO / LOGIN
     # =========================================================================
     st.markdown(
         f"""
