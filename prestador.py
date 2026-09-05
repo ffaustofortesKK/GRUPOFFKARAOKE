@@ -112,17 +112,18 @@ def render():
                     border-color: #eab308 !important;
                     color: #eab308 !important;
                 }
-                /* Estilo específico para corrigir os botões de ação da fila (Subir, Descer, Remover) */
+                /* Força fundo branco e visibilidade total nos botões da fila */
                 div[data-testid="column"] button {
-                    background-color: #18181b !important;
-                    color: #ffffff !important;
-                    border: 1px solid #3f3f46 !important;
-                    font-size: 11px !important;
+                    background-color: #ffffff !important;
+                    color: #000000 !important;
+                    border: 1px solid #d4d4d8 !important;
+                    font-size: 10px !important;
+                    font-weight: bold !important;
                 }
                 div[data-testid="column"] button:hover {
-                    background-color: #27272a !important;
+                    background-color: #f4f4f5 !important;
                     border-color: #eab308 !important;
-                    color: #eab308 !important;
+                    color: #000000 !important;
                 }
                 @keyframes equalizer {
                     0% { height: 2px; }
@@ -172,7 +173,7 @@ def render():
                         )
                     except Exception:
                         segundos_restantes = segundos_contrato_inicial
-                
+        
                 horas = segundos_restantes // 3600
                 minutos = (segundos_restantes % 3600) // 60
                 segundos = segundos_restantes % 60
@@ -225,17 +226,14 @@ def render():
                 unsafe_allow_html=True,
             )
 
-            # CAMPO DE EXPLICAÇÃO / AJUDA
             st.markdown(
                 """
                 <div style="background-color: #0d0d10; border: 1px solid #3b2c60; padding: 8px; border-radius: 6px; font-size: 10px; color: #d4d4d8; line-height: 1.3;">
                     <div style="color: #eab308; font-weight: bold; font-size: 11px; margin-bottom: 4px; text-align: center;">💡 GUIA DE AJUDA</div>
-                    <div style="margin-bottom: 4px;">🖥️ <b>Ícone TV:</b> Abrirá uma nova página onde abrirá uma tela que irá apresentar os pedidos de karaokê dos clientes assim que clicar no TOCAR.</div>
-                    <div style="margin-bottom: 4px;">📱 <b>Ícone Cliente:</b> Abrirá uma nova página onde o cliente fará o seu registo e pedido da sua música de karaokê e onde acompanhará também a posição dos demais clientes.</div>
-                    <div style="margin-bottom: 4px;">🎬 <b>Vídeo TV:</b> Escolherá o vídeo que irá passar na tela enquanto não houver pedido ou enquanto o prestador não puser a música de karaokê.</div>
+                    <div style="margin-bottom: 4px;">🖥️ <b>Ícone TV:</b> Abrirá uma nova página com a tela de pedidos de karaokê.</div>
+                    <div style="margin-bottom: 4px;">📱 <b>Ícone Cliente:</b> Abrirá a página onde o cliente faz o seu pedido.</div>
                     <div style="border-top: 1px solid #27272a; margin-top: 6px; padding-top: 4px; text-align: center; color: #a1a1aa; font-size: 9px;">
-                        Para mais informações acesse o WhatsApp:<br>
-                        <b style="color: #eab308;">921204050 / 955099159</b>
+                        WhatsApp:<br><b style="color: #eab308;">921204050 / 955099159</b>
                     </div>
                 </div>
                 """,
@@ -287,84 +285,63 @@ def render():
 
                 st.markdown("<div style='height: 2px;'></div>", unsafe_allow_html=True)
 
-               @st.fragment(run_every=3)
-def renderizar_fila_pedidos():
-    try:
-        todos_pedidos = obter_pedidos_musicas() or []
-    except Exception:
-        todos_pedidos = []
+                @st.fragment(run_every=3)
+                def renderizar_fila_pedidos():
+                    try:
+                        todos_pedidos = obter_pedidos_musicas() or []
+                    except Exception:
+                        todos_pedidos = []
 
-    token_ativo = str(st.session_state.get("token_prestador", ""))
-    lista_pedidos = [p for p in todos_pedidos if p.get("status", "pendente") == "pendente" and (str(p.get("token_prestador", "")) in ["", "None", token_ativo])]
-    total_pedidos = len(lista_pedidos)
+                    token_ativo = str(st.session_state.get("token_prestador", ""))
+                    lista_pedidos = [p for p in todos_pedidos if p.get("status", "pendente") == "pendente" and (str(p.get("token_prestador", "")) in ["", "None", token_ativo])]
+                    total_pedidos = len(lista_pedidos)
 
-    st.markdown(
-        """
-        <style>
-            /* Força fundo branco e visibilidade total nos botões da fila */
-            div[data-testid="column"] button {
-                background-color: #ffffff !important;
-                color: #000000 !important;
-                border: 1px solid #d4d4d8 !important;
-                font-size: 10px !important;
-                font-weight: bold !important;
-            }
-            div[data-testid="column"] button:hover {
-                background-color: #f4f4f5 !important;
-                border-color: #eab308 !important;
-                color: #000000 !important;
-            }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+                    st.markdown(
+                        f"""
+                            <div class="box-container" style="max-height: 150px; overflow-y: auto;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; border-bottom: 1px solid #27272a; padding-bottom: 2px;">
+                                    <span style="color: #c084fc; font-weight: bold; font-size: 10px;">👥 FILA DE PEDIDOS ({total_pedidos})</span>
+                                </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
 
-    st.markdown(
-        f"""
-            <div class="box-container" style="max-height: 150px; overflow-y: auto;">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; border-bottom: 1px solid #27272a; padding-bottom: 2px;">
-                    <span style="color: #c084fc; font-weight: bold; font-size: 10px;">👥 FILA DE PEDIDOS ({total_pedidos})</span>
-                </div>
-        """,
-        unsafe_allow_html=True,
-    )
+                    if total_pedidos > 0:
+                        for idx, pedido in enumerate(lista_pedidos):
+                            musica = pedido.get("musica", "Desconhecida")
+                            cantor = pedido.get("cantor", "Convidado")
+                            pedido_id = pedido.get("id") or pedido.get("timestamp") or idx
 
-    if total_pedidos > 0:
-        for idx, pedido in enumerate(lista_pedidos):
-            musica = pedido.get("musica", "Desconhecida")
-            cantor = pedido.get("cantor", "Convidado")
-            pedido_id = pedido.get("id") or pedido.get("timestamp") or idx
+                            col_info, col_botoes = st.columns([2.2, 1.8])
+                            with col_info:
+                                st.markdown(
+                                    f"""
+                                    <div style="background-color: #0d0d10; border: 1px solid #27272a; border-radius: 3px; padding: 2px 6px; display: flex; align-items: center; gap: 4px; height: 26px; margin-bottom: 3px;">
+                                        <span style="color: #c084fc; font-weight: bold; font-size: 9px;">{idx+1}º</span>
+                                        <span style="color: #ffffff; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{musica} — <span style="color: #a1a1aa;">{cantor}</span></span>
+                                    </div>
+                                    """,
+                                    unsafe_allow_html=True,
+                                )
+                            with col_botoes:
+                                b_up, b_down, b_del = st.columns(3)
+                                with b_up:
+                                    if idx > 0 and st.button("⬆", key=f"up_{pedido_id}", use_container_width=True):
+                                        pass
+                                with b_down:
+                                    if idx < total_pedidos - 1 and st.button("⬇", key=f"down_{pedido_id}", use_container_width=True):
+                                        pass
+                                with b_del:
+                                    if st.button("✕", key=f"del_{pedido_id}", use_container_width=True):
+                                        apagar_pedido_musica(pedido_id)
+                                        st.rerun()
+                    else:
+                        st.markdown("<p style='color: #a1a1aa; margin: 0; font-size: 10px;'>Sem pedidos na fila.</p>", unsafe_allow_html=True)
 
-            col_info, col_botoes = st.columns([2.2, 1.8])
-            with col_info:
-                st.markdown(
-                    f"""
-                    <div style="background-color: #0d0d10; border: 1px solid #27272a; border-radius: 3px; padding: 2px 6px; display: flex; align-items: center; gap: 4px; height: 26px; margin-bottom: 3px;">
-                        <span style="color: #c084fc; font-weight: bold; font-size: 9px;">{idx+1}º</span>
-                        <span style="color: #ffffff; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{musica} — <span style="color: #a1a1aa;">{cantor}</span></span>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-            with col_botoes:
-                b_up, b_down, b_del = st.columns(3)
-                with b_up:
-                    if idx > 0 and st.button("⬆", key=f"up_{pedido_id}", use_container_width=True):
-                        pass
-                with b_down:
-                    if idx < total_pedidos - 1 and st.button("⬇", key=f"down_{pedido_id}", use_container_width=True):
-                        pass
-                with b_del:
-                    if st.button("✕", key=f"del_{pedido_id}", use_container_width=True):
-                        apagar_pedido_musica(pedido_id)
-                        st.rerun()
-    else:
-        st.markdown("<p style='color: #a1a1aa; margin: 0; font-size: 10px;'>Sem pedidos na fila.</p>", unsafe_allow_html=True)
+                    st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("</div>", unsafe_allow_html=True)
-    
                 renderizar_fila_pedidos()
-            
+        
             with col_dir:
                 st.markdown(
                     f"""
@@ -470,7 +447,6 @@ def renderizar_fila_pedidos():
                 margin-top: 0.1rem;
                 margin-bottom: 0.1rem;
             }}
-            /* Redução drástica da altura dos inputs de texto (50% menor) */
             div[data-baseweb="input"] input {{
                 min-height: 20px !important;
                 height: 22px !important;
@@ -481,12 +457,10 @@ def renderizar_fila_pedidos():
             div[data-baseweb="base-input"] {{
                 min-height: 22px !important;
             }}
-            /* Redução do selectbox */
             div[data-baseweb="select"] div {{
                 min-height: 22px !important;
                 font-size: 11px !important;
             }}
-            /* Estilização para as labels do radio em branco e negrito */
             div.row-widget.stRadio div[role="radiogroup"] label p {{
                 color: #ffffff !important;
                 font-weight: bold !important;
@@ -523,28 +497,24 @@ def renderizar_fila_pedidos():
                 unsafe_allow_html=True,
             )
 
-            # Campo 1: Nome Completo com Emoji ao lado
             c_emo1, c_inp1 = st.columns([0.08, 0.92])
             with c_emo1:
                 st.markdown('<div style="font-size: 20px; text-align: center; line-height: 1.5;">👤</div>', unsafe_allow_html=True)
             with c_inp1:
                 nome = st.text_input("Nome Completo", placeholder="Digite o seu nome completo", label_visibility="collapsed")
 
-            # Campo 2: Telefone com Emoji ao lado
             c_emo2, c_inp2 = st.columns([0.08, 0.92])
             with c_emo2:
                 st.markdown('<div style="font-size: 20px; text-align: center; line-height: 1.5;">📞</div>', unsafe_allow_html=True)
             with c_inp2:
                 telefone = st.text_input("Telemóvel / Telefone", placeholder="Digite o seu número de telefone", label_visibility="collapsed")
 
-            # Campo 3: Estabelecimento com Emoji ao lado
             c_emo3, c_inp3 = st.columns([0.08, 0.92])
             with c_emo3:
                 st.markdown('<div style="font-size: 20px; text-align: center; line-height: 1.5;">📍</div>', unsafe_allow_html=True)
             with c_inp3:
                 estabelecimento = st.text_input("Estabelecimento", placeholder="Ex: Bar do Zé, Restaurante Bom Sabor...", label_visibility="collapsed")
 
-            # Campo 4: Contrato com Emoji ao lado
             c_emo4, c_inp4 = st.columns([0.08, 0.92])
             with c_emo4:
                 st.markdown('<div style="font-size: 20px; text-align: center; line-height: 1.5;">📄</div>', unsafe_allow_html=True)
@@ -605,91 +575,42 @@ def renderizar_fila_pedidos():
                 unsafe_allow_html=True,
             )
 
-            # Login Nome com Emoji ao lado
             c_emo_l1, c_inp_l1 = st.columns([0.08, 0.92])
             with c_emo_l1:
                 st.markdown('<div style="font-size: 20px; text-align: center; line-height: 1.5;">👤</div>', unsafe_allow_html=True)
             with c_inp_l1:
-                login_nome = st.text_input("Nome", placeholder="Digite o nome com que se registou", label_visibility="collapsed")
+                login_nome = st.text_input("Nome", placeholder="Digite o seu nome cadastrado", label_visibility="collapsed")
 
-            # Login Telefone com Emoji ao lado
             c_emo_l2, c_inp_l2 = st.columns([0.08, 0.92])
             with c_emo_l2:
                 st.markdown('<div style="font-size: 20px; text-align: center; line-height: 1.5;">📞</div>', unsafe_allow_html=True)
             with c_inp_l2:
-                login_telefone = st.text_input("Telefone", placeholder="Digite o número de telefone registado", label_visibility="collapsed")
+                login_telefone = st.text_input("Telemóvel / Telefone", placeholder="Digite o seu número de telefone", label_visibility="collapsed")
 
-            st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
-            btn_entrar = st.form_submit_button("🔑 ACEDER AO PAINEL", use_container_width=True)
+            st.markdown("<div style='height: 2px;'></div>", unsafe_allow_html=True)
+            login_submitted = st.form_submit_button("🔓 ENTRAR", use_container_width=True)
 
             st.markdown("</div>", unsafe_allow_html=True)
 
-            if btn_entrar:
+            if login_submitted:
                 if login_nome.strip() and login_telefone.strip():
-                    prestadores = obter_prestadores()
+                    prestadores = obter_prestadores() or []
                     prestador_encontrado = next(
                         (
-                            p
-                            for p in prestadores
-                            if p.get("nome", "").strip().lower()
-                            == login_nome.strip().lower()
+                            p for p in prestadores
+                            if p.get("nome", "").strip().lower() == login_nome.strip().lower()
                             and p.get("telefone", "").strip() == login_telefone.strip()
                         ),
-                        None,
+                        None
                     )
 
                     if prestador_encontrado:
                         st.session_state.pedido_submetido = True
                         st.session_state.token_prestador = prestador_encontrado.get("token")
-                        status_db = prestador_encontrado.get("status_str", "pendente")
-                        st.session_state.estado_pedido = status_db
-                        if status_db == "aprovado":
-                            st.session_state.aprovado = True
+                        st.session_state.estado_pedido = prestador_encontrado.get("status_str", "pendente")
+                        st.session_state.aprovado = (prestador_encontrado.get("status_str") == "aprovado")
                         st.rerun()
                     else:
-                        st.error("Registo não encontrado com estes dados.")
+                        st.error("Prestador não encontrado com estes dados ou ainda não registado.")
                 else:
-                    st.error("Preencha o Nome e o Telefone.")
-
-    # 3 BLOCOS INFORMATIVOS NO RODAPÉ AUMENTADOS 30% COM TEXTOS MAIORES
-    st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
-    c_f1, c_f2, c_f3 = st.columns(3)
-    with c_f1:
-        st.markdown(
-            """
-            <div style="background-color: #050507; border: 1px solid #27203d; padding: 6px; border-radius: 4px; display: flex; align-items: center; gap: 6px;">
-                <span style="font-size: 16px;">🎧</span>
-                <div>
-                    <div style="color: #eab308; font-size: 11px; font-weight: bold;">RÁPIDO</div>
-                    <div style="color: #a1a1aa; font-size: 10px;">Passos simples.</div>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-    with c_f2:
-        st.markdown(
-            """
-            <div style="background-color: #050507; border: 1px solid #27203d; padding: 6px; border-radius: 4px; display: flex; align-items: center; gap: 6px;">
-                <span style="font-size: 16px;">⚡</span>
-                <div>
-                    <div style="color: #eab308; font-size: 11px; font-weight: bold;">EFICIENTE</div>
-                    <div style="color: #a1a1aa; font-size: 10px;">Gestão em tempo real.</div>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-    with c_f3:
-        st.markdown(
-            """
-            <div style="background-color: #050507; border: 1px solid #27203d; padding: 6px; border-radius: 4px; display: flex; align-items: center; gap: 6px;">
-                <span style="font-size: 16px;">🔒</span>
-                <div>
-                    <div style="color: #eab308; font-size: 11px; font-weight: bold;">SEGURO</div>
-                    <div style="color: #a1a1aa; font-size: 10px;">Acesso restrito.</div>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+                    st.error("Preencha o Nome e o Telefone para entrar.")
