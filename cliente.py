@@ -80,7 +80,7 @@ def render():
             border: 1px solid rgba(138, 43, 226, 0.4);
             border-radius: 12px;
             padding: 10px 15px;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.4);
         }
@@ -227,7 +227,7 @@ def render():
             font-size: 10px;
             text-transform: uppercase;
             letter-spacing: 1.5px;
-            margin: 6px 0 4px 0;
+            margin: 10px 0 6px 0;
             font-weight: 600;
         }
         .ff-steps-container {
@@ -347,28 +347,6 @@ def render():
                 <div class="ff-cantor-name">{letras_html}</div>
             </div>
         """, unsafe_allow_html=True)
-
-        # SECÇÃO COMO FUNCIONA COMPACTA (Logótipo / Rodapé logo após o registo do nome)
-        st.markdown('<div class="ff-how-it-works-title">🎧 COMO FUNCIONA?</div>', unsafe_allow_html=True)
-        st.markdown("""
-            <div class="ff-steps-container">
-                <div class="ff-step-card">
-                    <div class="ff-step-number">1</div>
-                    <h5>Escolha</h5>
-                    <p>Digite o nome da música.</p>
-                </div>
-                <div class="ff-step-card">
-                    <div class="ff-step-number">2</div>
-                    <h5>Aguarde</h5>
-                    <p>Acompanhe a sua posição.</p>
-                </div>
-                <div class="ff-step-card">
-                    <div class="ff-step-number">3</div>
-                    <h5>Cante</h5>
-                    <p>Dê o seu show na hora!</p>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
         
         @st.fragment(run_every=5)
         def renderizar_painel_fila(cantor_atual, token_p):
@@ -400,6 +378,20 @@ def render():
                 if pedidos_do_cantor:
                     pedido_ativo = pedidos_do_cantor[0]
                     st.session_state["meu_pedido_timestamp"] = pedido_ativo.get("timestamp")
+
+            # Montar string em loop duplo para o efeito de letreiro contínuo (marquee) da fila geral
+            lista_itens_fila = []
+            for i, item in enumerate(pendentes_geral):
+                pos_num = i + 1
+                pos_str = "1º" if pos_num == 1 else str(pos_num)
+                nome_c = item.get('cantor', 'Cantor')
+                lista_itens_fila.append(f'<span class="fila-pos">{pos_str}</span> — <span class="fila-cantor">{nome_c}</span>')
+
+            texto_base = " &nbsp;&nbsp;&bull;&nbsp;&nbsp; ".join(lista_itens_fila) if lista_itens_fila else "A fila está vazia no momento."
+            texto_fila_resumo = f"{texto_base} &nbsp;&nbsp;&bull;&nbsp;&nbsp; {texto_base}"
+
+            # Bloco de Fila de Espera Atual (Visível logo após o login)
+            html_rodape_fila = f'<div style="background: linear-gradient(90deg, #18122c, #22183d, #18122c); border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 8px; padding: 10px; text-align: left; box-shadow: inset 0 2px 5px rgba(0,0,0,0.4); margin-bottom: 10px;"><div style="font-size: 9px; color: #b19cd9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; text-align: center;">🎶 Fila de Espera Atual 🎶</div><div class="ff-marquee-container"><div class="ff-marquee-content" style="font-size: 11px;">{texto_fila_resumo}</div></div></div>'
             
             if pedido_ativo:
                 posicao_real = -1
@@ -418,34 +410,22 @@ def render():
                 if posicao_real > 1 and len(pendentes_geral) >= (posicao_real - 1):
                     cantor_acima = pendentes_geral[posicao_real - 2].get('cantor', 'outro cantor')
 
-                # Formatar os itens da fila: Posição 1º ou número normal em amarelo, nome do cantor em branco com borda/sombra, sem música
-                lista_itens_fila = []
-                for i, item in enumerate(pendentes_geral):
-                    pos_num = i + 1
-                    pos_str = "1º" if pos_num == 1 else str(pos_num)
-                    nome_c = item.get('cantor', 'Cantor')
-                    lista_itens_fila.append(f'<span class="fila-pos">{pos_str}</span> — <span class="fila-cantor">{nome_c}</span>')
-
-                texto_base = " &nbsp;&nbsp;&bull;&nbsp;&nbsp; ".join(lista_itens_fila) if lista_itens_fila else "A fila está vazia no momento."
-                texto_fila_resumo = f"{texto_base} &nbsp;&nbsp;&bull;&nbsp;&nbsp; {texto_base}"
-
                 # CARTÃO 1: A SUA POSIÇÃO ACTUAL É (Fixo, Amarelo, Sem Movimento)
                 st.markdown(f"""
                     <div class="ff-card-status-centered">
                         <div class="ff-card-title-yellow">A SUA POSIÇÃO ACTUAL É</div>
-                        <div class="ff-number-fixed">{posicao_real}º" style="display:none;"</div> <!-- Mantém estrutura interna limpa -->
-                        <div class="ff-number-fixed">{posicao_real}</div>
+                        <div class="ff-number-fixed">#{posicao_real}</div>
                         <div class="ff-card-subtitle" style="margin-top: 4px;">Título da Música que escolheu</div>
                         <div class="ff-card-main-text">🎵 {musica_nome_atv}</div>
                     </div>
                 """, unsafe_allow_html=True)
                 
-                # CARTÃO 2: AGUARDE A SUA VEZ (Com o letreiro animado atualizado)
+                # CARTÃO 2: AGUARDE A SUA VEZ + RODAPÉ DA FILA
                 if musicas_acima > 0:
-                    html_cartao_espera = f'<div class="ff-card-status-centered" style="border-color: rgba(231, 76, 60, 0.4);"><div class="ff-card-title-orange">AGUARDE A SUA VEZ</div><div class="ff-card-main-text" style="font-size: 14px; color: #f1c40f; margin-bottom: 6px;">Assim que cantar o cantor <b>{cantor_acima}</b> será a sua vez!</div><div class="ff-card-subtitle" style="font-size: 10px; margin-bottom: 10px;">({musicas_acima} músicas à sua frente)</div><div style="background: linear-gradient(90deg, #18122c, #22183d, #18122c); border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 8px; padding: 10px; text-align: left; box-shadow: inset 0 2px 5px rgba(0,0,0,0.4);"><div style="font-size: 9px; color: #b19cd9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; text-align: center;">🎶 Fila de Espera Atual 🎶</div><div class="ff-marquee-container"><div class="ff-marquee-content" style="font-size: 11px;">{texto_fila_resumo}</div></div></div></div>'
+                    html_cartao_espera = f'<div class="ff-card-status-centered" style="border-color: rgba(231, 76, 60, 0.4);"><div class="ff-card-title-orange">AGUARDE A SUA VEZ</div><div class="ff-card-main-text" style="font-size: 14px; color: #f1c40f; margin-bottom: 6px;">Assim que cantar o cantor <b>{cantor_acima}</b> será a sua vez!</div><div class="ff-card-subtitle" style="font-size: 10px; margin-bottom: 10px;">({musicas_acima} músicas à sua frente)</div>{html_rodape_fila}</div>'
                     st.markdown(html_cartao_espera, unsafe_allow_html=True)
                 else:
-                    html_cartao_vez = f'<div class="ff-card-status-centered" style="border-color: rgba(46, 204, 113, 0.4);"><div class="ff-card-title-green">É A SUA VEZ DE CANTAR!</div><div class="ff-card-main-text" style="color: #2ecc71; margin-bottom: 10px;">Prepare-se para subir ao palco agora.</div><div style="background: linear-gradient(90deg, #18122c, #22183d, #18122c); border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 8px; padding: 10px; text-align: left; box-shadow: inset 0 2px 5px rgba(0,0,0,0.4);"><div style="font-size: 9px; color: #b19cd9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; text-align: center;">🎶 Fila de Espera Atual 🎶</div><div class="ff-marquee-container"><div class="ff-marquee-content" style="font-size: 11px;">{texto_fila_resumo}</div></div></div></div>'
+                    html_cartao_vez = f'<div class="ff-card-status-centered" style="border-color: rgba(46, 204, 113, 0.4);"><div class="ff-card-title-green">É A SUA VEZ DE CANTAR!</div><div class="ff-card-main-text" style="color: #2ecc71; margin-bottom: 10px;">Prepare-se para subir ao palco agora.</div>{html_rodape_fila}</div>'
                     st.markdown(html_cartao_vez, unsafe_allow_html=True)
             else:
                 if st.session_state["meu_pedido_timestamp"] is not None:
@@ -455,6 +435,9 @@ def render():
                     
                 total_fila_geral = len(pendentes_geral)
                 st.info(f"ℹ️ Existem **{total_fila_geral} músicas** na fila de espera global.")
+                
+                # Exibir o rodapé com a fila logo após o login, mesmo sem música pedida
+                st.markdown(html_rodape_fila, unsafe_allow_html=True)
                 
                 st.markdown('<div class="ff-action-box">', unsafe_allow_html=True)
                 st.markdown("##### 🔍 PEDIR MÚSICA")
@@ -481,6 +464,28 @@ def render():
                 st.markdown('</div>', unsafe_allow_html=True)
 
         renderizar_painel_fila(cantor, token_prestador)
+            
+        # SECÇÃO COMO FUNCIONA COMPACTA
+        st.markdown('<div class="ff-how-it-works-title">🎧 COMO FUNCIONA?</div>', unsafe_allow_html=True)
+        st.markdown("""
+            <div class="ff-steps-container">
+                <div class="ff-step-card">
+                    <div class="ff-step-number">1</div>
+                    <h5>Escolha</h5>
+                    <p>Digite o nome da música.</p>
+                </div>
+                <div class="ff-step-card">
+                    <div class="ff-step-number">2</div>
+                    <h5>Aguarde</h5>
+                    <p>Acompanhe a sua posição.</p>
+                </div>
+                <div class="ff-step-card">
+                    <div class="ff-step-number">3</div>
+                    <h5>Cante</h5>
+                    <p>Dê o seu show na hora!</p>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
         
         if st.button("🔄 Alterar Nome / Sair"):
             st.session_state["cliente_nome"] = ""
