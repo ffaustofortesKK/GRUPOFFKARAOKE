@@ -6,22 +6,23 @@ from db import guardar_prestador, obter_pedidos_musicas, obter_prestadores, guar
 LINK_LOGO = "https://cdn.phototourl.com/free/2026-07-03-793a0f18-6143-44c8-b56e-e44af828c30c.png"
 
 def render():
+    # Inicializar todas as variáveis de estado necessárias
     if "pedido_submetido" not in st.session_state:
         st.session_state.pedido_submetido = False
+    if "token_prestador" not in st.session_state:
         st.session_state.token_prestador = None
+    if "estado_pedido" not in st.session_state:
         st.session_state.estado_pedido = "pendente"
     if "aprovado" not in st.session_state:
         st.session_state.aprovado = False
+    if "aguardando_validacao" not in st.session_state:
+        st.session_state.aguardando_validacao = False
 
-    prestador_atual = None
-    if st.session_state.pedido_submetido and st.session_state.token_prestador:
-        prestadores = obter_prestadores()
+    # Verificar o estado atual no banco de dados se houver um token ativo
+    if st.session_state.token_prestador:
+        prestadores = obter_prestadores() or []
         prestador_atual = next(
-            (
-                p
-                for p in prestadores
-                if p.get("token") == st.session_state.token_prestador
-            ),
+            (p for p in prestadores if p.get("token") == st.session_state.token_prestador),
             None,
         )
 
@@ -31,12 +32,103 @@ def render():
 
             if status_atual == "aprovado":
                 st.session_state.aprovado = True
+                st.session_state.aguardando_validacao = False
+            elif status_atual == "recusado":
+                st.session_state.aprovado = False
+                st.session_state.aguardando_validacao = False
+            else: # pendente
+                st.session_state.aguardando_validacao = True
 
-    # 1. PAINEL OPERACIONAL (SE APROVADO)
-    if (
-        st.session_state.get("aprovado", False)
-        or st.session_state.get("estado_pedido") == "aprovado"
-    ):
+    # 1. TELA DE PENDENTE (AGUARDANDO APROVAÇÃO) - BLOQUEIA TOTALMENTE O FORMULÁRIO
+    if st.session_state.get("aguardando_validacao", False) or (st.session_state.pedido_submetido and st.session_state.estado_pedido == "pendente" and not st.session_state.aprovado):
+        st.markdown(
+            """
+            <style>
+                .stApp { background-color: #000000 !important; }
+                header[data-testid="stHeader"] { background-color: transparent !important; }
+                .block-container {
+                    background-color: #000000 !important;
+                    max-width: 500px !important;
+                    padding-top: 2rem !important;
+                }
+                @keyframes spinLeft { 0% { transform: rotate(0deg); } 100% { transform: rotate(-360deg); } }
+                @keyframes spinRight { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                .logo-container {
+                    position: relative;
+                    width: 140px;
+                    height: 140px;
+                    margin: 0 auto 15px auto;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .ring-red {
+                    position: absolute;
+                    width: 135px;
+                    height: 135px;
+                    border: 3px dashed #ef4444;
+                    border-radius: 50%;
+                    animation: spinLeft 6s linear infinite;
+                }
+                .ring-yellow {
+                    position: absolute;
+                    width: 155px;
+                    height: 155px;
+                    border: 3px dashed #eab308;
+                    border-radius: 50%;
+                    animation: spinRight 8s linear infinite;
+                }
+                .logo-img {
+                    width: 100px;
+                    height: 100px;
+                    border-radius: 50%;
+                    object-fit: cover;
+                    z-index: 2;
+                }
+                @keyframes pulseDot1 { 0%, 100% { transform: scale(0.6); opacity: 0.3; } 50% { transform: scale(1.5); opacity: 1; } }
+                @keyframes pulseDot2 { 0%, 100% { transform: scale(1.5); opacity: 1; } 50% { transform: scale(0.6); opacity: 0.3; } }
+                @keyframes pulseDot3 { 0%, 100% { transform: scale(0.8); opacity: 0.4; } 50% { transform: scale(1.7); opacity: 1; } }
+                .dot-container {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    gap: 14px;
+                    margin-top: 25px;
+                }
+                .dot-1 { width: 8px; height: 8px; background-color: #ef4444; border-radius: 50%; animation: pulseDot1 1.2s infinite ease-in-out; }
+                .dot-2 { width: 14px; height: 14px; background-color: #eab308; border-radius: 50%; animation: pulseDot2 1.2s infinite ease-in-out; }
+                .dot-3 { width: 11px; height: 11px; background-color: #c084fc; border-radius: 50%; animation: pulseDot3 1.2s infinite ease-in-out; }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        st.markdown(
+            f"""
+            <div style="background-color: #000000; padding: 10px; text-align: center;">
+                <div class="logo-container">
+                    <div class="ring-yellow"></div>
+                    <div class="ring-red"></div>
+                    <img src="{LINK_LOGO}" class="logo-img" />
+                </div>
+                <h3 style="color: #eab308; font-size: 20px; font-weight: bold; margin-bottom: 6px;">Aguardando Aprovação</h3>
+                <p style="color: #d4d4d8; font-size: 13px; margin-bottom: 15px;">O seu registo está a aguardar validação do Administrador.</p>
+                <div class="dot-container">
+                    <div class="dot-1"></div>
+                    <div class="dot-2"></div>
+                    <div class="dot-3"></div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        
+        time.sleep(3)
+        st.rerun()
+        return
+
+    # 2. PAINEL OPERACIONAL (SE APROVADO)
+    if st.session_state.get("aprovado", False) or st.session_state.get("estado_pedido") == "aprovado":
         token_ativo = st.session_state.get("token_prestador", "")
         try:
             base_url = st.context.headers.get("Host", "")
@@ -122,24 +214,18 @@ def render():
         with col_lateral:
             @st.fragment(run_every=3)
             def renderizar_relogio_topo():
-                nonlocal prestador_atual
-                if st.session_state.token_prestador:
-                    prestadores = obter_prestadores()
-                    prestador_atual = next(
-                        (
-                            p
-                            for p in prestadores
-                            if p.get("token") == st.session_state.token_prestador
-                        ),
-                        None,
-                    )
+                prestadores_local = obter_prestadores() or []
+                p_atual = next(
+                    (p for p in prestadores_local if p.get("token") == st.session_state.token_prestador),
+                    None,
+                )
 
                 segundos_restantes = 7200
-                if prestador_atual:
-                    segundos_contrato_inicial = prestador_atual.get(
+                if p_atual:
+                    segundos_contrato_inicial = p_atual.get(
                         "segundos_restantes", 7200
                     )
-                    data_pedido_str = prestador_atual.get("data_pedido", "")
+                    data_pedido_str = p_atual.get("data_pedido", "")
 
                     try:
                         dt_pedido = datetime.strptime(data_pedido_str, "%d/%m/%Y %H:%M")
@@ -167,8 +253,13 @@ def render():
 
             renderizar_relogio_topo()
 
-            nome_prestador_txt = prestador_atual.get("nome", "Prestador") if prestador_atual else "Prestador"
-            estabelecimento_txt = prestador_atual.get("estabelecimento", "") if prestador_atual else ""
+            prestadores_local = obter_prestadores() or []
+            p_atual = next(
+                (p for p in prestadores_local if p.get("token") == st.session_state.token_prestador),
+                None,
+            )
+            nome_prestador_txt = p_atual.get("nome", "Prestador") if p_atual else "Prestador"
+            estabelecimento_txt = p_atual.get("estabelecimento", "") if p_atual else ""
 
             st.markdown(
                 f"""
@@ -191,6 +282,7 @@ def render():
                 st.session_state.token_prestador = None
                 st.session_state.estado_pedido = "pendente"
                 st.session_state.aprovado = False
+                st.session_state.aguardando_validacao = False
                 st.rerun()
 
             st.markdown(
@@ -354,7 +446,7 @@ def render():
                 video_escolhido = st.selectbox("Vídeo de fundo:", list(videos_disponiveis.keys()), label_visibility="collapsed")
                 if st.button("▶ Atualizar", use_container_width=True, type="primary"):
                     if st.session_state.token_prestador:
-                        prestadores = obter_prestadores()
+                        prestadores = obter_prestadores() or []
                         for p in prestadores:
                             if p.get("token") == st.session_state.token_prestador:
                                 p["video_fundo"] = videos_disponiveis[video_escolhido]
@@ -364,7 +456,7 @@ def render():
 
         return
 
-    # 2. TELA DE RECUSADO
+    # 3. TELA DE RECUSADO
     if st.session_state.pedido_submetido and st.session_state.estado_pedido == "recusado":
         st.markdown(
             """
@@ -381,98 +473,11 @@ def render():
             st.session_state.token_prestador = None
             st.session_state.estado_pedido = "pendente"
             st.session_state.aprovado = False
+            st.session_state.aguardando_validacao = False
             st.rerun()
         return
 
-    # 3. TELA DE PENDENTE (AGUARDANDO APROVAÇÃO) - COLOCADA ANTES DA TELA DE REGISTO PARA BLOQUEAR TUDO
-    if st.session_state.pedido_submetido:
-        st.markdown(
-            """
-            <style>
-                .stApp { background-color: #000000 !important; }
-                header[data-testid="stHeader"] { background-color: transparent !important; }
-                .block-container {
-                    background-color: #000000 !important;
-                    max-width: 500px !important;
-                    padding-top: 2rem !important;
-                }
-                @keyframes spinLeft { 0% { transform: rotate(0deg); } 100% { transform: rotate(-360deg); } }
-                @keyframes spinRight { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-                .logo-container {
-                    position: relative;
-                    width: 140px;
-                    height: 140px;
-                    margin: 0 auto 15px auto;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-                .ring-red {
-                    position: absolute;
-                    width: 135px;
-                    height: 135px;
-                    border: 3px dashed #ef4444;
-                    border-radius: 50%;
-                    animation: spinLeft 6s linear infinite;
-                }
-                .ring-yellow {
-                    position: absolute;
-                    width: 155px;
-                    height: 155px;
-                    border: 3px dashed #eab308;
-                    border-radius: 50%;
-                    animation: spinRight 8s linear infinite;
-                }
-                .logo-img {
-                    width: 100px;
-                    height: 100px;
-                    border-radius: 50%;
-                    object-fit: cover;
-                    z-index: 2;
-                }
-                @keyframes pulseDot1 { 0%, 100% { transform: scale(0.6); opacity: 0.3; } 50% { transform: scale(1.5); opacity: 1; } }
-                @keyframes pulseDot2 { 0%, 100% { transform: scale(1.5); opacity: 1; } 50% { transform: scale(0.6); opacity: 0.3; } }
-                @keyframes pulseDot3 { 0%, 100% { transform: scale(0.8); opacity: 0.4; } 50% { transform: scale(1.7); opacity: 1; } }
-                .dot-container {
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    gap: 14px;
-                    margin-top: 25px;
-                }
-                .dot-1 { width: 8px; height: 8px; background-color: #ef4444; border-radius: 50%; animation: pulseDot1 1.2s infinite ease-in-out; }
-                .dot-2 { width: 14px; height: 14px; background-color: #eab308; border-radius: 50%; animation: pulseDot2 1.2s infinite ease-in-out; }
-                .dot-3 { width: 11px; height: 11px; background-color: #c084fc; border-radius: 50%; animation: pulseDot3 1.2s infinite ease-in-out; }
-            </style>
-            """,
-            unsafe_allow_html=True,
-        )
-
-        st.markdown(
-            f"""
-            <div style="background-color: #000000; padding: 10px; text-align: center;">
-                <div class="logo-container">
-                    <div class="ring-yellow"></div>
-                    <div class="ring-red"></div>
-                    <img src="{LINK_LOGO}" class="logo-img" />
-                </div>
-                <h3 style="color: #eab308; font-size: 20px; font-weight: bold; margin-bottom: 6px;">Aguardando Aprovação</h3>
-                <p style="color: #d4d4d8; font-size: 13px; margin-bottom: 15px;">O seu registo está a aguardar validação do Administrador.</p>
-                <div class="dot-container">
-                    <div class="dot-1"></div>
-                    <div class="dot-2"></div>
-                    <div class="dot-3"></div>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        
-        time.sleep(3)
-        st.rerun()
-        return
-
-    # 4. TELA INICIAL (REGISTO / LOGIN) - SÓ É EXECUTADA SE NÃO HOUVER PEDIDO SUBMETIDO
+    # 4. TELA INICIAL (REGISTO / LOGIN) - SÓ APARECE SE NENHUM PEDIDO TIVER SIDO SUBMETIDO
     st.markdown(
         f"""
         <style>
@@ -571,6 +576,7 @@ def render():
                     st.session_state.token_prestador = token_gerado
                     st.session_state.estado_pedido = "pendente"
                     st.session_state.aprovado = False
+                    st.session_state.aguardando_validacao = True
                     st.rerun()
                 else:
                     st.error("Preencha pelo menos o Nome e o Telefone.")
@@ -605,8 +611,10 @@ def render():
                     if prestador_encontrado:
                         st.session_state.pedido_submetido = True
                         st.session_state.token_prestador = prestador_encontrado.get("token")
-                        st.session_state.estado_pedido = prestador_encontrado.get("status_str", "pendente")
-                        st.session_state.aprovado = (prestador_encontrado.get("status_str") == "aprovado")
+                        status_encontrado = prestador_encontrado.get("status_str", "pendente")
+                        st.session_state.estado_pedido = status_encontrado
+                        st.session_state.aprovado = (status_encontrado == "aprovado")
+                        st.session_state.aguardando_validacao = (status_encontrado == "pendente")
                         st.rerun()
                     else:
                         st.error("Prestador não encontrado com estes dados ou ainda não registado.")
