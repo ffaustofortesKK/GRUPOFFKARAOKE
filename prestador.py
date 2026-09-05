@@ -536,6 +536,13 @@ def render():
                     label_visibility="collapsed",
                 )
 
+            # CAMPO DE VÍDEO CLIPE / FUNDO RESTAURADO
+            c_emo5, c_inp5 = st.columns([0.08, 0.92])
+            with c_emo5:
+                st.markdown('<div style="font-size: 18px; text-align: center; line-height: 1.5;">🎬</div>', unsafe_allow_html=True)
+            with c_inp5:
+                video_fundo = st.text_input("Link do Vídeo Clipe de Fundo (Opcional)", placeholder="Cole aqui o link do vídeo de fundo para a TV...", label_visibility="collapsed")
+
             st.markdown("<div style='height: 1px;'></div>", unsafe_allow_html=True)
             submitted = st.form_submit_button("🚀 SUBMETER PEDIDO", use_container_width=True)
             
@@ -561,7 +568,7 @@ def render():
                         "token": token_gerado,
                         "segundos_restantes": segundos_contrato,
                         "data_pedido": datetime.now().strftime("%d/%m/%Y %H:%M"),
-                        "video_fundo": "",
+                        "video_fundo": video_fundo.strip() if 'video_fundo' in locals() else "",
                     }
 
                     guardar_prestador(novo_prestador)
