@@ -211,54 +211,6 @@ def render():
 
             st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
-            # 4. Informações que antes estavam em baixo (Estilo Compacto na Vertical)
-            st.markdown(
-                """
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 32px; height: 32px; border: 1px solid #c084fc; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <span style="color: #c084fc; font-size: 14px;">🚀</span>
-                        </div>
-                        <div>
-                            <div style="color: #c084fc; font-weight: bold; font-size: 10px; letter-spacing: 0.5px;">RÁPIDO E PRÁTICO</div>
-                            <div style="color: #a1a1aa; font-size: 10px; line-height: 1.2;">Controle a reprodução fácil.</div>
-                        </div>
-                    </div>
-
-                    <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 32px; height: 32px; border: 1px solid #eab308; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 6px rgba(234, 179, 8, 0.2);">
-                            <span style="color: #eab308; font-size: 14px;">🛡️</span>
-                        </div>
-                        <div>
-                            <div style="color: #eab308; font-weight: bold; font-size: 10px; letter-spacing: 0.5px;">CONTROLE TOTAL</div>
-                            <div style="color: #a1a1aa; font-size: 10px; line-height: 1.2;">Gerencie a fila e a TV.</div>
-                        </div>
-                    </div>
-
-                    <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 32px; height: 32px; border: 1px solid #c084fc; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <span style="color: #c084fc; font-size: 14px;">👥</span>
-                        </div>
-                        <div>
-                            <div style="color: #c084fc; font-weight: bold; font-size: 10px; letter-spacing: 0.5px;">CONECTADO</div>
-                            <div style="color: #a1a1aa; font-size: 10px; line-height: 1.2;">Links e QR Code ativos.</div>
-                        </div>
-                    </div>
-
-                    <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 32px; height: 32px; border: 1px solid #eab308; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 6px rgba(234, 179, 8, 0.2);">
-                            <span style="color: #eab308; font-size: 14px;">⭐</span>
-                        </div>
-                        <div>
-                            <div style="color: #eab308; font-weight: bold; font-size: 10px; letter-spacing: 0.5px;">FAZ A VOZ!</div>
-                            <div style="color: #a1a1aa; font-size: 10px; line-height: 1.2;">Obrigado por fazer parte!</div>
-                        </div>
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
         with col_principal:
             col_esq, col_dir = st.columns([1.35, 1])
 
