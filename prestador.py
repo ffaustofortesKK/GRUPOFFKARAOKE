@@ -6,6 +6,7 @@ from db import guardar_prestador, obter_pedidos_musicas, obter_prestadores, guar
 LINK_LOGO = "https://cdn.phototourl.com/free/2026-07-03-793a0f18-6143-44c8-b56e-e44af828c30c.png"
 
 def render():
+    # 1. INICIALIZAÇÃO SEGURA DO ESTADO
     if "pedido_submetido" not in st.session_state:
         st.session_state.pedido_submetido = False
         st.session_state.token_prestador = None
@@ -15,11 +16,10 @@ def render():
 
     prestador_atual = None
     if st.session_state.pedido_submetido and st.session_state.token_prestador:
-        prestadores = obter_prestadores()
+        prestadores = obter_prestadores() or []
         prestador_atual = next(
             (
-                p
-                for p in prestadores
+                p for p in prestadores
                 if p.get("token") == st.session_state.token_prestador
             ),
             None,
@@ -28,12 +28,11 @@ def render():
         if prestador_atual:
             status_atual = prestador_atual.get("status_str", "pendente")
             st.session_state.estado_pedido = status_atual
-
             if status_atual == "aprovado":
                 st.session_state.aprovado = True
 
     # ==========================================
-    # 1. BLOQUEIO TOTAL SE ESTIVER PENDENTE
+    # 2. BLOQUEIO ABSOLUTO: SE ESTIVER PENDENTE
     # ==========================================
     if st.session_state.pedido_submetido and st.session_state.get("estado_pedido", "pendente") == "pendente":
         st.markdown(
@@ -64,7 +63,7 @@ def render():
         return
 
     # ==========================================
-    # 2. SE ESTIVER APROVADO: Painel Operacional
+    # 3. SE ESTIVER APROVADO: Painel Operacional
     # ==========================================
     if (
         st.session_state.get("aprovado", False)
@@ -180,11 +179,10 @@ def render():
             def renderizar_relogio_topo():
                 nonlocal prestador_atual
                 if st.session_state.token_prestador:
-                    prestadores = obter_prestadores()
+                    prestadores = obter_prestadores() or []
                     prestador_atual = next(
                         (
-                            p
-                            for p in prestadores
+                            p for p in prestadores
                             if p.get("token") == st.session_state.token_prestador
                         ),
                         None,
@@ -411,7 +409,7 @@ def render():
                 video_escolhido = st.selectbox("Vídeo de fundo:", list(videos_disponiveis.keys()), label_visibility="collapsed")
                 if st.button("▶ Atualizar", use_container_width=True, type="primary"):
                     if st.session_state.token_prestador:
-                        prestadores = obter_prestadores()
+                        prestadores = obter_prestadores() or []
                         for p in prestadores:
                             if p.get("token") == st.session_state.token_prestador:
                                 p["video_fundo"] = videos_disponiveis[video_escolhido]
@@ -422,7 +420,7 @@ def render():
         return
 
     # ==========================================
-    # 3. SE ESTIVER RECUSADO
+    # 4. SE ESTIVER RECUSADO
     # ==========================================
     if st.session_state.pedido_submetido and st.session_state.estado_pedido == "recusado":
         st.markdown(
@@ -444,7 +442,7 @@ def render():
         return
 
     # ==========================================
-    # 🎨 4. TELA INICIAL: REGISTO / LOGIN 
+    # 🎨 5. TELA INICIAL: REGISTO / LOGIN 
     # ==========================================
     st.markdown(
         f"""
