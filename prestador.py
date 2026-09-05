@@ -499,12 +499,13 @@ def render():
 
                         guardar_prestador(novo_prestador)
 
-                        # Atribuir estado e forçar rerun imediato com interrupção de fluxo
+                        # Atribuir estado e forçar rerun com interrupção imediata
                         st.session_state.pedido_submetido = True
                         st.session_state.token_prestador = token_gerado
                         st.session_state.estado_pedido = "pendente"
                         st.session_state.aprovado = False
                         st.rerun()
+                        st.stop()
                     else:
                         st.error("Preencha pelo menos o Nome e o Telefone.")
         else:
@@ -516,7 +517,7 @@ def render():
                 with c_inp_l1: login_nome = st.text_input("Nome", placeholder="Digite o seu nome cadastrado", label_visibility="collapsed")
 
                 c_emo_l2, c_inp_l2 = st.columns([0.08, 0.92])
-                with c_emo_l2: st.markdown('<div style="font-size: 20px; text-align: center; line-height: 1.5;">📞</div>', unsafe_allow_html=True)
+                with c_emo_l2: st.markdown('<div style="font-size: 20px; text-align: center; line-class: 1.5;">📞</div>', unsafe_allow_html=True)
                 with c_inp_l2: login_telefone = st.text_input("Telemóvel / Telefone", placeholder="Digite o seu número de telefone", label_visibility="collapsed")
 
                 st.markdown("<div style='height: 2px;'></div>", unsafe_allow_html=True)
@@ -542,6 +543,7 @@ def render():
                             st.session_state.estado_pedido = status_encontrado
                             st.session_state.aprovado = (status_encontrado == "aprovado")
                             st.rerun()
+                            st.stop()
                         else:
                             st.error("Prestador não encontrado com estes dados ou ainda não registado.")
                     else:
