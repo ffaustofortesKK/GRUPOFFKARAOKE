@@ -384,7 +384,7 @@ def render():
             st.rerun()
         return
 
-    # 3. TELA DE PENDENTE (AGUARDANDO APROVAÇÃO) - BLOQUEIA E IMPEDE O FORMULÁRIO DE APARECER EM BAIXO
+    # 3. TELA DE PENDENTE (AGUARDANDO APROVAÇÃO) - COLOCADA ANTES DA TELA DE REGISTO PARA BLOQUEAR TUDO
     if st.session_state.pedido_submetido:
         st.markdown(
             """
@@ -470,9 +470,9 @@ def render():
         
         time.sleep(3)
         st.rerun()
-        return  # Garante estritamente que nada abaixo é renderizado
+        return
 
-    # 4. TELA INICIAL (REGISTO / LOGIN) - SÓ APARECE SE NÃO HOUVER PEDIDO SUBMETIDO
+    # 4. TELA INICIAL (REGISTO / LOGIN) - SÓ É EXECUTADA SE NÃO HOUVER PEDIDO SUBMETIDO
     st.markdown(
         f"""
         <style>
