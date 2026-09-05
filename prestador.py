@@ -57,7 +57,7 @@ def render():
             )
 
         # ==========================================
-        # 🎨 ESTILO COM LARGURA AUMENTADA EM 20% (1344px)
+        # 🎨 ESTILO COM COLUNA LATERAL REDUZIDA EM 30%
         # ==========================================
         st.markdown(
             """
@@ -67,7 +67,7 @@ def render():
                     background-color: #08080a !important;
                 }
                 
-                /* Moldura centralizada (Largura aumentada em 20%: 1120px -> 1344px) */
+                /* Moldura centralizada */
                 .block-container {
                     max-width: 1344px !important;
                     padding-top: 1.8rem !important;
@@ -125,31 +125,27 @@ def render():
             unsafe_allow_html=True,
         )
 
-        # Layout Principal dividido em 2 colunas principais: Lateral Esquerda (Controles/Info) e Conteúdo Principal (Direita)
-        col_lateral, col_principal = st.columns([1, 2.6])
+        # Layout Principal com Coluna Lateral Reduzida
+        col_lateral, col_principal = st.columns([0.7, 2.9])
 
         with col_lateral:
             # 1. Relógio / Tempo Restante
             @st.fragment(run_every=3)
             def renderizar_relogio_topo():
-                nonlocal prestador_atual
-                if st.session_state.token_prestador:
-                    prestadores = obter_prestadores()
-                    prestador_atual = next(
-                        (
-                            p
-                            for p in prestadores
-                            if p.get("token") == st.session_state.token_prestador
-                        ),
-                        None,
-                    )
+                prestadores_local = obter_prestadores()
+                p_atual = next(
+                    (
+                        p
+                        for p in prestadores_local
+                        if p.get("token") == st.session_state.token_prestador
+                    ),
+                    None,
+                )
 
                 segundos_restantes = 7200
-                if prestador_atual:
-                    segundos_contrato_inicial = prestador_atual.get(
-                        "segundos_restantes", 7200
-                    )
-                    data_pedido_str = prestador_atual.get("data_pedido", "")
+                if p_atual:
+                    segundos_contrato_inicial = p_atual.get("segundos_restantes", 7200)
+                    data_pedido_str = p_atual.get("data_pedido", "")
 
                     try:
                         dt_pedido = datetime.strptime(data_pedido_str, "%d/%m/%Y %H:%M")
@@ -167,9 +163,9 @@ def render():
 
                 st.markdown(
                     f"""
-                    <div style="background-color: #121215; border: 2px solid #eab308; padding: 6px 10px; border-radius: 8px; text-align: center; box-shadow: 0 0 10px rgba(234, 179, 8, 0.3); margin-bottom: 8px;">
-                        <div style="color: #eab308; font-size: 9px; font-weight: bold; letter-spacing: 1px; margin-bottom: 2px;">⏳ TEMPO RESTANTE</div>
-                        <div style="color: #ffffff; font-family: monospace; font-size: 20px; font-weight: 900; letter-spacing: 1px;">{tempo_formatado}</div>
+                    <div style="background-color: #121215; border: 2px solid #eab308; padding: 5px 8px; border-radius: 8px; text-align: center; box-shadow: 0 0 10px rgba(234, 179, 8, 0.3); margin-bottom: 6px;">
+                        <div style="color: #eab308; font-size: 8px; font-weight: bold; letter-spacing: 1px; margin-bottom: 2px;">⏳ TEMPO RESTANTE</div>
+                        <div style="color: #ffffff; font-family: monospace; font-size: 16px; font-weight: 900; letter-spacing: 1px;">{tempo_formatado}</div>
                     </div>
                     """,
                     unsafe_allow_html=True,
@@ -184,17 +180,17 @@ def render():
 
             st.markdown(
                 f"""
-                <div style="background-color: #121215; border: 1px solid #8b5cf6; padding: 10px 14px; border-radius: 8px; margin-bottom: 8px;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 16px;">🎙️</span>
+                <div style="background-color: #121215; border: 1px solid #8b5cf6; padding: 8px 10px; border-radius: 8px; margin-bottom: 6px;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="font-size: 14px;">🎙️</span>
                         <div>
-                            <div style="color: #c084fc; font-size: 9px; font-weight: bold; letter-spacing: 0.5px;">PRESTADOR EM SESSÃO</div>
-                            <div style="color: #ffffff; font-size: 13px; font-weight: bold; word-break: break-word;">{nome_prestador_txt}{sub_info}</div>
+                            <div style="color: #c084fc; font-size: 8px; font-weight: bold; letter-spacing: 0.5px;">PRESTADOR EM SESSÃO</div>
+                            <div style="color: #ffffff; font-size: 11px; font-weight: bold; word-break: break-word;">{nome_prestador_txt}{sub_info}</div>
                         </div>
                     </div>
-                    <div style="margin-top: 6px; display: flex; justify-content: space-between; align-items: center;">
-                        <span style="color: #a1a1aa; font-size: 10px;">Estado:</span>
-                        <span style="color: #eab308; font-size: 11px; font-weight: bold; background: rgba(234, 179, 8, 0.1); padding: 2px 8px; border-radius: 12px; border: 1px solid rgba(234, 179, 8, 0.3);">🟢 Ativo</span>
+                    <div style="margin-top: 4px; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: #a1a1aa; font-size: 9px;">Estado:</span>
+                        <span style="color: #eab308; font-size: 10px; font-weight: bold; background: rgba(234, 179, 8, 0.1); padding: 1px 6px; border-radius: 10px; border: 1px solid rgba(234, 179, 8, 0.3);">🟢 Ativo</span>
                     </div>
                 </div>
                 """,
@@ -209,49 +205,49 @@ def render():
                 st.session_state.aprovado = False
                 st.rerun()
 
-            st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 
-            # 4. Informações de Apoio
+            # 4. Informações fixas na barra lateral
             st.markdown(
                 """
                 <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 32px; height: 32px; border: 1px solid #c084fc; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <span style="color: #c084fc; font-size: 14px;">🚀</span>
+                    <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 28px; height: 28px; border: 1px solid #c084fc; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <span style="color: #c084fc; font-size: 12px;">🚀</span>
                         </div>
                         <div>
-                            <div style="color: #c084fc; font-weight: bold; font-size: 10px; letter-spacing: 0.5px;">RÁPIDO E PRÁTICO</div>
-                            <div style="color: #a1a1aa; font-size: 10px; line-height: 1.2;">Controle a reprodução fácil.</div>
+                            <div style="color: #c084fc; font-weight: bold; font-size: 9px; letter-spacing: 0.5px;">RÁPIDO E PRÁTICO</div>
+                            <div style="color: #a1a1aa; font-size: 9px; line-height: 1.1;">Controle a reprodução fácil.</div>
                         </div>
                     </div>
 
-                    <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 32px; height: 32px; border: 1px solid #eab308; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 6px rgba(234, 179, 8, 0.2);">
-                            <span style="color: #eab308; font-size: 14px;">🛡️</span>
+                    <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 28px; height: 28px; border: 1px solid #eab308; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 6px rgba(234, 179, 8, 0.2);">
+                            <span style="color: #eab308; font-size: 12px;">🛡️</span>
                         </div>
                         <div>
-                            <div style="color: #eab308; font-weight: bold; font-size: 10px; letter-spacing: 0.5px;">CONTROLE TOTAL</div>
-                            <div style="color: #a1a1aa; font-size: 10px; line-height: 1.2;">Gerencie a fila e a TV.</div>
+                            <div style="color: #eab308; font-weight: bold; font-size: 9px; letter-spacing: 0.5px;">CONTROLE TOTAL</div>
+                            <div style="color: #a1a1aa; font-size: 9px; line-height: 1.1;">Gerencie a fila e a TV.</div>
                         </div>
                     </div>
 
-                    <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 32px; height: 32px; border: 1px solid #c084fc; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <span style="color: #c084fc; font-size: 14px;">👥</span>
+                    <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 28px; height: 28px; border: 1px solid #c084fc; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <span style="color: #c084fc; font-size: 12px;">👥</span>
                         </div>
                         <div>
-                            <div style="color: #c084fc; font-weight: bold; font-size: 10px; letter-spacing: 0.5px;">CONECTADO</div>
-                            <div style="color: #a1a1aa; font-size: 10px; line-height: 1.2;">Links e QR Code ativos.</div>
+                            <div style="color: #c084fc; font-weight: bold; font-size: 9px; letter-spacing: 0.5px;">CONECTADO</div>
+                            <div style="color: #a1a1aa; font-size: 9px; line-height: 1.1;">Links e QR Code ativos.</div>
                         </div>
                     </div>
 
-                    <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 32px; height: 32px; border: 1px solid #eab308; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 6px rgba(234, 179, 8, 0.2);">
-                            <span style="color: #eab308; font-size: 14px;">⭐</span>
+                    <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 28px; height: 28px; border: 1px solid #eab308; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 6px rgba(234, 179, 8, 0.2);">
+                            <span style="color: #eab308; font-size: 12px;">⭐</span>
                         </div>
                         <div>
-                            <div style="color: #eab308; font-weight: bold; font-size: 10px; letter-spacing: 0.5px;">FAZ A VOZ!</div>
-                            <div style="color: #a1a1aa; font-size: 10px; line-height: 1.2;">Obrigado por fazer parte!</div>
+                            <div style="color: #eab308; font-weight: bold; font-size: 9px; letter-spacing: 0.5px;">FAZ A VOZ!</div>
+                            <div style="color: #a1a1aa; font-size: 9px; line-height: 1.1;">Obrigado por fazer parte!</div>
                         </div>
                     </div>
                 </div>
@@ -263,7 +259,6 @@ def render():
             col_esq, col_dir = st.columns([1.35, 1])
 
             with col_esq:
-
                 @st.fragment(run_every=3)
                 def renderizar_a_tocar():
                     st.markdown(
@@ -312,13 +307,13 @@ def render():
                     except Exception:
                         todos_pedidos = []
 
-                    token_ativo = str(st.session_state.get("token_prestador", ""))
+                    token_ativo_local = str(st.session_state.get("token_prestador", ""))
 
                     lista_pedidos = []
                     for p in todos_pedidos:
                         if p.get("status", "pendente") == "pendente":
                             p_token = str(p.get("token_prestador", ""))
-                            if not p_token or p_token == "None" or p_token == token_ativo:
+                            if not p_token or p_token == "None" or p_token == token_ativo_local:
                                 lista_pedidos.append(p)
 
                     total_pedidos = len(lista_pedidos)
@@ -411,3 +406,125 @@ def render():
                     """,
                     unsafe_allow_html=True,
                 )
+
+                col_bt_tv, col_bt_cli = st.columns(2)
+                with col_bt_tv:
+                    st.markdown(
+                        f'<a href="{url_tela}" target="_blank"><button style="width: 100%; background-color: #121215; color: #ffffff; border: 1px solid #27272a; padding: 6px; border-radius: 6px; font-size: 12px; font-weight: 500;">🖥️ TV</button></a>',
+                        unsafe_allow_html=True,
+                    )
+                with col_bt_cli:
+                    st.markdown(
+                        f'<a href="{url_cliente}" target="_blank"><button style="width: 100%; background-color: #121215; color: #ffffff; border: 1px solid #27272a; padding: 6px; border-radius: 6px; font-size: 12px; font-weight: 500;">📱 Cliente</button></a>',
+                        unsafe_allow_html=True,
+                    )
+
+                st.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
+
+                videos_disponiveis = {
+                    "- Sem vídeo -": "",
+                    "Vídeo 1 (Oficial)": "https://youtu.be/cQ4MD7gOBmc?si=5wzaxysiHSEwn9QT",
+                    "Vídeo 2": "https://youtu.be/H_aniWehIYY?si=e9WzMGyFSy7PdrAj",
+                    "Vídeo 3": "https://youtu.be/sGGlQ9yJQNg?si=LVeN5zjZ153uksLW",
+                    "Vídeo 4": "https://youtu.be/sGGlQ9yJQNg?si=ZxjJ34_4Z13MUL-g",
+                    "Vídeo 5": "https://youtu.be/TmayKMV0bJY?si=Zb99BwXuFyDDJ-tN",
+                }
+
+                st.markdown(
+                    """
+                    <div class="box-container">
+                        <div class="box-title">
+                            <span>🎬 VÍDEO DE FUNDO DA TV</span>
+                        </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+                video_escolhido = st.selectbox(
+                    "Vídeo de fundo:",
+                    list(videos_disponiveis.keys()),
+                    label_visibility="collapsed",
+                )
+                url_video_selecionado = videos_disponiveis[video_escolhido]
+
+                if st.button(
+                    "▶ Atualizar Vídeo",
+                    use_container_width=True,
+                    type="primary",
+                    key="btn_atualizar_video",
+                ):
+                    if st.session_state.token_prestador:
+                        prestadores = obter_prestadores()
+                        for p in prestadores:
+                            if p.get("token") == st.session_state.token_prestador:
+                                p["video_fundo"] = url_video_selecionado
+                                guardar_prestador(p)
+                        st.success("Guardado!")
+
+                st.markdown("</div>", unsafe_allow_html=True)
+
+        return
+
+    # 2. SE ESTIVER RECUSADO
+    if (
+        st.session_state.pedido_submetido
+        and st.session_state.estado_pedido == "recusado"
+    ):
+        st.markdown(
+            """
+                <div style="background-color: #0f0f11; border: 1px solid #ef4444; padding: 20px; text-align: center; border-radius: 8px; max-width: 500px; margin: 30px auto;">
+                    <div style="font-size: 35px; margin-bottom: 8px;">❌</div>
+                    <h3 style="color: #ef4444; font-size: 18px; margin-bottom: 8px;">Pedido Recusado</h3>
+                    <p style="color: #d4d4d8; font-size: 14px; margin-bottom: 12px;">O seu pedido foi recusado pelo Administrador.</p>
+                </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.button("Tentar Novamente", use_container_width=True):
+                st.session_state.pedido_submetido = False
+                st.session_state.token_prestador = None
+                st.session_state.estado_pedido = "pendente"
+                st.session_state.aprovado = False
+                st.rerun()
+        return
+
+    # 3. SE ESTIVER PENDENTE
+    if st.session_state.pedido_submetido:
+        st.markdown(
+            """
+                <div style="background-color: #0f0f11; padding: 25px; text-align: center; border-radius: 8px; max-width: 500px; margin: 30px auto;">
+                    <h3 style="color: #ffffff; font-size: 18px; margin-bottom: 8px;">Aguardando Aprovação</h3>
+                    <p style="color: #d4d4d8; font-size: 14px; margin-bottom: 6px;">O seu registo está a aguardar validação do Administrador.</p>
+                </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        time.sleep(3)
+        st.rerun()
+        return
+
+    # 4. TELA INICIAL: REGISTO OU LOGIN
+    st.markdown(
+        """
+            <style>
+                .prestador-wrapper {
+                    background: #0f0f13;
+                    border: 1px solid #8b5cf6;
+                    border-radius: 10px;
+                    padding: 16px 20px;
+                    max-width: 700px;
+                    margin: 0 auto;
+                }
+                .prestador-title {
+                    color: #eab308;
+                    font-size: 20px;
+                    font-weight: 800;
+                    margin-top: 4px;
+                    margin-bottom: 2px;
+                }
+            </style>
+        """,
+        unsafe_allow_html=True,
+    )
