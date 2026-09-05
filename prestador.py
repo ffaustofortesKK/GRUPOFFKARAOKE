@@ -650,10 +650,10 @@ def render():
         st.markdown(
             """
             <div style="background-color: #050507; border: 1px solid #27203d; padding: 6px; border-radius: 4px; display: flex; align-items: center; gap: 6px;">
-                <span style="font-size: 16px;">🛡️</span>
+                <span style="font-size: 16px;">⚡</span>
                 <div>
-                    <div style="color: #eab308; font-size: 11px; font-weight: bold;">SEGURO</div>
-                    <div style="color: #a1a1aa; font-size: 10px;">Dados protegidos.</div>
+                    <div style="color: #eab308; font-size: 11px; font-weight: bold;">EFICIENTE</div>
+                    <div style="color: #a1a1aa; font-size: 10px;">Gestão em tempo real.</div>
                 </div>
             </div>
             """,
@@ -663,10 +663,10 @@ def render():
         st.markdown(
             """
             <div style="background-color: #050507; border: 1px solid #27203d; padding: 6px; border-radius: 4px; display: flex; align-items: center; gap: 6px;">
-                <span style="font-size: 16px;">⭐</span>
+                <span style="font-size: 16px;">🔒</span>
                 <div>
-                    <div style="color: #eab308; font-size: 11px; font-weight: bold;">FASTA!</div>
-                    <div style="color: #a1a1aa; font-size: 10px;">FF KARAOKE.</div>
+                    <div style="color: #eab308; font-size: 11px; font-weight: bold;">SEGURO</div>
+                    <div style="color: #a1a1aa; font-size: 10px;">Acesso restrito.</div>
                 </div>
             </div>
             """,
