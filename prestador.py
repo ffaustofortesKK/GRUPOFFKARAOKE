@@ -57,7 +57,7 @@ def render():
             )
 
         # ==========================================
-        # 🎨 ESTILO COM LARGURA AUMENTADA EM 20% (1344px)
+        # 🎨 ESTILO COM COLUNA LATERAL REDUZIDA EM 30%
         # ==========================================
         st.markdown(
             """
@@ -67,7 +67,7 @@ def render():
                     background-color: #08080a !important;
                 }
                 
-                /* Moldura centralizada (Largura aumentada em 20%: 1120px -> 1344px) */
+                /* Moldura centralizada */
                 .block-container {
                     max-width: 1344px !important;
                     padding-top: 1.8rem !important;
@@ -125,8 +125,8 @@ def render():
             unsafe_allow_html=True,
         )
 
-        # Layout Principal dividido em 2 colunas principais: Lateral Esquerda (Controles/Info) e Conteúdo Principal (Direita)
-        col_lateral, col_principal = st.columns([1, 2.6])
+        # Layout Principal com Coluna Lateral Reduzida (~30 menor proporção: 0.7 para a lateral e 2.9 para o principal)
+        col_lateral, col_principal = st.columns([0.7, 2.9])
 
         with col_lateral:
             # 1. Relógio / Tempo Restante
@@ -167,9 +167,9 @@ def render():
 
                 st.markdown(
                     f"""
-                    <div style="background-color: #121215; border: 2px solid #eab308; padding: 6px 10px; border-radius: 8px; text-align: center; box-shadow: 0 0 10px rgba(234, 179, 8, 0.3); margin-bottom: 8px;">
-                        <div style="color: #eab308; font-size: 9px; font-weight: bold; letter-spacing: 1px; margin-bottom: 2px;">⏳ TEMPO RESTANTE</div>
-                        <div style="color: #ffffff; font-family: monospace; font-size: 20px; font-weight: 900; letter-spacing: 1px;">{tempo_formatado}</div>
+                    <div style="background-color: #121215; border: 2px solid #eab308; padding: 5px 8px; border-radius: 8px; text-align: center; box-shadow: 0 0 10px rgba(234, 179, 8, 0.3); margin-bottom: 6px;">
+                        <div style="color: #eab308; font-size: 8px; font-weight: bold; letter-spacing: 1px; margin-bottom: 2px;">⏳ TEMPO RESTANTE</div>
+                        <div style="color: #ffffff; font-family: monospace; font-size: 16px; font-weight: 900; letter-spacing: 1px;">{tempo_formatado}</div>
                     </div>
                     """,
                     unsafe_allow_html=True,
@@ -184,17 +184,17 @@ def render():
 
             st.markdown(
                 f"""
-                <div style="background-color: #121215; border: 1px solid #8b5cf6; padding: 10px 14px; border-radius: 8px; margin-bottom: 8px;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 16px;">🎙️</span>
+                <div style="background-color: #121215; border: 1px solid #8b5cf6; padding: 8px 10px; border-radius: 8px; margin-bottom: 6px;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="font-size: 14px;">🎙️</span>
                         <div>
-                            <div style="color: #c084fc; font-size: 9px; font-weight: bold; letter-spacing: 0.5px;">PRESTADOR EM SESSÃO</div>
-                            <div style="color: #ffffff; font-size: 13px; font-weight: bold; word-break: break-word;">{nome_prestador_txt}{sub_info}</div>
+                            <div style="color: #c084fc; font-size: 8px; font-weight: bold; letter-spacing: 0.5px;">PRESTADOR EM SESSÃO</div>
+                            <div style="color: #ffffff; font-size: 11px; font-weight: bold; word-break: break-word;">{nome_prestador_txt}{sub_info}</div>
                         </div>
                     </div>
-                    <div style="margin-top: 6px; display: flex; justify-content: space-between; align-items: center;">
-                        <span style="color: #a1a1aa; font-size: 10px;">Estado:</span>
-                        <span style="color: #eab308; font-size: 11px; font-weight: bold; background: rgba(234, 179, 8, 0.1); padding: 2px 8px; border-radius: 12px; border: 1px solid rgba(234, 179, 8, 0.3);">🟢 Ativo</span>
+                    <div style="margin-top: 4px; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: #a1a1aa; font-size: 9px;">Estado:</span>
+                        <span style="color: #eab308; font-size: 10px; font-weight: bold; background: rgba(234, 179, 8, 0.1); padding: 1px 6px; border-radius: 10px; border: 1px solid rgba(234, 179, 8, 0.3);">🟢 Ativo</span>
                     </div>
                 </div>
                 """,
@@ -209,49 +209,49 @@ def render():
                 st.session_state.aprovado = False
                 st.rerun()
 
-            st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 
-            # 4. Informações que antes estavam em baixo (Estilo Compacto na Vertical)
+            # 4. Informações Corrigidas Exatamente Conforme a Segunda Imagem
             st.markdown(
                 """
                 <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 32px; height: 32px; border: 1px solid #c084fc; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <span style="color: #c084fc; font-size: 14px;">🚀</span>
+                    <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 28px; height: 28px; border: 1px solid #c084fc; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <span style="color: #c084fc; font-size: 12px;">🚀</span>
                         </div>
                         <div>
-                            <div style="color: #c084fc; font-weight: bold; font-size: 10px; letter-spacing: 0.5px;">RÁPIDO E PRÁTICO</div>
-                            <div style="color: #a1a1aa; font-size: 10px; line-height: 1.2;">Controle a reprodução fácil.</div>
+                            <div style="color: #c084fc; font-weight: bold; font-size: 9px; letter-spacing: 0.5px;">RÁPIDO E PRÁTICO</div>
+                            <div style="color: #a1a1aa; font-size: 9px; line-height: 1.1;">Controle a reprodução fácil.</div>
                         </div>
                     </div>
 
-                    <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 32px; height: 32px; border: 1px solid #eab308; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 6px rgba(234, 179, 8, 0.2);">
-                            <span style="color: #eab308; font-size: 14px;">🛡️</span>
+                    <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 28px; height: 28px; border: 1px solid #eab308; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 6px rgba(234, 179, 8, 0.2);">
+                            <span style="color: #eab308; font-size: 12px;">🛡️</span>
                         </div>
                         <div>
-                            <div style="color: #eab308; font-weight: bold; font-size: 10px; letter-spacing: 0.5px;">CONTROLE TOTAL</div>
-                            <div style="color: #a1a1aa; font-size: 10px; line-height: 1.2;">Gerencie a fila e a TV.</div>
+                            <div style="color: #eab308; font-weight: bold; font-size: 9px; letter-spacing: 0.5px;">CONTROLE TOTAL</div>
+                            <div style="color: #a1a1aa; font-size: 9px; line-height: 1.1;">Gerencie a fila e a TV.</div>
                         </div>
                     </div>
 
-                    <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 32px; height: 32px; border: 1px solid #c084fc; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <span style="color: #c084fc; font-size: 14px;">👥</span>
+                    <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 28px; height: 28px; border: 1px solid #c084fc; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <span style="color: #c084fc; font-size: 12px;">👥</span>
                         </div>
                         <div>
-                            <div style="color: #c084fc; font-weight: bold; font-size: 10px; letter-spacing: 0.5px;">CONECTADO</div>
-                            <div style="color: #a1a1aa; font-size: 10px; line-height: 1.2;">Links e QR Code ativos.</div>
+                            <div style="color: #c084fc; font-weight: bold; font-size: 9px; letter-spacing: 0.5px;">CONECTADO</div>
+                            <div style="color: #a1a1aa; font-size: 9px; line-height: 1.1;">Links e QR Code ativos.</div>
                         </div>
                     </div>
 
-                    <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 32px; height: 32px; border: 1px solid #eab308; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 6px rgba(234, 179, 8, 0.2);">
-                            <span style="color: #eab308; font-size: 14px;">⭐</span>
+                    <div style="background-color: #0c0c0e; border: 1px solid #27272a; border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 28px; height: 28px; border: 1px solid #eab308; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 6px rgba(234, 179, 8, 0.2);">
+                            <span style="color: #eab308; font-size: 12px;">⭐</span>
                         </div>
                         <div>
-                            <div style="color: #eab308; font-weight: bold; font-size: 10px; letter-spacing: 0.5px;">FAZ A VOZ!</div>
-                            <div style="color: #a1a1aa; font-size: 10px; line-height: 1.2;">Obrigado por fazer parte!</div>
+                            <div style="color: #eab308; font-weight: bold; font-size: 9px; letter-spacing: 0.5px;">FAZ A VOZ!</div>
+                            <div style="color: #a1a1aa; font-size: 9px; line-height: 1.1;">Obrigado por fazer parte!</div>
                         </div>
                     </div>
                 </div>
