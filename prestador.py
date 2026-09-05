@@ -9,7 +9,9 @@ def render():
     # 1. INICIALIZAÇÃO DE VARIÁVEIS DE SESSÃO
     if "pedido_submetido" not in st.session_state:
         st.session_state.pedido_submetido = False
+    if "token_prestador" not in st.session_state:
         st.session_state.token_prestador = None
+    if "estado_pedido" not in st.session_state:
         st.session_state.estado_pedido = "pendente"
     if "aprovado" not in st.session_state:
         st.session_state.aprovado = False
@@ -27,10 +29,18 @@ def render():
             st.session_state.estado_pedido = status_atual
             if status_atual == "aprovado":
                 st.session_state.aprovado = True
+                st.session_state.pedido_submetido = True
+            elif status_atual == "pendente":
+                st.session_state.pedido_submetido = True
+        else:
+            # Se o token não for encontrado na BD, limpa a sessão
+            st.session_state.token_prestador = None
+            st.session_state.pedido_submetido = False
+            st.session_state.aprovado = False
+            st.session_state.estado_pedido = "pendente"
 
     # =========================================================================
-    # 3. BLOQUEIO ABSOLUTO DE ECRÃ (SE ESTIVER PENDENTE OU SUBMETIDO)
-    # Colocado estritamente no topo para impedir que qualquer campo apareça
+    # 3. BLOQUEIO ABSOLUTO DE ECRÃ (SE ESTIVER PENDENTE)
     # =========================================================================
     if st.session_state.pedido_submetido and st.session_state.get("estado_pedido", "pendente") == "pendente":
         st.markdown(
