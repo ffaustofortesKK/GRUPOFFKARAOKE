@@ -117,8 +117,8 @@ def render():
         .ff-cantor-name span:nth-child(5n+4) { color: #b19cd9; animation-delay: 0.6s; }
         .ff-cantor-name span:nth-child(5n+5) { color: #2ecc71; animation-delay: 0.8s; }
         
-        /* Número Fixo em Amarelo Sem Animação */
-        .ff-number-static {
+        /* Número Fixo Amarelo para a Posição Actual (Sem movimento) */
+        .ff-number-fixed {
             display: inline-block;
             font-size: 32px;
             font-weight: 900;
@@ -198,6 +198,17 @@ def render():
 
         .ff-marquee-content:hover {
             animation-play-state: paused;
+        }
+
+        /* Estilo para os itens da fila: Posição Amarela e Cantor Branco com Borda Preta e Sombra */
+        .fila-pos {
+            color: #eab308;
+            font-weight: 900;
+        }
+        .fila-cantor {
+            color: #ffffff;
+            font-weight: 800;
+            text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 0 2px 4px rgba(0,0,0,0.9);
         }
 
         /* Caixa de Ação Compacta */
@@ -385,34 +396,33 @@ def render():
                 if posicao_real > 1 and len(pendentes_geral) >= (posicao_real - 1):
                     cantor_acima = pendentes_geral[posicao_real - 2].get('cantor', 'outro cantor')
 
-                # Formatar a lista de espera apenas com posição (ex: 1º, 2º) e nome do cantor
+                # Formatar os itens da fila: Posição 1º ou número normal em amarelo, nome do cantor em branco com borda/sombra, sem música
                 lista_itens_fila = []
                 for i, item in enumerate(pendentes_geral):
                     pos_num = i + 1
-                    pos_str = "1º" if pos_num == 1 else f"{pos_num}º"
+                    pos_str = "1º" if pos_num == 1 else str(pos_num)
                     nome_c = item.get('cantor', 'Cantor')
-                    lista_itens_fila.append(f"<b>{pos_str}</b> — {nome_c}")
-                
+                    lista_itens_fila.append(f'<span class="fila-pos">{pos_str}</span> — <span class="fila-cantor">{nome_c}</span>')
+
                 texto_base = " &nbsp;&nbsp;&bull;&nbsp;&nbsp; ".join(lista_itens_fila) if lista_itens_fila else "A fila está vazia no momento."
                 texto_fila_resumo = f"{texto_base} &nbsp;&nbsp;&bull;&nbsp;&nbsp; {texto_base}"
 
-                # CARTÃO 1: A SUA POSIÇÃO ACTUAL É (Fixo em amarelo, sem animação)
-                pos_atual_str = "1º" if posicao_real == 1 else f"{posicao_real}º"
+                # CARTÃO 1: A SUA POSIÇÃO ACTUAL É (Fixo, Amarelo, Sem Movimento)
                 st.markdown(f"""
                     <div class="ff-card-status-centered">
                         <div class="ff-card-title-yellow">A SUA POSIÇÃO ACTUAL É</div>
-                        <div class="ff-number-static">{pos_atual_str}</div>
+                        <div class="ff-number-fixed">#{posicao_real}</div>
                         <div class="ff-card-subtitle" style="margin-top: 4px;">Título da Música que escolheu</div>
                         <div class="ff-card-main-text">🎵 {musica_nome_atv}</div>
                     </div>
                 """, unsafe_allow_html=True)
                 
-                # CARTÃO 2: AGUARDE A SUA VEZ (Com letreiro contínuo)
+                # CARTÃO 2: AGUARDE A SUA VEZ (Com o letreiro animado atualizado)
                 if musicas_acima > 0:
-                    html_cartao_espera = f'<div class="ff-card-status-centered" style="border-color: rgba(231, 76, 60, 0.4);"><div class="ff-card-title-orange">AGUARDE A SUA VEZ</div><div class="ff-card-main-text" style="font-size: 14px; color: #f1c40f; margin-bottom: 6px;">Assim que cantar o cantor <b>{cantor_acima}</b> será a sua vez!</div><div class="ff-card-subtitle" style="font-size: 10px; margin-bottom: 10px;">({musicas_acima} músicas à sua frente)</div><div style="background: linear-gradient(90deg, #18122c, #22183d, #18122c); border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 8px; padding: 10px; text-align: left; box-shadow: inset 0 2px 5px rgba(0,0,0,0.4);"><div style="font-size: 9px; color: #b19cd9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; text-align: center;">🎶 Fila de Espera Atual 🎶</div><div class="ff-marquee-container"><div class="ff-marquee-content" style="font-size: 11px; color: #ffffff; font-weight: 600;">{texto_fila_resumo}</div></div></div></div>'
+                    html_cartao_espera = f'<div class="ff-card-status-centered" style="border-color: rgba(231, 76, 60, 0.4);"><div class="ff-card-title-orange">AGUARDE A SUA VEZ</div><div class="ff-card-main-text" style="font-size: 14px; color: #f1c40f; margin-bottom: 6px;">Assim que cantar o cantor <b>{cantor_acima}</b> será a sua vez!</div><div class="ff-card-subtitle" style="font-size: 10px; margin-bottom: 10px;">({musicas_acima} músicas à sua frente)</div><div style="background: linear-gradient(90deg, #18122c, #22183d, #18122c); border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 8px; padding: 10px; text-align: left; box-shadow: inset 0 2px 5px rgba(0,0,0,0.4);"><div style="font-size: 9px; color: #b19cd9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; text-align: center;">🎶 Fila de Espera Atual 🎶</div><div class="ff-marquee-container"><div class="ff-marquee-content" style="font-size: 11px;">{texto_fila_resumo}</div></div></div></div>'
                     st.markdown(html_cartao_espera, unsafe_allow_html=True)
                 else:
-                    html_cartao_vez = f'<div class="ff-card-status-centered" style="border-color: rgba(46, 204, 113, 0.4);"><div class="ff-card-title-green">É A SUA VEZ DE CANTAR!</div><div class="ff-card-main-text" style="color: #2ecc71; margin-bottom: 10px;">Prepare-se para subir ao palco agora.</div><div style="background: linear-gradient(90deg, #18122c, #22183d, #18122c); border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 8px; padding: 10px; text-align: left; box-shadow: inset 0 2px 5px rgba(0,0,0,0.4);"><div style="font-size: 9px; color: #b19cd9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; text-align: center;">🎶 Fila de Espera Atual 🎶</div><div class="ff-marquee-container"><div class="ff-marquee-content" style="font-size: 11px; color: #ffffff; font-weight: 600;">{texto_fila_resumo}</div></div></div></div>'
+                    html_cartao_vez = f'<div class="ff-card-status-centered" style="border-color: rgba(46, 204, 113, 0.4);"><div class="ff-card-title-green">É A SUA VEZ DE CANTAR!</div><div class="ff-card-main-text" style="color: #2ecc71; margin-bottom: 10px;">Prepare-se para subir ao palco agora.</div><div style="background: linear-gradient(90deg, #18122c, #22183d, #18122c); border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 8px; padding: 10px; text-align: left; box-shadow: inset 0 2px 5px rgba(0,0,0,0.4);"><div style="font-size: 9px; color: #b19cd9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; text-align: center;">🎶 Fila de Espera Atual 🎶</div><div class="ff-marquee-container"><div class="ff-marquee-content" style="font-size: 11px;">{texto_fila_resumo}</div></div></div></div>'
                     st.markdown(html_cartao_vez, unsafe_allow_html=True)
             else:
                 if st.session_state["meu_pedido_timestamp"] is not None:
