@@ -1,12 +1,12 @@
 from datetime import datetime
 import time
 import streamlit as st
-from db import guardar_prestador, obter_pedidos_musicas, obter_prestadores, guardar_pedido_musica, apagar_pedido_musica
+from db import guardar_prestador, obter_pedidos_musicas, obter_prestadores, apagar_pedido_musica
 
 LINK_LOGO = "https://cdn.phototourl.com/free/2026-07-03-793a0f18-6143-44c8-b56e-e44af828c30c.png"
 
 def render():
-    # 1. INICIALIZAÇÃO SEGURA DO ESTADO
+    # 1. INICIALIZAÇÃO DE VARIÁVEIS DE SESSÃO
     if "pedido_submetido" not in st.session_state:
         st.session_state.pedido_submetido = False
         st.session_state.token_prestador = None
@@ -14,26 +14,24 @@ def render():
     if "aprovado" not in st.session_state:
         st.session_state.aprovado = False
 
+    # 2. SINCRONIZAÇÃO DE DADOS DO PRESTADOR
     prestador_atual = None
-    if st.session_state.pedido_submetido and st.session_state.token_prestador:
+    if st.session_state.token_prestador:
         prestadores = obter_prestadores() or []
         prestador_atual = next(
-            (
-                p for p in prestadores
-                if p.get("token") == st.session_state.token_prestador
-            ),
+            (p for p in prestadores if p.get("token") == st.session_state.token_prestador),
             None,
         )
-
         if prestador_atual:
             status_atual = prestador_atual.get("status_str", "pendente")
             st.session_state.estado_pedido = status_atual
             if status_atual == "aprovado":
                 st.session_state.aprovado = True
 
-    # ==========================================
-    # 2. BLOQUEIO ABSOLUTO: SE ESTIVER PENDENTE
-    # ==========================================
+    # =========================================================================
+    # 3. BLOQUEIO ABSOLUTO DE ECRÃ (SE ESTIVER PENDENTE OU SUBMETIDO)
+    # Colocado estritamente no topo para impedir que qualquer campo apareça
+    # =========================================================================
     if st.session_state.pedido_submetido and st.session_state.get("estado_pedido", "pendente") == "pendente":
         st.markdown(
             """
@@ -63,32 +61,21 @@ def render():
         return
 
     # ==========================================
-    # 3. SE ESTIVER APROVADO: Painel Operacional
+    # 4. SE ESTIVER APROVADO: Painel Operacional
     # ==========================================
-    if (
-        st.session_state.get("aprovado", False)
-        or st.session_state.get("estado_pedido") == "aprovado"
-    ):
+    if st.session_state.get("aprovado", False) or st.session_state.get("estado_pedido") == "aprovado":
         token_ativo = st.session_state.get("token_prestador", "")
         try:
             base_url = st.context.headers.get("Host", "")
             if base_url:
-                protocol = (
-                    "http"
-                    if "localhost" in base_url or "127.0.0.1" in base_url
-                    else "https"
-                )
+                protocol = "http" if "localhost" in base_url or "127.0.0.1" in base_url else "https"
                 url_cliente = f"{protocol}://{base_url}/?page=cliente&token={token_ativo}"
                 url_tela = f"{protocol}://{base_url}/?page=tela&token={token_ativo}"
             else:
                 raise Exception()
         except Exception:
-            url_cliente = (
-                f"https://grupoffkaraoke.streamlit.app/?page=cliente&token={token_ativo}"
-            )
-            url_tela = (
-                f"https://grupoffkaraoke.streamlit.app/?page=tela&token={token_ativo}"
-            )
+            url_cliente = f"https://grupoffkaraoke.streamlit.app/?page=cliente&token={token_ativo}"
+            url_tela = f"https://grupoffkaraoke.streamlit.app/?page=tela&token={token_ativo}"
 
         st.markdown(
             """
@@ -181,26 +168,18 @@ def render():
                 if st.session_state.token_prestador:
                     prestadores = obter_prestadores() or []
                     prestador_atual = next(
-                        (
-                            p for p in prestadores
-                            if p.get("token") == st.session_state.token_prestador
-                        ),
+                        (p for p in prestadores if p.get("token") == st.session_state.token_prestador),
                         None,
                     )
 
                 segundos_restantes = 7200
                 if prestador_atual:
-                    segundos_contrato_inicial = prestador_atual.get(
-                        "segundos_restantes", 7200
-                    )
+                    segundos_contrato_inicial = prestador_atual.get("segundos_restantes", 7200)
                     data_pedido_str = prestador_atual.get("data_pedido", "")
-
                     try:
                         dt_pedido = datetime.strptime(data_pedido_str, "%d/%m/%Y %H:%M")
                         decorrido = int((datetime.now() - dt_pedido).total_seconds())
-                        segundos_restantes = max(
-                            0, segundos_contrato_inicial - decorrido
-                        )
+                        segundos_restantes = max(0, segundos_contrato_inicial - decorrido)
                     except Exception:
                         segundos_restantes = segundos_contrato_inicial
         
@@ -420,7 +399,7 @@ def render():
         return
 
     # ==========================================
-    # 4. SE ESTIVER RECUSADO
+    # 5. SE ESTIVER RECUSADO
     # ==========================================
     if st.session_state.pedido_submetido and st.session_state.estado_pedido == "recusado":
         st.markdown(
@@ -441,9 +420,9 @@ def render():
             st.rerun()
         return
 
-    # ==========================================
-    # 🎨 5. TELA INICIAL: REGISTO / LOGIN 
-    # ==========================================
+    # =========================================================================
+    # 🎨 6. TELA DE REGISTO / LOGIN (APENAS SE NENHUM PEDIDO FOI SUBMETIDO)
+    # =========================================================================
     st.markdown(
         f"""
         <style>
