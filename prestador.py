@@ -287,7 +287,7 @@ def render():
 
                 st.markdown("<div style='height: 2px;'></div>", unsafe_allow_html=True)
 
-                @st.fragment(run_every=3)
+               @st.fragment(run_every=3)
 def renderizar_fila_pedidos():
     try:
         todos_pedidos = obter_pedidos_musicas() or []
@@ -335,7 +335,6 @@ def renderizar_fila_pedidos():
             cantor = pedido.get("cantor", "Convidado")
             pedido_id = pedido.get("id") or pedido.get("timestamp") or idx
 
-            # Alargamos o espaço dedicado aos botões para caberem confortavelmente
             col_info, col_botoes = st.columns([2.2, 1.8])
             with col_info:
                 st.markdown(
@@ -363,7 +362,7 @@ def renderizar_fila_pedidos():
         st.markdown("<p style='color: #a1a1aa; margin: 0; font-size: 10px;'>Sem pedidos na fila.</p>", unsafe_allow_html=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
-
+    
                 renderizar_fila_pedidos()
             
             with col_dir:
