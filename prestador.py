@@ -422,7 +422,7 @@ def render():
                 .block-container {{
                     background-color: #000000 !important;
                     max-width: 500px !important;
-                    padding-top: 3rem !important;
+                    padding-top: 2rem !important;
                 }}
                 @keyframes spinLeft {{
                     0% {{ transform: rotate(0deg); }}
@@ -436,7 +436,7 @@ def render():
                     position: relative;
                     width: 140px;
                     height: 140px;
-                    margin: 0 auto 20px auto;
+                    margin: 0 auto 15px auto;
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -481,7 +481,7 @@ def render():
                     justify-content: center;
                     align-items: center;
                     gap: 14px;
-                    margin-top: 35px;
+                    margin-top: 25px;
                 }}
                 .dot-1 {{
                     width: 8px;
@@ -506,15 +506,15 @@ def render():
                 }}
             </style>
 
-            <div style="background-color: #000000; padding: 25px 20px; text-align: center; border-radius: 8px; margin-top: 20px;">
+            <div style="background-color: #000000; padding: 10px; text-align: center;">
                 <div class="logo-container">
                     <div class="ring-yellow"></div>
                     <div class="ring-red"></div>
                     <img src="{LINK_LOGO}" class="logo-img" />
                 </div>
                 
-                <h3 style="color: #eab308; font-size: 21px; font-weight: bold; margin-bottom: 8px;">Aguardando Aprovação</h3>
-                <p style="color: #d4d4d8; font-size: 13px; margin-bottom: 10px;">O seu registo está a aguardar validação do Administrador.</p>
+                <h3 style="color: #eab308; font-size: 20px; font-weight: bold; margin-bottom: 6px;">Aguardando Aprovação</h3>
+                <p style="color: #d4d4d8; font-size: 13px; margin-bottom: 15px;">O seu registo está a aguardar validação do Administrador.</p>
                 
                 <div class="dot-container">
                     <div class="dot-1"></div>
@@ -527,7 +527,7 @@ def render():
         )
         time.sleep(3)
         st.rerun()
-        return
+        return  # <-- ESTE RETURN É CRUCIAL PARA PARAR O SCRIPT AQUI E NÃO MOSTRAR O REGISTO EM BAIXO!
 
     # ==========================================
     # 🎨 4. TELA INICIAL: REGISTO / LOGIN
