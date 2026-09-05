@@ -465,16 +465,16 @@ def render():
                     z-index: 2;
                 }}
                 @keyframes pulseDot1 {{
-                    0%, 100% { transform: scale(0.6); opacity: 0.3; }
-                    50% { transform: scale(1.5); opacity: 1; }
+                    0%, 100% {{ transform: scale(0.6); opacity: 0.3; }}
+                    50% {{ transform: scale(1.5); opacity: 1; }}
                 }}
                 @keyframes pulseDot2 {{
-                    0%, 100% { transform: scale(1.5); opacity: 1; }
-                    50% { transform: scale(0.6); opacity: 0.3; }
+                    0%, 100% {{ transform: scale(1.5); opacity: 1; }}
+                    50% {{ transform: scale(0.6); opacity: 0.3; }}
                 }}
                 @keyframes pulseDot3 {{
-                    0%, 100% { transform: scale(0.8); opacity: 0.4; }
-                    50% { transform: scale(1.7); opacity: 1; }
+                    0%, 100% {{ transform: scale(0.8); opacity: 0.4; }}
+                    50% {{ transform: scale(1.7); opacity: 1; }}
                 }}
                 .dot-container {{
                     display: flex;
