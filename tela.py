@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import time
 from db import obter_prestadores, obter_pedidos_musicas
 
@@ -16,53 +17,6 @@ def render():
                 padding-bottom: 1rem !important;
                 padding-left: 1.5rem !important;
                 padding-right: 1.5rem !important;
-            }
-            .playlist-container {
-                background-color: #121216;
-                border: 2px solid #eab308;
-                border-radius: 12px;
-                padding: 20px;
-                height: 75vh;
-                overflow-y: auto;
-                box-shadow: 0 0 20px rgba(234, 179, 8, 0.2);
-            }
-            .playlist-item {
-                background-color: #1c1c24;
-                border: 1px solid #3f3f46;
-                border-radius: 8px;
-                padding: 12px 15px;
-                margin-bottom: 10px;
-                text-align: left;
-                display: flex;
-                flex-direction: column;
-                gap: 4px;
-            }
-            .tv-container {
-                position: relative;
-                width: 100%;
-                min-height: 75vh;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                border: 2px solid #eab308;
-                border-radius: 12px;
-                padding: 30px;
-                background: #121216;
-                box-shadow: 0 0 20px rgba(234, 179, 8, 0.2);
-                text-align: center;
-            }
-            .tv-title {
-                color: #eab308;
-                font-size: 36px;
-                font-weight: bold;
-                margin-bottom: 20px;
-                text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            }
-            .tv-status {
-                color: #d4d4d8;
-                font-size: 22px;
-                margin-bottom: 10px;
             }
         </style>
     """, unsafe_allow_html=True)
@@ -105,10 +59,9 @@ def render():
             """, unsafe_allow_html=True)
         else:
             st.markdown("""
-                <div class="tv-container" style="min-height: 56.25vh;">
-                    <div class="tv-title">🎵 A Tocar Agora</div>
-                    <div class="tv-status">Nenhum vídeo de fundo configurado.</div>
-                    <p style="color: #71717a; font-size: 16px; margin-top: 15px;">Configure um link de vídeo no painel do prestador...</p>
+                <div style="position: relative; width: 100%; min-height: 56.25vh; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 2px solid #eab308; border-radius: 12px; padding: 30px; background: #121216; box-shadow: 0 0 20px rgba(234, 179, 8, 0.2); text-align: center;">
+                    <div style="color: #eab308; font-size: 36px; font-weight: bold; margin-bottom: 20px;">🎵 A Tocar Agora</div>
+                    <div style="color: #d4d4d8; font-size: 22px; margin-bottom: 10px;">Nenhum vídeo de fundo configurado.</div>
                 </div>
             """, unsafe_allow_html=True)
 
@@ -127,26 +80,20 @@ def render():
                 and (str(p.get("token_prestador", "")) in ["", "None", token_str])
             ]
 
-            html_conteudo = f"""
-            <div class="playlist-container">
-                <div style="color: #eab308; font-weight: bold; font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #3f3f46; padding-bottom: 8px; text-align: center;">
-                    🎶 PLAYLIST · FILA ({len(lista_pedidos)})
-                </div>
-            """
-
+            itens_html = ""
             if lista_pedidos:
                 for idx, pedido in enumerate(lista_pedidos):
                     musica = pedido.get("musica", "Desconhecida")
                     cantor = pedido.get("cantor", "Convidado")
-                    html_conteudo += f"""
-                    <div class="playlist-item">
+                    itens_html += f"""
+                    <div style="background-color: #1c1c24; border: 1px solid #3f3f46; border-radius: 8px; padding: 12px 15px; margin-bottom: 10px; text-align: left;">
                         <div style="color: #eab308; font-size: 12px; font-weight: bold;">#{idx+1} na Fila</div>
-                        <div style="color: #ffffff; font-size: 15px; font-weight: bold;">🎵 {musica}</div>
-                        <div style="color: #c084fc; font-size: 13px;">🎤 Cantor: <b>{cantor}</b></div>
+                        <div style="color: #ffffff; font-size: 15px; font-weight: bold; margin-top: 2px;">🎵 {musica}</div>
+                        <div style="color: #c084fc; font-size: 13px; margin-top: 2px;">🎤 Cantor: <b>{cantor}</b></div>
                     </div>
                     """
             else:
-                html_conteudo += """
+                itens_html = """
                 <div style="text-align: center; color: #71717a; margin-top: 50px;">
                     <div style="font-size: 32px; margin-bottom: 10px;">🎤</div>
                     <div style="font-size: 16px;">Sem músicas na fila de momento.</div>
@@ -154,8 +101,40 @@ def render():
                 </div>
                 """
 
-            html_conteudo += "</div>"
-            st.markdown(html_conteudo, unsafe_allow_html=True)
+            html_conteudo = f"""
+            <html>
+            <head>
+            <style>
+                body {{
+                    background-color: #121216;
+                    color: #ffffff;
+                    font-family: sans-serif;
+                    margin: 0;
+                    padding: 0;
+                }}
+                .playlist-container {{
+                    border: 2px solid #eab308;
+                    border-radius: 12px;
+                    padding: 15px;
+                    height: 72vh;
+                    overflow-y: auto;
+                    box-shadow: 0 0 20px rgba(234, 179, 8, 0.2);
+                    background-color: #121216;
+                    box-sizing: border-box;
+                }}
+            </style>
+            </head>
+            <body>
+                <div class="playlist-container">
+                    <div style="color: #eab308; font-weight: bold; font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #3f3f46; padding-bottom: 8px; text-align: center;">
+                        🎶 PLAYLIST · FILA ({len(lista_pedidos)})
+                    </div>
+                    {itens_html}
+                </div>
+            </body>
+            </html>
+            """
+            components.html(html_conteudo, height=540, scrolling=False)
 
         renderizar_playlist_lateral()
 
