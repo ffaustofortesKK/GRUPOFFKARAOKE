@@ -232,6 +232,7 @@ def render():
                     <div style="color: #eab308; font-weight: bold; font-size: 11px; margin-bottom: 4px; text-align: center;">💡 GUIA DE AJUDA</div>
                     <div style="margin-bottom: 4px;">🖥️ <b>Ícone TV:</b> Abrirá uma nova página com a tela de pedidos de karaokê.</div>
                     <div style="margin-bottom: 4px;">📱 <b>Ícone Cliente:</b> Abrirá a página onde o cliente faz o seu pedido.</div>
+                    <div style="margin-bottom: 4px;">📷 <b>QR Code:</b> Aponte a câmera do telefone ao código QR para o cliente ter acesso às músicas de Karaoke.</div>
                     <div style="border-top: 1px solid #27272a; margin-top: 6px; padding-top: 4px; text-align: center; color: #a1a1aa; font-size: 9px;">
                         WhatsApp:<br><b style="color: #eab308;">921204050 / 955099159</b>
                     </div>
