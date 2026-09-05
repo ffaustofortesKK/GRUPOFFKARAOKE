@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 from db import obter_prestadores, obter_pedidos_musicas
 
 def render():
@@ -43,7 +44,6 @@ def render():
             embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=0&loop=1&playlist={video_id}&controls=0"
 
     # 1. VÍDEO DE FUNDO FIXO (Comandado pelo Prestador)
-    # Só é renderizado/iniciado se o prestador definir o link e guardar. Como está fora do fragmento, NUNCA reinicia ao entrar novos pedidos!
     if embed_url:
         st.markdown(f"""
             <iframe src="{embed_url}" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; border: none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
@@ -55,7 +55,7 @@ def render():
             </div>
         """, unsafe_allow_html=True)
 
-    # 2. PLAYLIST NO CENTRO (Atualiza a cada 3 segundos em segundo plano, sem afetar o vídeo)
+    # 2. PLAYLIST NO CENTRO (Atualiza em segundo plano sem recarregar o vídeo)
     @st.fragment(run_every=3)
     def renderizar_playlist_centro():
         try:
@@ -90,16 +90,60 @@ def render():
             </div>
             """
 
-        playlist_html = f"""
-        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; width: 450px; max-height: 70vh; background: rgba(18, 18, 22, 0.88); border: 2px solid #eab308; border-radius: 12px; padding: 20px; box-shadow: 0 0 40px rgba(0,0,0,0.95); backdrop-filter: blur(10px); display: flex; flex-direction: column;">
-            <div style="color: #eab308; font-weight: bold; font-size: 16px; margin-bottom: 12px; border-bottom: 2px solid #3f3f46; padding-bottom: 8px; text-align: center; text-transform: uppercase;">
-                🎶 Playlist · Fila ({len(lista_pedidos)})
+        html_conteudo = f"""
+        <html>
+        <head>
+        <style>
+            body {{
+                background-color: transparent;
+                margin: 0;
+                padding: 0;
+                font-family: sans-serif;
+                overflow: hidden;
+            }}
+            .playlist-overlay {{
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 440px;
+                max-height: 70vh;
+                background: rgba(18, 18, 22, 0.88);
+                border: 2px solid #eab308;
+                border-radius: 12px;
+                padding: 20px;
+                box-shadow: 0 0 40px rgba(0,0,0,0.95);
+                backdrop-filter: blur(10px);
+                display: flex;
+                flex-direction: column;
+                box-sizing: border-box;
+            }}
+            .playlist-scroll {{
+                overflow-y: auto;
+                max-height: 52vh;
+                padding-right: 4px;
+            }}
+            .playlist-scroll::-webkit-scrollbar {{
+                width: 6px;
+            }}
+            .playlist-scroll::-webkit-scrollbar-thumb {{
+                background: #3f3f46;
+                border-radius: 4px;
+            }}
+        </style>
+        </head>
+        <body>
+            <div class="playlist-overlay">
+                <div style="color: #eab308; font-weight: bold; font-size: 16px; margin-bottom: 12px; border-bottom: 2px solid #3f3f46; padding-bottom: 8px; text-align: center; text-transform: uppercase;">
+                    🎶 Playlist · Fila ({len(lista_pedidos)})
+                </div>
+                <div class="playlist-scroll">
+                    {itens_html}
+                </div>
             </div>
-            <div style="overflow-y: auto; max-height: 52vh; padding-right: 4px;">
-                {itens_html}
-            </div>
-        </div>
+        </body>
+        </html>
         """
-        st.markdown(playlist_html, unsafe_allow_html=True)
+        components.html(html_conteudo, height=650, scrolling=False)
 
     renderizar_playlist_centro()
