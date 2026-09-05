@@ -57,7 +57,7 @@ def render():
             )
 
         # ==========================================
-        # 🎨 É AQUI QUE ENTRA O CÓDIGO DO CSS (ESTILO TABLET)
+        # 🎨 ESTILO COM LARGURA AUMENTADA EM 20% (1344px)
         # ==========================================
         st.markdown(
             """
@@ -67,13 +67,13 @@ def render():
                     background-color: #08080a !important;
                 }
                 
-                /* Moldura centralizada estilo tablet (largura máxima de 1120px) */
+                /* Moldura centralizada (Largura aumentada em 20%: 1120px -> 1344px) */
                 .block-container {
-                    max-width: 1120px !important;
-                    padding-top: 1.5rem !important;
-                    padding-bottom: 2rem !important;
-                    padding-left: 1.5rem !important;
-                    padding-right: 1.5rem !important;
+                    max-width: 1344px !important;
+                    padding-top: 1.8rem !important;
+                    padding-bottom: 2.2rem !important;
+                    padding-left: 2rem !important;
+                    padding-right: 2rem !important;
                     background-color: #0b0714 !important;
                     border-radius: 20px;
                     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
