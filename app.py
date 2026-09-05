@@ -1,6 +1,7 @@
 import importlib.util
 import os
 import sys
+print("Caminho atual do ficheiro:", os.path.abspath(__file__))
 
 # Garante que o diretório atual está no caminho do sistema
 current_dir = os.path.dirname(os.path.abspath(__file__))
