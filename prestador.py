@@ -3,6 +3,8 @@ import time
 import streamlit as st
 from db import guardar_prestador, obter_pedidos_musicas, obter_prestadores, guardar_pedido_musica, apagar_pedido_musica
 
+LINK_LOGO = "https://cdn.phototourl.com/free/2026-07-03-793a0f18-6143-44c8-b56e-e44af828c30c.png"
+
 def render():
     if "pedido_submetido" not in st.session_state:
         st.session_state.pedido_submetido = False
@@ -124,7 +126,7 @@ def render():
             """,
             unsafe_allow_html=True,
         )
-
+        
         # Layout Principal dividido em 2 colunas principais: Lateral Esquerda (Controles/Info) e Conteúdo Principal (Direita)
         col_lateral, col_principal = st.columns([1, 2.6])
 
@@ -208,6 +210,16 @@ def render():
                 st.session_state.estado_pedido = "pendente"
                 st.session_state.aprovado = False
                 st.rerun()
+
+            # 4. Logotipo por baixo do botão Sair
+            st.markdown(
+                f"""
+                <div style="text-align: center; margin-top: 10px; margin-bottom: 10px;">
+                    <img src="{LINK_LOGO}" style="max-width: 100%; width: 140px; border-radius: 8px;" />
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
             st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
@@ -295,7 +307,6 @@ def render():
                             pedido_id = pedido.get("id") or pedido.get("timestamp") or idx
 
                             col_info, col_botoes = st.columns([3, 1.2])
-
                             with col_info:
                                 st.markdown(
                                     f"""
@@ -344,7 +355,7 @@ def render():
                     )
 
                 renderizar_fila_pedidos()
-
+            
             with col_dir:
                 st.markdown(
                     f"""
@@ -505,7 +516,7 @@ def render():
         horizontal=True,
         label_visibility="collapsed",
     )
-
+    
     if modo_acesso == "Novo Registo":
         with st.form("form_registo_prestador_compacto"):
             c1, c2 = st.columns(2)
@@ -617,4 +628,4 @@ def render():
                     else:
                         st.error("Registo não encontrado.")
                 else:
-                    st.error("Preencha os campos de Nome e Telefone.")
+                    st.error("Preencha o Nome e o Telefone.")
