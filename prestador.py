@@ -32,7 +32,9 @@ def render():
             if status_atual == "aprovado":
                 st.session_state.aprovado = True
 
+    # ==========================================
     # 1. SE ESTIVER APROVADO: Painel Operacional Ultra-Compacto
+    # ==========================================
     if (
         st.session_state.get("aprovado", False)
         or st.session_state.get("estado_pedido") == "aprovado"
@@ -112,7 +114,6 @@ def render():
                     border-color: #eab308 !important;
                     color: #eab308 !important;
                 }
-                /* Força fundo branco e visibilidade total nos botões da fila */
                 div[data-testid="column"] button {
                     background-color: #ffffff !important;
                     color: #000000 !important;
@@ -389,7 +390,9 @@ def render():
 
         return
 
+    # ==========================================
     # 2. SE ESTIVER RECUSADO
+    # ==========================================
     if st.session_state.pedido_submetido and st.session_state.estado_pedido == "recusado":
         st.markdown(
             """
@@ -409,11 +412,13 @@ def render():
             st.rerun()
         return
 
-    # 3. SE ESTIVER PENDENTE
+    # ==========================================
+    # 3. SE ESTIVER PENDENTE (COLOCADO ANTES DO FORMULÁRIO)
+    # ==========================================
     if st.session_state.pedido_submetido:
         st.markdown(
             """
-                <div style="background-color: #050507; padding: 15px; text-align: center; border-radius: 4px; max-width: 400px; margin: 15px auto;">
+                <div style="background-color: #050507; padding: 15px; text-align: center; border-radius: 4px; max-width: 400px; margin: 15px auto; border: 1px solid #3b2c60;">
                     <h3 style="color: #ffffff; font-size: 15px; margin-bottom: 2px;">Aguardando Aprovação</h3>
                     <p style="color: #d4d4d8; font-size: 11px; margin-bottom: 2px;">O seu registo está a aguardar validação do Administrador.</p>
                 </div>
@@ -610,7 +615,7 @@ def render():
                         st.session_state.token_prestador = prestador_encontrado.get("token")
                         st.session_state.estado_pedido = prestador_encontrado.get("status_str", "pendente")
                         st.session_state.aprovado = (prestador_encontrado.get("status_str") == "aprovado")
-                        st.rerun()
+                        st.session_state.rerun()
                     else:
                         st.error("Prestador não encontrado com estes dados ou ainda não registado.")
                 else:
