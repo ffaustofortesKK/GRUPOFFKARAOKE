@@ -64,17 +64,20 @@ def render():
                 .stApp {
                     background-color: #000000 !important;
                 }
+                header[data-testid="stHeader"] {
+                    background-color: transparent !important;
+                }
                 .block-container {
-                    max-width: 1075px !important;
-                    padding-top: 1.8rem !important;
-                    padding-bottom: 2.2rem !important;
+                    max-width: 840px !important;
+                    padding-top: 1.5rem !important;
+                    padding-bottom: 2rem !important;
                     padding-left: 2rem !important;
                     padding-right: 2rem !important;
                     background-color: #000000 !important;
                     border-radius: 20px;
                     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
                     border: 1px solid rgba(138, 43, 226, 0.25);
-                    margin-top: 1.5rem;
+                    margin-top: 1rem;
                     margin-bottom: 1.5rem;
                 }
                 .box-container {
@@ -406,7 +409,7 @@ def render():
         return
 
     # ==========================================
-    # 🎨 4. TELA INICIAL: REGISTO / LOGIN (LARGURA REDUZIDA EM MAIS 20%: 840px E FUNDO PRETO)
+    # 🎨 4. TELA INICIAL: REGISTO / LOGIN (SEM BARRA BRANCA E LOGOTIPO POSICIONADO CORRETAMENTE)
     # ==========================================
     st.markdown(
         f"""
@@ -414,15 +417,21 @@ def render():
             .stApp {{
                 background-color: #000000 !important;
             }}
+            /* Remove a barra branca superior do Streamlit */
+            header[data-testid="stHeader"] {{
+                background-color: transparent !important;
+            }}
             .block-container {{
                 max-width: 840px !important;
-                padding-top: 1.8rem !important;
-                padding-bottom: 1.8rem !important;
+                padding-top: 1rem !important;
+                padding-bottom: 1.5rem !important;
                 padding-left: 1.8rem !important;
                 padding-right: 1.8rem !important;
                 background-color: #000000 !important;
                 border-radius: 16px;
                 border: 1px solid rgba(138, 43, 226, 0.25);
+                margin-top: 0.8rem;
+                margin-bottom: 1rem;
             }}
             .input-group-custom {{
                 background-color: #050507;
@@ -442,17 +451,17 @@ def render():
             }}
         </style>
 
-        <!-- CABEÇALHO COM LOGOTIPO NO CANTO E TÍTULO -->
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <img src="{LINK_LOGO}" style="width: 140px; border-radius: 6px;" />
+        <!-- CABEÇALHO COM LOGOTIPO NO CANTO E TÍTULO (GARANTINDO ESPAÇO PARA NÃO CORTAR) -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-top: 5px;">
+            <div style="display: flex; align-items: center;">
+                <img src="{LINK_LOGO}" style="width: 140px; border-radius: 6px; display: block;" />
             </div>
             <div style="text-align: right;">
                 <div style="width: 38px; height: 38px; background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.4); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #eab308; font-size: 16px;">👤</div>
             </div>
         </div>
 
-        <div style="text-align: center; margin-top: -10px; margin-bottom: 20px;">
+        <div style="text-align: center; margin-bottom: 18px;">
             <h1 style="color: #eab308; font-size: 24px; font-weight: 900; letter-spacing: 0.5px; margin-bottom: 4px;">ÁREA DO PRESTADOR</h1>
             <p style="color: #a1a1aa; font-size: 12px; margin: 0;">Faça o seu registo de acesso ou entre com os seus dados se já tiver uma sessão ativa.</p>
         </div>
