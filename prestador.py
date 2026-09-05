@@ -413,9 +413,9 @@ def render():
         return
 
     # ==========================================
-    # 3. SE ESTIVER PENDENTE (COLOCADO ANTES DO FORMULÁRIO)
+    # 3. SE ESTIVER PENDENTE (GARANTE QUE O FORMULÁRIO SUME)
     # ==========================================
-    if st.session_state.pedido_submetido:
+    if st.session_state.pedido_submetido and st.session_state.get("estado_pedido", "pendente") == "pendente":
         st.markdown(
             """
                 <div style="background-color: #050507; padding: 15px; text-align: center; border-radius: 4px; max-width: 400px; margin: 15px auto; border: 1px solid #3b2c60;">
@@ -615,7 +615,7 @@ def render():
                         st.session_state.token_prestador = prestador_encontrado.get("token")
                         st.session_state.estado_pedido = prestador_encontrado.get("status_str", "pendente")
                         st.session_state.aprovado = (prestador_encontrado.get("status_str") == "aprovado")
-                        st.session_state.rerun()
+                        st.rerun()
                     else:
                         st.error("Prestador não encontrado com estes dados ou ainda não registado.")
                 else:
