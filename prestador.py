@@ -6,59 +6,78 @@ from db import guardar_prestador, obter_pedidos_musicas, obter_prestadores, guar
 LINK_LOGO = "https://cdn.phototourl.com/free/2026-07-03-793a0f18-6143-44c8-b56e-e44af828c30c.png"
 
 def render():
-    # Inicialização de estados
     if "pedido_submetido" not in st.session_state:
         st.session_state.pedido_submetido = False
-    if "token_prestador" not in st.session_state:
         st.session_state.token_prestador = None
-    if "estado_pedido" not in st.session_state:
         st.session_state.estado_pedido = "pendente"
     if "aprovado" not in st.session_state:
         st.session_state.aprovado = False
 
-    # Sincronizar com a base de dados se houver um token ativo
-    if st.session_state.token_prestador:
-        prestadores = obter_prestadores() or []
+    prestador_atual = None
+    if st.session_state.pedido_submetido and st.session_state.token_prestador:
+        prestadores = obter_prestadores()
         prestador_atual = next(
-            (p for p in prestadores if p.get("token") == st.session_state.token_prestador),
+            (
+                p
+                for p in prestadores
+                if p.get("token") == st.session_state.token_prestador
+            ),
             None,
         )
 
         if prestador_atual:
             status_atual = prestador_atual.get("status_str", "pendente")
             st.session_state.estado_pedido = status_atual
+
             if status_atual == "aprovado":
                 st.session_state.aprovado = True
 
-    # ==========================================
-    # CASO 1: APROVADO (PAINEL OPERACIONAL)
-    # ==========================================
-    if st.session_state.get("aprovado", False) or st.session_state.get("estado_pedido") == "aprovado":
+    # 1. SE ESTIVER APROVADO: Painel Operacional Ultra-Compacto
+    if (
+        st.session_state.get("aprovado", False)
+        or st.session_state.get("estado_pedido") == "aprovado"
+    ):
         token_ativo = st.session_state.get("token_prestador", "")
         try:
             base_url = st.context.headers.get("Host", "")
             if base_url:
-                protocol = "http" if "localhost" in base_url or "127.0.0.1" in base_url else "https"
+                protocol = (
+                    "http"
+                    if "localhost" in base_url or "127.0.0.1" in base_url
+                    else "https"
+                )
                 url_cliente = f"{protocol}://{base_url}/?page=cliente&token={token_ativo}"
                 url_tela = f"{protocol}://{base_url}/?page=tela&token={token_ativo}"
             else:
                 raise Exception()
         except Exception:
-            url_cliente = f"https://grupoffkaraoke.streamlit.app/?page=cliente&token={token_ativo}"
-            url_tela = f"https://grupoffkaraoke.streamlit.app/?page=tela&token={token_ativo}"
+            url_cliente = (
+                f"https://grupoffkaraoke.streamlit.app/?page=cliente&token={token_ativo}"
+            )
+            url_tela = (
+                f"https://grupoffkaraoke.streamlit.app/?page=tela&token={token_ativo}"
+            )
 
         st.markdown(
             """
             <style>
-                .stApp { background-color: #000000 !important; }
-                header[data-testid="stHeader"] { background-color: transparent !important; }
+                .stApp {
+                    background-color: #000000 !important;
+                }
+                header[data-testid="stHeader"] {
+                    background-color: transparent !important;
+                }
                 .block-container {
                     max-width: 960px !important;
-                    padding: 0.2rem 0.8rem !important;
+                    padding-top: 0.2rem !important;
+                    padding-bottom: 0.4rem !important;
+                    padding-left: 0.8rem !important;
+                    padding-right: 0.8rem !important;
                     background-color: #000000 !important;
                     border-radius: 8px;
                     border: 1px solid rgba(138, 43, 226, 0.25);
                     margin-top: 0.1rem;
+                    margin-bottom: 0.1rem;
                 }
                 .box-container {
                     background-color: #050507;
@@ -76,12 +95,15 @@ def render():
                     justify-content: space-between;
                     align-items: center;
                 }
-                div[data-testid="column"] { padding: 0px !important; }
+                div[data-testid="column"] {
+                    padding: 0px !important;
+                }
                 .stButton button {
                     background-color: #0d0d10 !important;
                     color: #ffffff !important;
                     border: 1px solid #27272a !important;
                     border-radius: 3px !important;
+                    min-height: 24px !important;
                     height: 26px !important;
                     font-size: 11px !important;
                     font-weight: 500;
@@ -89,6 +111,19 @@ def render():
                 .stButton button:hover {
                     border-color: #eab308 !important;
                     color: #eab308 !important;
+                }
+                /* Força fundo branco e visibilidade total nos botões da fila */
+                div[data-testid="column"] button {
+                    background-color: #ffffff !important;
+                    color: #000000 !important;
+                    border: 1px solid #d4d4d8 !important;
+                    font-size: 10px !important;
+                    font-weight: bold !important;
+                }
+                div[data-testid="column"] button:hover {
+                    background-color: #f4f4f5 !important;
+                    border-color: #eab308 !important;
+                    color: #000000 !important;
                 }
                 @keyframes equalizer {
                     0% { height: 2px; }
@@ -111,16 +146,31 @@ def render():
         with col_lateral:
             @st.fragment(run_every=3)
             def renderizar_relogio_topo():
-                prestadores_local = obter_prestadores() or []
-                p_atual = next((p for p in prestadores_local if p.get("token") == st.session_state.token_prestador), None)
+                nonlocal prestador_atual
+                if st.session_state.token_prestador:
+                    prestadores = obter_prestadores()
+                    prestador_atual = next(
+                        (
+                            p
+                            for p in prestadores
+                            if p.get("token") == st.session_state.token_prestador
+                        ),
+                        None,
+                    )
+
                 segundos_restantes = 7200
-                if p_atual:
-                    segundos_contrato_inicial = p_atual.get("segundos_restantes", 7200)
-                    data_pedido_str = p_atual.get("data_pedido", "")
+                if prestador_atual:
+                    segundos_contrato_inicial = prestador_atual.get(
+                        "segundos_restantes", 7200
+                    )
+                    data_pedido_str = prestador_atual.get("data_pedido", "")
+
                     try:
                         dt_pedido = datetime.strptime(data_pedido_str, "%d/%m/%Y %H:%M")
                         decorrido = int((datetime.now() - dt_pedido).total_seconds())
-                        segundos_restantes = max(0, segundos_contrato_inicial - decorrido)
+                        segundos_restantes = max(
+                            0, segundos_contrato_inicial - decorrido
+                        )
                     except Exception:
                         segundos_restantes = segundos_contrato_inicial
         
@@ -141,10 +191,8 @@ def render():
 
             renderizar_relogio_topo()
 
-            prestadores_local = obter_prestadores() or []
-            p_atual = next((p for p in prestadores_local if p.get("token") == st.session_state.token_prestador), None)
-            nome_prestador_txt = p_atual.get("nome", "Prestador") if p_atual else "Prestador"
-            estabelecimento_txt = p_atual.get("estabelecimento", "") if p_atual else ""
+            nome_prestador_txt = prestador_atual.get("nome", "Prestador") if prestador_atual else "Prestador"
+            estabelecimento_txt = prestador_atual.get("estabelecimento", "") if prestador_atual else ""
 
             st.markdown(
                 f"""
@@ -153,7 +201,7 @@ def render():
                         <span style="font-size: 22px;">🎙️</span>
                         <div>
                             <div style="color: #c084fc; font-size: 8px; font-weight: bold;">PRESTADOR</div>
-                            <div style="color: #ffffff; font-size: 18px; font-weight: bold; line-height: 1.1;">{nome_prestador_txt}</div>
+                            <div style="color: #ffffff; font-size: 25px; font-weight: bold; line-height: 1.1;">{nome_prestador_txt}</div>
                             <div style="color: #a1a1aa; font-size: 9px;">{estabelecimento_txt}</div>
                         </div>
                     </div>
@@ -178,8 +226,24 @@ def render():
                 unsafe_allow_html=True,
             )
 
+            st.markdown(
+                """
+                <div style="background-color: #0d0d10; border: 1px solid #3b2c60; padding: 8px; border-radius: 6px; font-size: 10px; color: #d4d4d8; line-height: 1.3;">
+                    <div style="color: #eab308; font-weight: bold; font-size: 11px; margin-bottom: 4px; text-align: center;">💡 GUIA DE AJUDA</div>
+                    <div style="margin-bottom: 4px;">🖥️ <b>Ícone TV:</b> Abrirá uma nova página com a tela de pedidos de karaokê.</div>
+                    <div style="margin-bottom: 4px;">📱 <b>Ícone Cliente:</b> Abrirá a página onde o cliente faz o seu pedido.</div>
+                    <div style="margin-bottom: 4px;">📷 <b>QR Code:</b> Aponte a câmera do telefone ao código QR para o cliente ter acesso às músicas de Karaoke.</div>
+                    <div style="border-top: 1px solid #27272a; margin-top: 6px; padding-top: 4px; text-align: center; color: #a1a1aa; font-size: 9px;">
+                        WhatsApp:<br><b style="color: #eab308;">921204050 / 955099159</b>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
         with col_principal:
             col_esq, col_dir = st.columns([1.4, 1])
+
             with col_esq:
                 @st.fragment(run_every=3)
                 def renderizar_a_tocar():
@@ -190,20 +254,20 @@ def render():
 
                     st.markdown(
                         f"""
-                        <div class="box-container">
-                            <div style="display: flex; align-items: center; gap: 6px;">
-                                <div style="width: 26px; height: 26px; border: 1px solid #eab308; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                    <span style="font-size: 12px; color: #eab308;">🎵</span>
+                            <div class="box-container">
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <div style="width: 26px; height: 26px; border: 1px solid #eab308; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                        <span style="font-size: 12px; color: #eab308;">🎵</span>
+                                    </div>
+                                    <div>
+                                        <div style="color: #eab308; font-weight: bold; font-size: 9px;">▶ A TOCAR AGORA</div>
+                                        <div style="color: #ffffff; font-size: 12px; font-weight: bold;">Nada em reprodução</div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <div style="color: #eab308; font-weight: bold; font-size: 9px;">▶ A TOCAR AGORA</div>
-                                    <div style="color: #ffffff; font-size: 12px; font-weight: bold;">Nada em reprodução</div>
+                                <div style="display: flex; justify-content: space-between; align-items: flex-end; height: 16px; padding: 0 2px; margin-top: 2px;">
+                                    {bars_html}
                                 </div>
                             </div>
-                            <div style="display: flex; justify-content: space-between; align-items: flex-end; height: 16px; padding: 0 2px; margin-top: 2px;">
-                                {bars_html}
-                            </div>
-                        </div>
                         """,
                         unsafe_allow_html=True,
                     )
@@ -235,10 +299,10 @@ def render():
 
                     st.markdown(
                         f"""
-                        <div class="box-container" style="max-height: 150px; overflow-y: auto;">
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; border-bottom: 1px solid #27272a; padding-bottom: 2px;">
-                                <span style="color: #c084fc; font-weight: bold; font-size: 10px;">👥 FILA DE PEDIDOS ({total_pedidos})</span>
-                            </div>
+                            <div class="box-container" style="max-height: 150px; overflow-y: auto;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; border-bottom: 1px solid #27272a; padding-bottom: 2px;">
+                                    <span style="color: #c084fc; font-weight: bold; font-size: 10px;">👥 FILA DE PEDIDOS ({total_pedidos})</span>
+                                </div>
                         """,
                         unsafe_allow_html=True,
                     )
@@ -262,6 +326,12 @@ def render():
                                 )
                             with col_botoes:
                                 b_up, b_down, b_del = st.columns(3)
+                                with b_up:
+                                    if idx > 0 and st.button("⬆", key=f"up_{pedido_id}", use_container_width=True):
+                                        pass
+                                with b_down:
+                                    if idx < total_pedidos - 1 and st.button("⬇", key=f"down_{pedido_id}", use_container_width=True):
+                                        pass
                                 with b_del:
                                     if st.button("✕", key=f"del_{pedido_id}", use_container_width=True):
                                         apagar_pedido_musica(pedido_id)
@@ -276,286 +346,272 @@ def render():
             with col_dir:
                 st.markdown(
                     f"""
-                    <div class="box-container">
-                        <div class="box-title">
-                            <span>🔗 LINKS E QR CODE</span>
+                        <div class="box-container">
+                            <div class="box-title">
+                                <span>🔗 LINKS E QR CODE</span>
+                            </div>
+                            <div class="box-content" style="font-size: 9px; word-break: break-all; margin-bottom: 4px;">
+                                <span style="color: #eab308;">Cli:</span> {url_cliente}<br>
+                                <span style="color: #3b82f6;">TV:</span> {url_tela}
+                            </div>
+                            <div style="text-align: center; background: #ffffff; padding: 2px; border-radius: 3px;">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=75x75&data={url_cliente}" width="75" />
+                            </div>
                         </div>
-                        <div class="box-content" style="font-size: 9px; word-break: break-all; margin-bottom: 4px;">
-                            <span style="color: #eab308;">Cli:</span> {url_cliente}<br>
-                            <span style="color: #3b82f6;">TV:</span> {url_tela}
-                        </div>
-                        <div style="text-align: center; background: #ffffff; padding: 2px; border-radius: 3px;">
-                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=75x75&data={url_cliente}" width="75" />
-                        </div>
-                    </div>
                     """,
                     unsafe_allow_html=True,
                 )
 
-    # ==========================================
-    # CASO 2: RECUSADO
-    # ==========================================
-    elif st.session_state.get("pedido_submetido") and st.session_state.get("estado_pedido") == "recusado":
+                col_bt_tv, col_bt_cli = st.columns(2)
+                with col_bt_tv:
+                    st.markdown(f'<a href="{url_tela}" target="_blank"><button style="width: 100%; background-color: #0d0d10; color: #ffffff; border: 1px solid #27272a; padding: 2px; border-radius: 3px; font-size: 10px;">🖥️ TV</button></a>', unsafe_allow_html=True)
+                with col_bt_cli:
+                    st.markdown(f'<a href="{url_cliente}" target="_blank"><button style="width: 100%; background-color: #0d0d10; color: #ffffff; border: 1px solid #27272a; padding: 2px; border-radius: 3px; font-size: 10px;">📱 Cliente</button></a>', unsafe_allow_html=True)
+
+                videos_disponiveis = {
+                    "- Sem vídeo -": "",
+                    "Vídeo 1": "https://youtu.be/cQ4MD7gOBmc?si=5wzaxysiHSEwn9QT",
+                    "Vídeo 2": "https://youtu.be/H_aniWehIYY?si=e9WzMGyFSy7PdrAj",
+                    "Vídeo 3": "https://youtu.be/sGGlQ9yJQNg?si=LVeN5zjZ153uksLW",
+                }
+
+                st.markdown('<div class="box-container" style="margin-top: 4px;"><div class="box-title"><span>🎬 VÍDEO TV</span></div>', unsafe_allow_html=True)
+                video_escolhido = st.selectbox("Vídeo de fundo:", list(videos_disponiveis.keys()), label_visibility="collapsed")
+                if st.button("▶ Atualizar", use_container_width=True, type="primary"):
+                    if st.session_state.token_prestador:
+                        prestadores = obter_prestadores()
+                        for p in prestadores:
+                            if p.get("token") == st.session_state.token_prestador:
+                                p["video_fundo"] = videos_disponiveis[video_escolhido]
+                                guardar_prestador(p)
+                        st.success("Guardado!")
+                st.markdown("</div>", unsafe_allow_html=True)
+
+        return
+
+    # 2. SE ESTIVER RECUSADO
+    if st.session_state.pedido_submetido and st.session_state.estado_pedido == "recusado":
         st.markdown(
             """
-            <style>
-                .stApp { background-color: #000000 !important; }
-                header[data-testid="stHeader"] { background-color: transparent !important; }
-                .block-container {
-                    background-color: #000000 !important;
-                    max-width: 500px !important;
-                    padding-top: 4rem !important;
-                }
-            </style>
-            <div style="background-color: #050507; border: 1px solid #ef4444; padding: 20px; text-align: center; border-radius: 6px; max-width: 450px; margin: 0 auto;">
-                <div style="font-size: 32px; margin-bottom: 8px;">❌</div>
-                <h3 style="color: #ef4444; font-size: 18px; margin-bottom: 6px;">Pedido Recusado</h3>
-                <p style="color: #d4d4d8; font-size: 13px; margin-bottom: 0px;">O seu pedido foi recusado pelo Administrador.</p>
-            </div>
+                <div style="background-color: #050507; border: 1px solid #ef4444; padding: 12px; text-align: center; border-radius: 4px; max-width: 400px; margin: 15px auto;">
+                    <div style="font-size: 24px; margin-bottom: 2px;">❌</div>
+                    <h3 style="color: #ef4444; font-size: 15px; margin-bottom: 2px;">Pedido Recusado</h3>
+                    <p style="color: #d4d4d8; font-size: 11px; margin-bottom: 6px;">O seu pedido foi recusado pelo Administrador.</p>
+                </div>
             """,
             unsafe_allow_html=True,
         )
-        st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
-        if st.button("🔄 Tentar Novamente", use_container_width=True):
+        if st.button("Tentar Novamente", use_container_width=True):
             st.session_state.pedido_submetido = False
             st.session_state.token_prestador = None
             st.session_state.estado_pedido = "pendente"
             st.session_state.aprovado = False
             st.rerun()
-            st.stop()
+        return
 
-    # ==========================================
-    # CASO 3: PENDENTE (AGUARDANDO APROVAÇÃO)
-    # ==========================================
-    elif st.session_state.get("pedido_submetido") and st.session_state.get("estado_pedido") == "pendente":
+    # 3. SE ESTIVER PENDENTE
+    if st.session_state.pedido_submetido:
         st.markdown(
             """
-            <style>
-                .stApp { background-color: #000000 !important; }
-                header[data-testid="stHeader"] { background-color: transparent !important; }
-                .block-container {
-                    background-color: #000000 !important;
-                    max-width: 500px !important;
-                    padding-top: 2rem !important;
-                }
-                @keyframes spinLeft { 0% { transform: rotate(0deg); } 100% { transform: rotate(-360deg); } }
-                @keyframes spinRight { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-                .logo-container {
-                    position: relative;
-                    width: 140px;
-                    height: 140px;
-                    margin: 0 auto 15px auto;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-                .ring-red {
-                    position: absolute;
-                    width: 135px;
-                    height: 135px;
-                    border: 3px dashed #ef4444;
-                    border-radius: 50%;
-                    animation: spinLeft 6s linear infinite;
-                }
-                .ring-yellow {
-                    position: absolute;
-                    width: 155px;
-                    height: 155px;
-                    border: 3px dashed #eab308;
-                    border-radius: 50%;
-                    animation: spinRight 8s linear infinite;
-                }
-                .logo-img {
-                    width: 100px;
-                    height: 100px;
-                    border-radius: 50%;
-                    object-fit: cover;
-                    z-index: 2;
-                }
-                @keyframes pulseDot1 { 0%, 100% { transform: scale(0.6); opacity: 0.3; } 50% { transform: scale(1.5); opacity: 1; } }
-                @keyframes pulseDot2 { 0%, 100% { transform: scale(1.5); opacity: 1; } 50% { transform: scale(0.6); opacity: 0.3; } }
-                @keyframes pulseDot3 { 0%, 100% { transform: scale(0.8); opacity: 0.4; } 50% { transform: scale(1.7); opacity: 1; } }
-                .dot-container {
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    gap: 14px;
-                    margin-top: 25px;
-                }
-                .dot-1 { width: 8px; height: 8px; background-color: #ef4444; border-radius: 50%; animation: pulseDot1 1.2s infinite ease-in-out; }
-                .dot-2 { width: 14px; height: 14px; background-color: #eab308; border-radius: 50%; animation: pulseDot2 1.2s infinite ease-in-out; }
-                .dot-3 { width: 11px; height: 11px; background-color: #c084fc; border-radius: 50%; animation: pulseDot3 1.2s infinite ease-in-out; }
-            </style>
+                <div style="background-color: #050507; padding: 15px; text-align: center; border-radius: 4px; max-width: 400px; margin: 15px auto;">
+                    <h3 style="color: #ffffff; font-size: 15px; margin-bottom: 2px;">Aguardando Aprovação</h3>
+                    <p style="color: #d4d4d8; font-size: 11px; margin-bottom: 2px;">O seu registo está a aguardar validação do Administrador.</p>
+                </div>
             """,
             unsafe_allow_html=True,
         )
-
-        st.markdown(
-            f"""
-            <div style="background-color: #000000; padding: 10px; text-align: center;">
-                <div class="logo-container">
-                    <div class="ring-yellow"></div>
-                    <div class="ring-red"></div>
-                    <img src="{LINK_LOGO}" class="logo-img" />
-                </div>
-                <h3 style="color: #eab308; font-size: 20px; font-weight: bold; margin-bottom: 6px;">Aguardando Aprovação</h3>
-                <p style="color: #d4d4d8; font-size: 13px; margin-bottom: 15px;">O seu registo está a aguardar validação do Administrador.</p>
-                <div class="dot-container">
-                    <div class="dot-1"></div>
-                    <div class="dot-2"></div>
-                    <div class="dot-3"></div>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        
-        # Recarregar automaticamente a página a cada 4 segundos para verificar aprovação/recusa sem bloquear o script
-        time.sleep(4)
+        time.sleep(3)
         st.rerun()
+        return
 
     # ==========================================
-    # CASO 4: TELA INICIAL (REGISTO / LOGIN)
+    # 🎨 4. TELA INICIAL: REGISTO / LOGIN AJUSTADO
     # ==========================================
-    else:
-        st.markdown(
-            f"""
-            <style>
-                .stApp {{ background-color: #000000 !important; }}
-                header[data-testid="stHeader"] {{ background-color: transparent !important; }}
-                .block-container {{
-                    max-width: 720px !important;
-                    padding: 0.2rem 1.2rem !important;
-                    background-color: #000000 !important;
-                    border-radius: 8px;
-                    border: 1px solid rgba(138, 43, 226, 0.25);
-                    margin-top: 0.1rem;
-                }}
-                div.row-widget.stRadio div[role="radiogroup"] label p {{
-                    color: #ffffff !important;
-                    font-weight: bold !important;
-                    font-size: 11px !important;
-                }}
-            </style>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                <img src="{LINK_LOGO}" style="width: 142px; border-radius: 4px; display: block;" />
-                <div style="width: 28px; height: 28px; background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.4); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #eab308; font-size: 12px;">👤</div>
-            </div>
-            <div style="text-align: center; margin-bottom: 4px;">
-                <h1 style="color: #eab308; font-size: 18px; font-weight: 900; margin-bottom: 1px;">ÁREA DO PRESTADOR</h1>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+    st.markdown(
+        f"""
+        <style>
+            .stApp {{
+                background-color: #000000 !important;
+            }}
+            header[data-testid="stHeader"] {{
+                background-color: transparent !important;
+            }}
+            .block-container {{
+                max-width: 720px !important;
+                padding-top: 0.2rem !important;
+                padding-bottom: 0.4rem !important;
+                padding-left: 1.2rem !important;
+                padding-right: 1.2rem !important;
+                background-color: #000000 !important;
+                border-radius: 8px;
+                border: 1px solid rgba(138, 43, 226, 0.25);
+                margin-top: 0.1rem;
+                margin-bottom: 0.1rem;
+            }}
+            div[data-baseweb="input"] input {{
+                min-height: 20px !important;
+                height: 22px !important;
+                padding-top: 2px !important;
+                padding-bottom: 2px !important;
+                font-size: 11px !important;
+            }}
+            div[data-baseweb="base-input"] {{
+                min-height: 22px !important;
+            }}
+            div[data-baseweb="select"] div {{
+                min-height: 22px !important;
+                font-size: 11px !important;
+            }}
+            div.row-widget.stRadio div[role="radiogroup"] label p {{
+                color: #ffffff !important;
+                font-weight: bold !important;
+                font-size: 11px !important;
+            }}
+        </style>
 
-        modo_acesso = st.radio(
-            "Escolha a opção:",
-            ["Novo Registo", "Já estou online / Entrar com Nome e Telefone"],
-            horizontal=True,
-            key="radio_modo_acesso_prestador"
-        )
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <img src="{LINK_LOGO}" style="width: 142px; border-radius: 4px; display: block;" />
+            <div style="width: 28px; height: 28px; background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.4); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #eab308; font-size: 12px;">👤</div>
+        </div>
 
-        if modo_acesso == "Novo Registo":
-            with st.form("form_registo_prestador_idêntico"):
-                st.markdown('<div style="background-color: #050507; border: 1px solid #3b2c60; border-radius: 6px; padding: 4px 8px;">', unsafe_allow_html=True)
+        <div style="text-align: center; margin-bottom: 4px;">
+            <h1 style="color: #eab308; font-size: 18px; font-weight: 900; margin-bottom: 1px;">ÁREA DO PRESTADOR</h1>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
-                c_emo1, c_inp1 = st.columns([0.08, 0.92])
-                with c_emo1: st.markdown('<div style="font-size: 20px; text-align: center; line-height: 1.5;">👤</div>', unsafe_allow_html=True)
-                with c_inp1: nome = st.text_input("Nome Completo", placeholder="Digite o seu nome completo", label_visibility="collapsed")
+    st.markdown('<div style="color: #eab308; font-size: 18px; font-weight: 900; margin-bottom: 2px;">Escolha a opção:</div>', unsafe_allow_html=True)
+    modo_acesso = st.radio(
+        "Escolha a opção:",
+        ["Novo Registo", "Já estou online / Entrar com Nome e Telefone"],
+        horizontal=True,
+        label_visibility="collapsed",
+    )
 
-                c_emo2, c_inp2 = st.columns([0.08, 0.92])
-                with c_emo2: st.markdown('<div style="font-size: 20px; text-align: center; line-height: 1.5;">📞</div>', unsafe_allow_html=True)
-                with c_inp2: telefone = st.text_input("Telemóvel / Telefone", placeholder="Digite o seu número de telefone", label_visibility="collapsed")
+    if modo_acesso == "Novo Registo":
+        with st.form("form_registo_prestador_idêntico"):
+            st.markdown(
+                """
+                <div style="background-color: #050507; border: 1px solid #3b2c60; border-radius: 6px; padding: 4px 8px;">
+                """,
+                unsafe_allow_html=True,
+            )
 
-                c_emo3, c_inp3 = st.columns([0.08, 0.92])
-                with c_emo3: st.markdown('<div style="font-size: 20px; text-align: center; line-height: 1.5;">📍</div>', unsafe_allow_html=True)
-                with c_inp3: estabelecimento = st.text_input("Estabelecimento", placeholder="Ex: Bar do Zé, Restaurante Bom Sabor...", label_visibility="collapsed")
+            c_emo1, c_inp1 = st.columns([0.08, 0.92])
+            with c_emo1:
+                st.markdown('<div style="font-size: 20px; text-align: center; line-height: 1.5;">👤</div>', unsafe_allow_html=True)
+            with c_inp1:
+                nome = st.text_input("Nome Completo", placeholder="Digite o seu nome completo", label_visibility="collapsed")
 
-                c_emo4, c_inp4 = st.columns([0.08, 0.92])
-                with c_emo4: st.markdown('<div style="font-size: 20px; text-align: center; line-height: 1.5;">📄</div>', unsafe_allow_html=True)
-                with c_inp4:
-                    contrato = st.selectbox(
-                        "Contrato",
-                        [
-                            "1 Hora - 12.000,00 Kwanzaas",
-                            "2 Horas - 17.000,00 Kwanzaas",
-                            "3 Horas - 20.000,00 Kwanzaas",
-                        ],
-                        label_visibility="collapsed",
+            c_emo2, c_inp2 = st.columns([0.08, 0.92])
+            with c_emo2:
+                st.markdown('<div style="font-size: 20px; text-align: center; line-height: 1.5;">📞</div>', unsafe_allow_html=True)
+            with c_inp2:
+                telefone = st.text_input("Telemóvel / Telefone", placeholder="Digite o seu número de telefone", label_visibility="collapsed")
+
+            c_emo3, c_inp3 = st.columns([0.08, 0.92])
+            with c_emo3:
+                st.markdown('<div style="font-size: 20px; text-align: center; line-height: 1.5;">📍</div>', unsafe_allow_html=True)
+            with c_inp3:
+                estabelecimento = st.text_input("Estabelecimento", placeholder="Ex: Bar do Zé, Restaurante Bom Sabor...", label_visibility="collapsed")
+
+            c_emo4, c_inp4 = st.columns([0.08, 0.92])
+            with c_emo4:
+                st.markdown('<div style="font-size: 20px; text-align: center; line-height: 1.5;">📄</div>', unsafe_allow_html=True)
+            with c_inp4:
+                contrato = st.selectbox(
+                    "Contrato",
+                    [
+                        "1 Hora - 12.000,00 Kwanzaas",
+                        "2 Horas - 17.000,00 Kwanzaas",
+                        "3 Horas - 20.000,00 Kwanzaas",
+                    ],
+                    label_visibility="collapsed",
+                )
+
+            st.markdown("<div style='height: 2px;'></div>", unsafe_allow_html=True)
+            submitted = st.form_submit_button("🚀 SUBMETER PEDIDO", use_container_width=True)
+            
+            st.markdown("</div>", unsafe_allow_html=True)
+
+            if submitted:
+                if nome.strip() and telefone.strip():
+                    token_gerado = f"token_{int(time.time())}"
+                    segundos_contrato = (
+                        3600
+                        if "1 Hora" in contrato
+                        else (7200 if "2 Horas" in contrato else 10800)
                     )
 
-                st.markdown("<div style='height: 2px;'></div>", unsafe_allow_html=True)
-                submitted = st.form_submit_button("🚀 SUBMETER PEDIDO", use_container_width=True)
-                st.markdown("</div>", unsafe_allow_html=True)
+                    novo_prestador = {
+                        "nome": nome.strip(),
+                        "telefone": telefone.strip(),
+                        "estabelecimento": estabelecimento.strip(),
+                        "plano": contrato,
+                        "contrato": contrato,
+                        "status_str": "pendente",
+                        "approved": False,
+                        "token": token_gerado,
+                        "segundos_restantes": segundos_contrato,
+                        "data_pedido": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                        "video_fundo": "",
+                    }
 
-                if submitted:
-                    if nome.strip() and telefone.strip():
-                        token_gerado = f"token_{int(time.time())}"
-                        segundos_contrato = (
-                            3600 if "1 Hora" in contrato else (7200 if "2 Horas" in contrato else 10800)
-                        )
+                    guardar_prestador(novo_prestador)
 
-                        novo_prestador = {
-                            "nome": nome.strip(),
-                            "telefone": telefone.strip(),
-                            "estabelecimento": estabelecimento.strip(),
-                            "plano": contrato,
-                            "contrato": contrato,
-                            "status_str": "pendente",
-                            "approved": False,
-                            "token": token_gerado,
-                            "segundos_restantes": segundos_contrato,
-                            "data_pedido": datetime.now().strftime("%d/%m/%Y %H:%M"),
-                            "video_fundo": "",
-                        }
+                    st.session_state.pedido_submetido = True
+                    st.session_state.token_prestador = token_gerado
+                    st.session_state.estado_pedido = "pendente"
+                    st.session_state.aprovado = False
+                    st.rerun()
+                else:
+                    st.error("Preencha pelo menos o Nome e o Telefone.")
+    else:
+        with st.form("form_login_prestador_idêntico"):
+            st.markdown(
+                """
+                <div style="background-color: #050507; border: 1px solid #3b2c60; border-radius: 6px; padding: 6px 8px;">
+                """,
+                unsafe_allow_html=True,
+            )
 
-                        guardar_prestador(novo_prestador)
+            c_emo_l1, c_inp_l1 = st.columns([0.08, 0.92])
+            with c_emo_l1:
+                st.markdown('<div style="font-size: 20px; text-align: center; line-height: 1.5;">👤</div>', unsafe_allow_html=True)
+            with c_inp_l1:
+                login_nome = st.text_input("Nome", placeholder="Digite o seu nome cadastrado", label_visibility="collapsed")
 
+            c_emo_l2, c_inp_l2 = st.columns([0.08, 0.92])
+            with c_emo_l2:
+                st.markdown('<div style="font-size: 20px; text-align: center; line-height: 1.5;">📞</div>', unsafe_allow_html=True)
+            with c_inp_l2:
+                login_telefone = st.text_input("Telemóvel / Telefone", placeholder="Digite o seu número de telefone", label_visibility="collapsed")
+
+            st.markdown("<div style='height: 2px;'></div>", unsafe_allow_html=True)
+            login_submitted = st.form_submit_button("🔓 ENTRAR", use_container_width=True)
+
+            st.markdown("</div>", unsafe_allow_html=True)
+
+            if login_submitted:
+                if login_nome.strip() and login_telefone.strip():
+                    prestadores = obter_prestadores() or []
+                    prestador_encontrado = next(
+                        (
+                            p for p in prestadores
+                            if p.get("nome", "").strip().lower() == login_nome.strip().lower()
+                            and p.get("telefone", "").strip() == login_telefone.strip()
+                        ),
+                        None
+                    )
+
+                    if prestador_encontrado:
                         st.session_state.pedido_submetido = True
-                        st.session_state.token_prestador = token_gerado
-                        st.session_state.estado_pedido = "pendente"
-                        st.session_state.aprovado = False
+                        st.session_state.token_prestador = prestador_encontrado.get("token")
+                        st.session_state.estado_pedido = prestador_encontrado.get("status_str", "pendente")
+                        st.session_state.aprovado = (prestador_encontrado.get("status_str") == "aprovado")
                         st.rerun()
-                        st.stop()
                     else:
-                        st.error("Preencha pelo menos o Nome e o Telefone.")
-        else:
-            with st.form("form_login_prestador_idêntico"):
-                st.markdown('<div style="background-color: #050507; border: 1px solid #3b2c60; border-radius: 6px; padding: 6px 8px;">', unsafe_allow_html=True)
-
-                c_emo_l1, c_inp_l1 = st.columns([0.08, 0.92])
-                with c_emo_l1: st.markdown('<div style="font-size: 20px; text-align: center; line-height: 1.5;">👤</div>', unsafe_allow_html=True)
-                with c_inp_l1: login_nome = st.text_input("Nome", placeholder="Digite o seu nome cadastrado", label_visibility="collapsed")
-
-                c_emo_l2, c_inp_l2 = st.columns([0.08, 0.92])
-                with c_emo_l2: st.markdown('<div style="font-size: 20px; text-align: center; line-height: 1.5;">📞</div>', unsafe_allow_html=True)
-                with c_inp_l2: login_telefone = st.text_input("Telemóvel / Telefone", placeholder="Digite o seu número de telefone", label_visibility="collapsed")
-
-                st.markdown("<div style='height: 2px;'></div>", unsafe_allow_html=True)
-                login_submitted = st.form_submit_button("🔓 ENTRAR", use_container_width=True)
-                st.markdown("</div>", unsafe_allow_html=True)
-
-                if login_submitted:
-                    if login_nome.strip() and login_telefone.strip():
-                        prestadores = obter_prestadores() or []
-                        prestador_encontrado = next(
-                            (
-                                p for p in prestadores
-                                if p.get("nome", "").strip().lower() == login_nome.strip().lower()
-                                and p.get("telefone", "").strip() == login_telefone.strip()
-                            ),
-                            None
-                        )
-
-                        if prestador_encontrado:
-                            st.session_state.pedido_submetido = True
-                            st.session_state.token_prestador = prestador_encontrado.get("token")
-                            status_encontrado = prestador_encontrado.get("status_str", "pendente")
-                            st.session_state.estado_pedido = status_encontrado
-                            st.session_state.aprovado = (status_encontrado == "aprovado")
-                            st.rerun()
-                            st.stop()
-                        else:
-                            st.error("Prestador não encontrado com estes dados ou ainda não registado.")
-                    else:
-                        st.error("Preencha o Nome e o Telefone para entrar.")
+                        st.error("Prestador não encontrado com estes dados ou ainda não registado.")
+                else:
+                    st.error("Preencha o Nome e o Telefone para entrar.")
