@@ -59,7 +59,7 @@ def render():
             )
 
         # ==========================================
-        # 🎨 ESTILO COM LARGURA AUMENTADA E ANIMAÇÃO DA ONDA
+        # 🎨 ESTILO COM LARGURA AUMENTADA EM 20% (1344px) + ANIMAÇÃO DA ONDA
         # ==========================================
         st.markdown(
             """
@@ -123,41 +123,24 @@ def render():
                     color: #eab308 !important;
                 }
 
-                /* Animação das Barras de Equalizador (Onda a Mexer) */
-                @keyframes ondaAnimada {
-                    0% { height: 6px; }
+                /* ANIMAÇÃO DA ONDA DE EQUALIZAÇÃO */
+                @keyframes equalizer {
+                    0% { height: 4px; }
                     50% { height: 22px; }
-                    100% { height: 6px; }
-                }
-                .equalizer-wave {
-                    display: flex;
-                    align-items: flex-end;
-                    justify-content: flex-end;
-                    gap: 3px;
-                    height: 25px;
+                    100% { height: 4px; }
                 }
                 .eq-bar {
-                    width: 4px;
                     background-color: #eab308;
+                    width: 5px;
                     border-radius: 2px;
-                    animation: ondaAnimada 1.2s infinite ease-in-out;
+                    animation: equalizer 1.2s infinite ease-in-out;
                 }
-                .eq-bar:nth-child(1) { animation-delay: 0.1s; }
-                .eq-bar:nth-child(2) { animation-delay: 0.3s; }
-                .eq-bar:nth-child(3) { animation-delay: 0.5s; }
-                .eq-bar:nth-child(4) { animation-delay: 0.2s; }
-                .eq-bar:nth-child(5) { animation-delay: 0.6s; }
-                .eq-bar:nth-child(6) { animation-delay: 0.4s; }
-                .eq-bar:nth-child(7) { animation-delay: 0.7s; }
-                .eq-bar:nth-child(8) { animation-delay: 0.2s; }
-                .eq-bar:nth-child(9) { animation-delay: 0.5s; }
-                .eq-bar:nth-child(10) { animation-delay: 0.3s; }
             </style>
             """,
             unsafe_allow_html=True,
         )
         
-        # Layout Principal dividido em 2 colunas principais: Lateral Esquerda (Controles/Info) e Conteúdo Principal (Direita)
+        # Layout Principal dividido em 2 colunas principais: Lateral Esquerda e Conteúdo Principal
         col_lateral, col_principal = st.columns([1, 2.6])
 
         with col_lateral:
@@ -209,22 +192,23 @@ def render():
 
             renderizar_relogio_topo()
 
-            # 2. Nome do Prestador
+            # 2. Nome do Prestador (Aumentado em 80%: 13px * 1.8 = ~23px)
             nome_prestador_txt = prestador_atual.get("nome", "Prestador") if prestador_atual else "Prestador"
             estabelecimento_txt = prestador_atual.get("estabelecimento", "") if prestador_atual else ""
             sub_info = f" — {estabelecimento_txt}" if estabelecimento_txt else ""
 
             st.markdown(
                 f"""
-                <div style="background-color: #121215; border: 1px solid #8b5cf6; padding: 10px 14px; border-radius: 8px; margin-bottom: 8px;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 16px;">🎙️</span>
+                <div style="background-color: #121215; border: 1px solid #8b5cf6; padding: 12px 14px; border-radius: 8px; margin-bottom: 8px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 22px;">🎙️</span>
                         <div>
-                            <div style="color: #c084fc; font-size: 9px; font-weight: bold; letter-spacing: 0.5px;">PRESTADOR EM SESSÃO</div>
-                            <div style="color: #ffffff; font-size: 13px; font-weight: bold; word-break: break-word;">{nome_prestador_txt}{sub_info}</div>
+                            <div style="color: #c084fc; font-size: 10px; font-weight: bold; letter-spacing: 0.5px;">PRESTADOR EM SESSÃO</div>
+                            <div style="color: #ffffff; font-size: 23px; font-weight: bold; word-break: break-word; line-height: 1.2;">{nome_prestador_txt}</div>
+                            <div style="color: #a1a1aa; font-size: 12px; margin-top: 2px;">{estabelecimento_txt}</div>
                         </div>
                     </div>
-                    <div style="margin-top: 6px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
                         <span style="color: #a1a1aa; font-size: 10px;">Estado:</span>
                         <span style="color: #eab308; font-size: 11px; font-weight: bold; background: rgba(234, 179, 8, 0.1); padding: 2px 8px; border-radius: 12px; border: 1px solid rgba(234, 179, 8, 0.3);">🟢 Ativo</span>
                     </div>
@@ -241,11 +225,11 @@ def render():
                 st.session_state.aprovado = False
                 st.rerun()
 
-            # 4. Logotipo Aumentado em 80% (por baixo do botão Sair)
+            # 4. Logotipo Aumentado em 100% (280px) por baixo do botão Sair
             st.markdown(
                 f"""
-                <div style="text-align: center; margin-top: 10px; margin-bottom: 10px;">
-                    <img src="{LINK_LOGO}" style="max-width: 100%; width: 252px; border-radius: 8px;" />
+                <div style="text-align: center; margin-top: 12px; margin-bottom: 12px;">
+                    <img src="{LINK_LOGO}" style="max-width: 100%; width: 280px; border-radius: 8px;" />
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -260,8 +244,14 @@ def render():
 
                 @st.fragment(run_every=3)
                 def renderizar_a_tocar():
+                    # Gerando 24 barras para preencher toda a largura do retângulo do "A Tocar Agora"
+                    bars_html = ""
+                    delays = [0.0, 0.2, 0.4, 0.1, 0.5, 0.3, 0.6, 0.15, 0.35, 0.45, 0.25, 0.55] * 2
+                    for i, d in enumerate(delays):
+                        bars_html += f'<div class="eq-bar" style="animation-delay: {d}s; height: {10 + (i % 5) * 3}px;"></div>'
+
                     st.markdown(
-                        """
+                        f"""
                             <div class="box-container" style="border: 1px solid #27272a;">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                     <div style="display: flex; align-items: center; gap: 12px;">
@@ -275,19 +265,8 @@ def render():
                                         </div>
                                     </div>
                                 </div>
-                                <div style="margin-top: 4px;">
-                                    <div class="equalizer-wave">
-                                        <div class="eq-bar"></div>
-                                        <div class="eq-bar"></div>
-                                        <div class="eq-bar"></div>
-                                        <div class="eq-bar"></div>
-                                        <div class="eq-bar"></div>
-                                        <div class="eq-bar"></div>
-                                        <div class="eq-bar"></div>
-                                        <div class="eq-bar"></div>
-                                        <div class="eq-bar"></div>
-                                        <div class="eq-bar"></div>
-                                    </div>
+                                <div style="display: flex; justify-content: space-between; align-items: flex-end; height: 26px; padding: 0 4px; margin-top: 6px; overflow: hidden;">
+                                    {bars_html}
                                 </div>
                             </div>
                         """,
