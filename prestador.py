@@ -116,22 +116,22 @@ def render():
                 }
                 .block-container {
                     max-width: 1400px !important;
-                    padding-top: 0.2rem !important;
-                    padding-bottom: 0.4rem !important;
-                    padding-left: 0.8rem !important;
-                    padding-right: 0.8rem !important;
+                    padding-top: 0.1rem !important;
+                    padding-bottom: 0.1rem !important;
+                    padding-left: 0.6rem !important;
+                    padding-right: 0.6rem !important;
                     background-color: #000000 !important;
-                    border-radius: 8px;
+                    border-radius: 6px;
                     border: 1px solid rgba(138, 43, 226, 0.25);
-                    margin-top: 0.1rem;
-                    margin-bottom: 0.1rem;
+                    margin-top: 0rem;
+                    margin-bottom: 0rem;
                 }
                 .box-container {
                     background-color: #050507;
                     border: 1px solid #27272a;
                     border-radius: 4px;
-                    padding: 6px 10px;
-                    margin-bottom: 4px;
+                    padding: 5px 8px;
+                    margin-bottom: 3px;
                 }
                 .box-title {
                     color: #eab308;
@@ -150,8 +150,8 @@ def render():
                     color: #ffffff !important;
                     border: 1px solid #27272a !important;
                     border-radius: 3px !important;
-                    min-height: 24px !important;
-                    height: 26px !important;
+                    min-height: 22px !important;
+                    height: 24px !important;
                     font-size: 11px !important;
                     font-weight: 500;
                 }
@@ -218,9 +218,9 @@ def render():
 
                 st.markdown(
                     f"""
-                    <div style="background-color: #0d0d10; border: 1px solid #eab308; padding: 2px 6px; border-radius: 4px; text-align: center; margin-bottom: 4px;">
+                    <div style="background-color: #0d0d10; border: 1px solid #eab308; padding: 2px 4px; border-radius: 4px; text-align: center; margin-bottom: 3px;">
                         <div style="color: #eab308; font-size: 8px; font-weight: bold;">⏳ TEMPO RESTANTE</div>
-                        <div style="color: #ffffff; font-family: monospace; font-size: 15px; font-weight: 900;">{tempo_formatado}</div>
+                        <div style="color: #ffffff; font-family: monospace; font-size: 14px; font-weight: 900;">{tempo_formatado}</div>
                     </div>
                     """,
                     unsafe_allow_html=True,
@@ -233,12 +233,12 @@ def render():
 
             st.markdown(
                 f"""
-                <div style="background-color: #0d0d10; border: 1px solid #8b5cf6; padding: 6px 8px; border-radius: 4px; margin-bottom: 4px;">
+                <div style="background-color: #0d0d10; border: 1px solid #8b5cf6; padding: 5px 6px; border-radius: 4px; margin-bottom: 3px;">
                     <div style="display: flex; align-items: center; gap: 6px;">
-                        <span style="font-size: 22px;">🎙️</span>
+                        <span style="font-size: 20px;">🎙️</span>
                         <div>
                             <div style="color: #c084fc; font-size: 8px; font-weight: bold;">PRESTADOR</div>
-                            <div style="color: #ffffff; font-size: 25px; font-weight: bold; line-height: 1.1;">{nome_prestador_txt}</div>
+                            <div style="color: #ffffff; font-size: 22px; font-weight: bold; line-height: 1.1;">{nome_prestador_txt}</div>
                             <div style="color: #a1a1aa; font-size: 9px;">{estabelecimento_txt}</div>
                         </div>
                     </div>
@@ -250,8 +250,8 @@ def render():
             # LOGOTIPO
             st.markdown(
                 f"""
-                <div style="text-align: center; margin-top: 2px; margin-bottom: 4px;">
-                    <img src="{LINK_LOGO}" style="max-width: 100%; width: 130px; border-radius: 4px;" />
+                <div style="text-align: center; margin-top: 1px; margin-bottom: 3px;">
+                    <img src="{LINK_LOGO}" style="max-width: 100%; width: 115px; border-radius: 4px;" />
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -260,10 +260,10 @@ def render():
             # NOTA INFORMATIVA LOGO ABAIXO DO LOGOTIPO
             st.markdown(
                 """
-                <div style="background-color: #0d0d10; border: 1px solid #3b2c60; padding: 6px 8px; border-radius: 4px; margin-bottom: 4px; font-size: 9px; color: #d4d4d8; line-height: 1.3;">
-                    <div style="color: #c084fc; font-weight: bold; margin-bottom: 2px;">📌 NOTAS IMPORTANTES:</div>
+                <div style="background-color: #0d0d10; border: 1px solid #3b2c60; padding: 5px 6px; border-radius: 4px; margin-bottom: 3px; font-size: 9px; color: #d4d4d8; line-height: 1.2;">
+                    <div style="color: #c084fc; font-weight: bold; margin-bottom: 1px;">📌 NOTAS IMPORTANTES:</div>
                     <div>• <b>Tela do Código QR:</b> Abra o link/botão "TV" num projetor ou ecrã secundário para os clientes verem o QR Code em tamanho grande.</div>
-                    <div style="margin-top: 3px;">• <b>Ícone Cliente:</b> O link/botão "Cliente" serve para os clientes lerem o código ou abrirem no telemóvel para pedirem músicas.</div>
+                    <div style="margin-top: 2px;">• <b>Ícone Cliente:</b> O link/botão "Cliente" serve para os clientes lerem o código ou abrirem no telemóvel para pedirem músicas.</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -285,21 +285,21 @@ def render():
                     bars_html = ""
                     delays = [0.0, 0.2, 0.4, 0.1, 0.5, 0.3, 0.6, 0.15, 0.35, 0.45]
                     for i, d in enumerate(delays):
-                        bars_html += f'<div class="eq-bar" style="animation-delay: {d}s; height: {6 + (i % 4) * 2}px;"></div>'
+                        bars_html += f'<div class="eq-bar" style="animation-delay: {d}s; height: {5 + (i % 4) * 2}px;"></div>'
 
                     st.markdown(
                         f"""
                             <div class="box-container">
                                 <div style="display: flex; align-items: center; gap: 6px;">
-                                    <div style="width: 26px; height: 26px; border: 1px solid #eab308; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                        <span style="font-size: 12px; color: #eab308;">🎵</span>
+                                    <div style="width: 24px; height: 24px; border: 1px solid #eab308; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                        <span style="font-size: 11px; color: #eab308;">🎵</span>
                                     </div>
                                     <div>
                                         <div style="color: #eab308; font-weight: bold; font-size: 9px;">▶ A TOCAR AGORA</div>
-                                        <div style="color: #ffffff; font-size: 12px; font-weight: bold;">Nada em reprodução</div>
+                                        <div style="color: #ffffff; font-size: 11px; font-weight: bold;">Nada em reprodução</div>
                                     </div>
                                 </div>
-                                <div style="display: flex; justify-content: space-between; align-items: flex-end; height: 16px; padding: 0 2px; margin-top: 2px;">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-end; height: 14px; padding: 0 2px; margin-top: 2px;">
                                     {bars_html}
                                 </div>
                             </div>
@@ -319,7 +319,7 @@ def render():
                     if st.button("⏭ Próxima", use_container_width=True, key="btn_proxima"):
                         st.toast("Próxima.")
 
-                st.markdown("<div style='height: 2px;'></div>", unsafe_allow_html=True)
+                st.markdown("<div style='height: 1px;'></div>", unsafe_allow_html=True)
 
                 @st.fragment(run_every=3)
                 def renderizar_fila_pedidos():
@@ -334,8 +334,8 @@ def render():
 
                     st.markdown(
                         f"""
-                            <div class="box-container" style="max-height: 150px; overflow-y: auto;">
-                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; border-bottom: 1px solid #27272a; padding-bottom: 2px;">
+                            <div class="box-container" style="max-height: 220px; overflow-y: auto;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px; border-bottom: 1px solid #27272a; padding-bottom: 2px;">
                                     <span style="color: #c084fc; font-weight: bold; font-size: 10px;">👥 FILA DE PEDIDOS ({total_pedidos})</span>
                                 </div>
                         """,
@@ -348,13 +348,13 @@ def render():
                             cantor = pedido.get("cantor", "Convidado")
                             pedido_id = pedido.get("id") or pedido.get("timestamp") or idx
 
-                            col_info, col_botoes = st.columns([2.2, 1.8])
+                            col_info, col_botoes = st.columns([2.3, 1.7])
                             with col_info:
                                 st.markdown(
                                     f"""
-                                    <div style="background-color: #0d0d10; border: 1px solid #27272a; border-radius: 3px; padding: 2px 6px; display: flex; align-items: center; gap: 4px; height: 26px; margin-bottom: 3px;">
+                                    <div style="background-color: #0d0d10; border: 1px solid #27272a; border-radius: 3px; padding: 2px 5px; display: flex; align-items: center; gap: 4px; height: 24px; margin-bottom: 2px;">
                                         <span style="color: #c084fc; font-weight: bold; font-size: 9px;">{idx+1}º</span>
-                                        <span style="color: #ffffff; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{musica} — <span style="color: #a1a1aa;">{cantor}</span></span>
+                                        <span style="color: #ffffff; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{musica} — <span style="color: #a1a1aa;">{cantor}</span></span>
                                     </div>
                                     """,
                                     unsafe_allow_html=True,
@@ -385,12 +385,12 @@ def render():
                             <div class="box-title">
                                 <span>🔗 LINKS E QR CODE</span>
                             </div>
-                            <div class="box-content" style="font-size: 9px; word-break: break-all; margin-bottom: 4px;">
+                            <div class="box-content" style="font-size: 9px; word-break: break-all; margin-bottom: 3px;">
                                 <span style="color: #eab308;">Cli:</span> {url_cliente}<br>
                                 <span style="color: #3b82f6;">TV:</span> {url_tela}
                             </div>
                             <div style="text-align: center; background: #ffffff; padding: 2px; border-radius: 3px;">
-                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=75x75&data={url_cliente}" width="75" />
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=70x70&data={url_cliente}" width="70" />
                             </div>
                         </div>
                     """,
@@ -441,15 +441,15 @@ def render():
             }}
             .block-container {{
                 max-width: 720px !important;
-                padding-top: 0.2rem !important;
-                padding-bottom: 0.4rem !important;
-                padding-left: 1.2rem !important;
-                padding-right: 1.2rem !important;
+                padding-top: 0.1rem !important;
+                padding-bottom: 0.2rem !important;
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
                 background-color: #000000 !important;
-                border-radius: 8px;
+                border-radius: 6px;
                 border: 1px solid rgba(138, 43, 226, 0.25);
-                margin-top: 0.1rem;
-                margin-bottom: 0.1rem;
+                margin-top: 0rem;
+                margin-bottom: 0rem;
             }}
             div[data-baseweb="input"] input {{
                 min-height: 20px !important;
@@ -472,19 +472,19 @@ def render():
             }}
         </style>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <img src="{LINK_LOGO}" style="width: 142px; border-radius: 4px; display: block;" />
-            <div style="width: 28px; height: 28px; background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.4); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #eab308; font-size: 12px;">👤</div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+            <img src="{LINK_LOGO}" style="width: 130px; border-radius: 4px; display: block;" />
+            <div style="width: 26px; height: 26px; background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.4); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #eab308; font-size: 11px;">👤</div>
         </div>
 
-        <div style="text-align: center; margin-bottom: 4px;">
-            <h1 style="color: #eab308; font-size: 18px; font-weight: 900; margin-bottom: 1px;">ÁREA DO PRESTADOR</h1>
+        <div style="text-align: center; margin-bottom: 3px;">
+            <h1 style="color: #eab308; font-size: 17px; font-weight: 900; margin-bottom: 1px;">ÁREA DO PRESTADOR</h1>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    st.markdown('<div style="color: #eab308; font-size: 18px; font-weight: 900; margin-bottom: 2px;">Escolha a opção:</div>', unsafe_allow_html=True)
+    st.markdown('<div style="color: #eab308; font-size: 17px; font-weight: 900; margin-bottom: 2px;">Escolha a opção:</div>', unsafe_allow_html=True)
     modo_acesso = st.radio(
         "Escolha a opção:",
         ["Novo Registo", "Já estou online / Entrar com Nome e Telefone"],
@@ -503,25 +503,25 @@ def render():
 
             c_emo1, c_inp1 = st.columns([0.08, 0.92])
             with c_emo1:
-                st.markdown('<div style="font-size: 20px; text-align: center; line-height: 1.5;">👤</div>', unsafe_allow_html=True)
+                st.markdown('<div style="font-size: 18px; text-align: center; line-height: 1.5;">👤</div>', unsafe_allow_html=True)
             with c_inp1:
                 nome = st.text_input("Nome Completo", placeholder="Digite o seu nome completo", label_visibility="collapsed")
 
             c_emo2, c_inp2 = st.columns([0.08, 0.92])
             with c_emo2:
-                st.markdown('<div style="font-size: 20px; text-align: center; line-height: 1.5;">📞</div>', unsafe_allow_html=True)
+                st.markdown('<div style="font-size: 18px; text-align: center; line-height: 1.5;">📞</div>', unsafe_allow_html=True)
             with c_inp2:
                 telefone = st.text_input("Telemóvel / Telefone", placeholder="Digite o seu número de telefone", label_visibility="collapsed")
 
             c_emo3, c_inp3 = st.columns([0.08, 0.92])
             with c_emo3:
-                st.markdown('<div style="font-size: 20px; text-align: center; line-height: 1.5;">📍</div>', unsafe_allow_html=True)
+                st.markdown('<div style="font-size: 18px; text-align: center; line-height: 1.5;">📍</div>', unsafe_allow_html=True)
             with c_inp3:
                 estabelecimento = st.text_input("Estabelecimento", placeholder="Ex: Bar do Zé, Restaurante Bom Sabor...", label_visibility="collapsed")
 
             c_emo4, c_inp4 = st.columns([0.08, 0.92])
             with c_emo4:
-                st.markdown('<div style="font-size: 20px; text-align: center; line-height: 1.5;">📄</div>', unsafe_allow_html=True)
+                st.markdown('<div style="font-size: 18px; text-align: center; line-height: 1.5;">📄</div>', unsafe_allow_html=True)
             with c_inp4:
                 contrato = st.selectbox(
                     "Contrato",
@@ -533,7 +533,7 @@ def render():
                     label_visibility="collapsed",
                 )
 
-            st.markdown("<div style='height: 2px;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 1px;'></div>", unsafe_allow_html=True)
             submitted = st.form_submit_button("🚀 SUBMETER PEDIDO", use_container_width=True)
             
             st.markdown("</div>", unsafe_allow_html=True)
@@ -574,24 +574,24 @@ def render():
         with st.form("form_login_prestador_idêntico"):
             st.markdown(
                 """
-                <div style="background-color: #050507; border: 1px solid #3b2c60; border-radius: 6px; padding: 6px 8px;">
+                <div style="background-color: #050507; border: 1px solid #3b2c60; border-radius: 6px; padding: 5px 8px;">
                 """,
                 unsafe_allow_html=True,
             )
 
             c_emo_l1, c_inp_l1 = st.columns([0.08, 0.92])
             with c_emo_l1:
-                st.markdown('<div style="font-size: 20px; text-align: center; line-height: 1.5;">👤</div>', unsafe_allow_html=True)
+                st.markdown('<div style="font-size: 18px; text-align: center; line-height: 1.5;">👤</div>', unsafe_allow_html=True)
             with c_inp_l1:
                 login_nome = st.text_input("Nome", placeholder="Digite o seu nome cadastrado", label_visibility="collapsed")
 
             c_emo_l2, c_inp_l2 = st.columns([0.08, 0.92])
             with c_emo_l2:
-                st.markdown('<div style="font-size: 20px; text-align: center; line-height: 1.5;">📞</div>', unsafe_allow_html=True)
+                st.markdown('<div style="font-size: 18px; text-align: center; line-height: 1.5;">📞</div>', unsafe_allow_html=True)
             with c_inp_l2:
                 login_telefone = st.text_input("Telemóvel / Telefone", placeholder="Digite o seu número de telefone", label_visibility="collapsed")
 
-            st.markdown("<div style='height: 2px;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 1px;'></div>", unsafe_allow_html=True)
             login_submitted = st.form_submit_button("🔓 ENTRAR", use_container_width=True)
 
             st.markdown("</div>", unsafe_allow_html=True)
