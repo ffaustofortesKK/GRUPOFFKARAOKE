@@ -1,5 +1,5 @@
 import streamlit as st
-import time
+import streamlit.components.v1 as components
 from db import obter_prestadores, obter_pedidos_musicas
 
 def render():
@@ -15,37 +15,6 @@ def render():
             .block-container {
                 max-width: 100% !important;
                 padding: 0 !important;
-            }
-            /* Container centralizado fixo para a playlist */
-            .playlist-central {
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                width: 440px;
-                max-height: 70vh;
-                background: rgba(18, 18, 22, 0.94);
-                border: 2px solid #eab308;
-                border-radius: 12px;
-                padding: 20px;
-                box-shadow: 0 0 50px rgba(0,0,0,0.95);
-                backdrop-filter: blur(12px);
-                z-index: 99999;
-                display: flex;
-                flex-direction: column;
-                box-sizing: border-box;
-            }
-            .playlist-scroll {
-                overflow-y: auto;
-                max-height: 52vh;
-                padding-right: 4px;
-            }
-            .playlist-scroll::-webkit-scrollbar {
-                width: 6px;
-            }
-            .playlist-scroll::-webkit-scrollbar-thumb {
-                background: #3f3f46;
-                border-radius: 4px;
             }
         </style>
     """, unsafe_allow_html=True)
@@ -74,7 +43,7 @@ def render():
             video_id = video_fundo.split("watch?v=")[1].split("&")[0]
             embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=0&loop=1&playlist={video_id}&controls=0"
 
-    # 1. VÍDEO DE FUNDO FIXO (Comandado pelo Prestador)
+    # 1. VÍDEO DE FUNDO FIXO (Comandado pelo Prestador) - Mantém-se a tocar sem interrupções
     if embed_url:
         st.markdown(f"""
             <iframe src="{embed_url}" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; border: none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
@@ -86,7 +55,7 @@ def render():
             </div>
         """, unsafe_allow_html=True)
 
-    # 2. PLAYLIST NO CENTRO (Atualizada via Fragmento Nativamente)
+    # 2. PLAYLIST NO CENTRO (Renderizada via componente HTML isolado para aceitar as tags visualmente)
     @st.fragment(run_every=3)
     def renderizar_playlist_centro():
         try:
@@ -121,16 +90,63 @@ def render():
             </div>
             """
 
-        html_playlist = f"""
-        <div class="playlist-central">
-            <div style="color: #eab308; font-weight: bold; font-size: 16px; margin-bottom: 12px; border-bottom: 2px solid #3f3f46; padding-bottom: 8px; text-align: center; text-transform: uppercase;">
-                🎶 Playlist · Fila ({len(lista_pedidos)})
+        html_conteudo = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <meta charset="utf-8">
+        <style>
+            body {{
+                background-color: transparent;
+                margin: 0;
+                padding: 0;
+                font-family: sans-serif;
+                overflow: hidden;
+            }}
+            .playlist-overlay {{
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 440px;
+                max-height: 70vh;
+                background: rgba(18, 18, 22, 0.94);
+                border: 2px solid #eab308;
+                border-radius: 12px;
+                padding: 20px;
+                box-shadow: 0 0 50px rgba(0,0,0,0.95);
+                backdrop-filter: blur(12px);
+                display: flex;
+                flex-direction: column;
+                box-sizing: border-box;
+            }}
+            .playlist-scroll {{
+                overflow-y: auto;
+                max-height: 52vh;
+                padding-right: 4px;
+            }}
+            .playlist-scroll::-webkit-scrollbar {{
+                width: 6px;
+            }}
+            .playlist-scroll::-webkit-scrollbar-thumb {{
+                background: #3f3f46;
+                border-radius: 4px;
+            }}
+        </style>
+        </head>
+        <body>
+            <div class="playlist-overlay">
+                <div style="color: #eab308; font-weight: bold; font-size: 16px; margin-bottom: 12px; border-bottom: 2px solid #3f3f46; padding-bottom: 8px; text-align: center; text-transform: uppercase;">
+                    🎶 Playlist · Fila ({len(lista_pedidos)})
+                </div>
+                <div class="playlist-scroll">
+                    {itens_html}
+                </div>
             </div>
-            <div class="playlist-scroll">
-                {itens_html}
-            </div>
-        </div>
+        </body>
+        </html>
         """
-        st.markdown(html_playlist, unsafe_allow_html=True)
+        # Renderiza usando components.html para interpretar as tags corretamente sem exibir código na tela
+        components.html(html_conteudo, height=800, scrolling=False)
 
     renderizar_playlist_centro()
