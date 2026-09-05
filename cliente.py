@@ -16,61 +16,53 @@ def render():
             background-color: #06040b !important;
         }
         
-        /* Simulação de Moldura de Tablet / Tela Compacta para encaixar tudo sem scroll */
+        /* Moldura de Tablet Compacta - Tudo visível sem scroll */
         .block-container {
-            max-width: 800px !important;
+            max-width: 780px !important;
             padding-top: 0.8rem !important;
             padding-bottom: 1rem !important;
             padding-left: 1rem !important;
             padding-right: 1rem !important;
             background-color: #0b0714;
             border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8);
             border: 1px solid rgba(138, 43, 226, 0.25);
             margin-top: 0.5rem;
             margin-bottom: 0.5rem;
         }
 
-        /* Topo / Header Banner com Logotipo */
+        /* Topo / Header Banner Compacto */
         .ff-header {
             background: linear-gradient(135deg, #1a1333 0%, #0b0714 100%);
             border: 1px solid rgba(138, 43, 226, 0.3);
-            padding: 8px 15px;
+            padding: 8px 14px;
             border-radius: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-        }
-        .ff-logo-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .ff-logo-icon {
-            background: linear-gradient(135deg, #7b2cbf, #ff007f);
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            box-shadow: 0 0 10px rgba(123, 44, 191, 0.6);
+            margin-bottom: 10px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.5);
         }
         .ff-logo-title {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 800;
             color: #ffffff;
             letter-spacing: 1px;
-            line-height: 1.1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        .ff-logo-subtitle {
-            font-size: 9px;
-            font-weight: 400;
-            color: #b19cd9;
-            letter-spacing: 0.5px;
+        .ff-logo-icon {
+            background: linear-gradient(135deg, #7b2cbf, #9d4edd);
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+            box-shadow: 0 0 8px rgba(123, 44, 191, 0.5);
         }
         .ff-badge-online {
             background-color: rgba(46, 204, 113, 0.15);
@@ -82,12 +74,12 @@ def render():
             font-weight: 600;
         }
         
-        /* Caixa de Identificação do Cantor com Nome Animado (Aumentado em 50%) */
+        /* Caixa de Identificação do Cantor com Nome Animado (+50% tamanho) */
         .ff-cantor-box {
             background: linear-gradient(135deg, #151026, #1e133a);
             border: 1px solid rgba(138, 43, 226, 0.4);
             border-radius: 12px;
-            padding: 12px 15px;
+            padding: 10px 15px;
             margin-bottom: 12px;
             text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.4);
@@ -106,7 +98,7 @@ def render():
         }
 
         .ff-cantor-name {
-            font-size: 42px; /* Aumentado em mais 50% aprox. (de 28px para 42px) */
+            font-size: 42px; /* Aumentado em 50% */
             font-weight: 900;
             display: inline-flex;
             gap: 4px;
@@ -125,86 +117,95 @@ def render():
         .ff-cantor-name span:nth-child(5n+4) { color: #b19cd9; animation-delay: 0.6s; }
         .ff-cantor-name span:nth-child(5n+5) { color: #2ecc71; animation-delay: 0.8s; }
         
-        /* Blocos de Notificação Estilizados e Compactos */
-        .ff-card-status {
-            background-color: #151026;
-            border: 1px solid rgba(138, 43, 226, 0.25);
-            border-radius: 10px;
-            padding: 12px 15px;
+        /* Blocos de Notificação Centralizados */
+        .ff-card-status-centered {
+            background-color: #120e21;
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            border-radius: 12px;
+            padding: 14px 16px;
             margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.3);
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            position: relative;
         }
-        .ff-card-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .ff-icon-box {
-            background: linear-gradient(135deg, #7b2cbf, #9d4edd);
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            color: white;
-            box-shadow: 0 0 8px rgba(123, 44, 191, 0.5);
-            flex-shrink: 0;
-        }
-        .ff-card-text h4 {
-            margin: 0;
-            font-size: 12px;
+        .ff-card-title-yellow {
+            font-size: 13px;
             color: #eab308;
             font-weight: 800;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
         }
-        .ff-card-text p {
-            margin: 2px 0 0 0;
-            font-size: 12px;
+        .ff-card-title-orange {
+            font-size: 13px;
+            color: #e74c3c;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+        .ff-card-title-green {
+            font-size: 13px;
+            color: #2ecc71;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+        .ff-card-subtitle {
+            font-size: 11px;
+            color: #b19cd9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+            font-weight: 700;
+        }
+        .ff-card-main-text {
+            font-size: 16px;
             color: #ffffff;
+            font-weight: 700;
+            margin: 0;
         }
         
-        /* Círculo da posição ampliado */
-        .ff-badge-circle {
-            border: 3px solid #9d4edd;
+        /* Círculo da posição absoluto para canto superior direito do cartão */
+        .ff-badge-circle-abs {
+            position: absolute;
+            top: 12px;
+            right: 14px;
+            border: 2px solid #9d4edd;
             color: #ffffff;
             background: rgba(157, 78, 221, 0.15);
-            min-width: 75px;
-            height: 75px;
+            width: 55px;
+            height: 55px;
             border-radius: 50%;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
-            box-shadow: 0 0 14px rgba(157, 78, 221, 0.5);
-            flex-shrink: 0;
+            box-shadow: 0 0 12px rgba(157, 78, 221, 0.4);
         }
-        .ff-badge-circle .number {
-            font-size: 24px;
+        .ff-badge-circle-abs .number {
+            font-size: 18px;
             font-weight: 900;
             line-height: 1;
             color: #ffffff;
         }
-        .ff-badge-circle .label {
-            font-size: 9px;
+        .ff-badge-circle-abs .label {
+            font-size: 8px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: #b19cd9;
-            margin-top: 2px;
+            margin-top: 1px;
             font-weight: 700;
         }
 
-        /* Caixa de Ação / Pedido Compacta */
+        /* Caixa de Ação Compacta */
         .ff-action-box {
             background-color: #120e21;
             border: 1px solid rgba(138, 43, 226, 0.3);
             border-radius: 10px;
-            padding: 12px 15px;
+            padding: 12px;
             margin-top: 8px;
         }
 
@@ -215,20 +216,20 @@ def render():
             font-size: 10px;
             text-transform: uppercase;
             letter-spacing: 1.5px;
-            margin: 12px 0 6px 0;
+            margin: 10px 0 6px 0;
             font-weight: 600;
         }
         .ff-steps-container {
             display: flex;
             gap: 8px;
             justify-content: space-between;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         .ff-step-card {
             background-color: #120e21;
             border: 1px solid rgba(138, 43, 226, 0.2);
             border-radius: 8px;
-            padding: 8px 10px;
+            padding: 8px;
             flex: 1;
             text-align: left;
         }
@@ -257,7 +258,6 @@ def render():
             line-height: 1.2;
         }
         
-        /* Ajustes compactos para botões e inputs */
         div.stButton > button {
             width: 100%;
             border-radius: 6px;
@@ -265,7 +265,7 @@ def render():
             background: linear-gradient(135deg, #7b2cbf, #5a189a);
             color: white;
             border: none;
-            padding: 6px;
+            padding: 8px;
             font-size: 13px;
         }
         div.stButton > button:hover {
@@ -296,15 +296,12 @@ def render():
     if "meu_pedido_timestamp" not in st.session_state:
         st.session_state["meu_pedido_timestamp"] = None
 
-    # CABEÇALHO VISUAL DO TOPO COM LOGOTIPO
+    # CABEÇALHO COM LOGOTIPO
     st.markdown("""
         <div class="ff-header">
-            <div class="ff-logo-container">
-                <div class="ff-logo-icon">🎤</div>
-                <div>
-                    <div class="ff-logo-title">FF KARAOKE</div>
-                    <div class="ff-logo-subtitle">FAZ A VOZ, FAZ A FESTA!</div>
-                </div>
+            <div class="ff-logo-title">
+                <div class="ff-logo-icon">🎵</div>
+                FF KARAOKE <span style="font-size:9px; font-weight:400; color:#b19cd9; display:block;">FAZ A VOZ, FAZ A FESTA!</span>
             </div>
             <div><span class="ff-badge-online">● Online</span></div>
         </div>
@@ -312,7 +309,7 @@ def render():
 
     # ESTADO 1: Inserir o Nome
     if not st.session_state["cliente_nome"]:
-        st.markdown("<h4 style='margin-bottom:5px; font-size:16px;'>🎤 Bem-vindo ao FF Karaoke</h4>", unsafe_allow_html=True)
+        st.markdown("### 🎤 Bem-vindo ao FF Karaoke")
         st.write("Insira o seu nome ou alcunha para começar:")
         
         with st.form(key="form_login_cliente", clear_on_submit=True):
@@ -330,10 +327,9 @@ def render():
     else:
         cantor = st.session_state["cliente_nome"]
         
-        # Gerar HTML do nome com letras separadas para efeito de onda e cores (Aumentado)
         letras_html = "".join([f"<span>{char}</span>" if char != " " else "<span>&nbsp;</span>" for char in cantor])
         
-        # Bloco de Identificação do Cantor Animado
+        # Bloco de Identificação do Cantor Animado (+50% tamanho)
         st.markdown(f"""
             <div class="ff-cantor-box">
                 <div class="ff-cantor-label">🎤 Cantor(a) em Sessão</div>
@@ -385,41 +381,32 @@ def render():
                 musicas_acima = posicao_real - 1 if posicao_real > 0 else 0
                 musica_nome_atv = pedido_ativo.get('musica', '')
                 
-                # CARD 1: Apenas a posição atual e a música (sem o nome do cantor em cima)
+                # Identificar quem está imediatamente acima na fila (se houver)
+                cantor_acima = "Ninguém"
+                if posicao_real > 1 and len(pendentes_geral) >= (posicao_real - 1):
+                    cantor_acima = pendentes_geral[posicao_real - 2].get('cantor', 'outro cantor')
+
+                # CARTÃO 1: A SUA POSIÇÃO ACTUAL É (Centralizado)
                 st.markdown(f"""
-                    <div class="ff-card-status">
-                        <div class="ff-card-left">
-                            <div class="ff-icon-box">🎵</div>
-                            <div class="ff-card-text">
-                                <h4>A SUA POSIÇÃO ACTUAL É</h4>
-                                <p><b>{musica_nome_atv}</b></p>
-                            </div>
-                        </div>
-                        <div class="ff-badge-circle">
+                    <div class="ff-card-status-centered">
+                        <div class="ff-card-title-yellow">A SUA POSIÇÃO ACTUAL É</div>
+                        <div class="ff-card-subtitle">Título da Música que escolheu</div>
+                        <div class="ff-card-main-text">🎵 {musica_nome_atv}</div>
+                        <div class="ff-badge-circle-abs">
                             <span class="number">#{posicao_real}</span>
-                            <span class="label">Na Fila</span>
+                            <span class="label">Posição</span>
                         </div>
                     </div>
                 """, unsafe_allow_html=True)
                 
-                # CARD 2: Aguarde a sua vez (Informa quantas músicas e quem é o cantor acima)
+                # CARTÃO 2: AGUARDE A SUA VEZ (Centralizado)
                 if musicas_acima > 0:
-                    # Identificar o cantor que está logo acima (ou o anterior imediato na lista de pendentes)
-                    cantor_acima = "Outro participante"
-                    if posicao_real > 1:
-                        pedido_acima = pendentes_geral[posicao_real - 2]
-                        cantor_acima = pedido_acima.get("cantor", "Outro participante")
-                        
                     st.markdown(f"""
-                        <div class="ff-card-status" style="border-color: rgba(231, 76, 60, 0.4);">
-                            <div class="ff-card-left">
-                                <div class="ff-icon-box" style="background: linear-gradient(135deg, #c0392b, #e74c3c);">⏳</div>
-                                <div class="ff-card-text">
-                                    <h4 style="color: #e74c3c;">AGUARDE A SUA VEZ</h4>
-                                    <p><b>{musicas_acima}</b> música(s) à frente. Cantor acima: <b>{cantor_acima}</b></p>
-                                </div>
-                            </div>
-                            <div class="ff-badge-circle" style="border-color: #e74c3c;">
+                        <div class="ff-card-status-centered" style="border-color: rgba(231, 76, 60, 0.4);">
+                            <div class="ff-card-title-orange">AGUARDE A SUA VEZ</div>
+                            <div class="ff-card-subtitle">Estado na Fila ({musicas_acima} à frente)</div>
+                            <div class="ff-card-main-text" style="font-size: 14px; color: #f1c40f;">Assim que cantar o cantor <b>{cantor_acima}</b> será a sua vez!</div>
+                            <div class="ff-badge-circle-abs" style="border-color: #e74c3c;">
                                 <span class="number">#{musicas_acima}</span>
                                 <span class="label">Restam</span>
                             </div>
@@ -427,15 +414,11 @@ def render():
                     """, unsafe_allow_html=True)
                 else:
                     st.markdown(f"""
-                        <div class="ff-card-status" style="border-color: rgba(46, 204, 113, 0.4);">
-                            <div class="ff-card-left">
-                                <div class="ff-icon-box" style="background: linear-gradient(135deg, #27ae60, #2ecc71);">🔔</div>
-                                <div class="ff-card-text">
-                                    <h4 style="color: #2ecc71;">É A SUA VEZ DE CANTAR!</h4>
-                                    <p>Prepare-se para subir ao palco.</p>
-                                </div>
-                            </div>
-                            <div class="ff-badge-circle" style="border-color: #2ecc71;">
+                        <div class="ff-card-status-centered" style="border-color: rgba(46, 204, 113, 0.4);">
+                            <div class="ff-card-title-green">É A SUA VEZ DE CANTAR!</div>
+                            <div class="ff-card-subtitle">Palco Principal</div>
+                            <div class="ff-card-main-text" style="color: #2ecc71;">Prepare-se para subir ao palco agora.</div>
+                            <div class="ff-badge-circle-abs" style="border-color: #2ecc71;">
                                 <span class="number">#1</span>
                                 <span class="label">Palco</span>
                             </div>
@@ -451,7 +434,7 @@ def render():
                 st.info(f"ℹ️ Existem **{total_fila_geral} músicas** na fila de espera global.")
                 
                 st.markdown('<div class="ff-action-box">', unsafe_allow_html=True)
-                st.markdown("<h5 style='margin:0 0 6px 0; font-size:13px;'>🔍 PEDIR MÚSICA</h5>", unsafe_allow_html=True)
+                st.markdown("##### 🔍 PEDIR MÚSICA")
                 with st.form("form_cliente", clear_on_submit=True):
                     musica_inicial = st.text_input("Nome da música ou artista:", placeholder="Ex: Bruno Mars, Matias Damásio...")
                     submitted_inicial = st.form_submit_button("Pedir Música")
@@ -476,7 +459,7 @@ def render():
 
         renderizar_painel_fila(cantor, token_prestador)
             
-        # SECÇÃO COMO FUNCIONA (Compactada)
+        # SECÇÃO COMO FUNCIONA COMPACTA
         st.markdown('<div class="ff-how-it-works-title">🎧 COMO FUNCIONA?</div>', unsafe_allow_html=True)
         st.markdown("""
             <div class="ff-steps-container">
