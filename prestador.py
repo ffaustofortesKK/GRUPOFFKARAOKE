@@ -1,13 +1,7 @@
 from datetime import datetime
 import time
 import streamlit as st
-from db import (
-    guardar_prestador, 
-    obter_pedidos_musicas, 
-    obter_prestadores, 
-    guardar_pedido_musica, 
-    apagar_pedido_musica
-)
+from db import guardar_prestador, obter_pedidos_musicas, obter_prestadores, guardar_pedido_musica, apagar_pedido_musica
 
 def render():
     if "pedido_submetido" not in st.session_state:
@@ -63,7 +57,7 @@ def render():
             )
 
         # ==========================================
-        # 🎨 ESTILO CSS (ESTILO TABLET / DARK MODE)
+        # 🎨 ESTILO CSS (ESTILO TABLET / TEMA ESCURO)
         # ==========================================
         st.markdown(
             """
@@ -304,7 +298,7 @@ def render():
                                             todos_pedidos[global_idx_atual], todos_pedidos[global_idx_atual - 1] = todos_pedidos[global_idx_atual - 1], todos_pedidos[global_idx_atual]
                                             for item in todos_pedidos:
                                                 guardar_pedido_musica(item)
-                                        st.rerun()
+                                            st.rerun()
                             with b_down:
                                 if idx < total_pedidos - 1:
                                     if st.button("⬇️", key=f"down_{pedido_id}", use_container_width=True):
@@ -313,7 +307,7 @@ def render():
                                             todos_pedidos[global_idx_atual], todos_pedidos[global_idx_atual + 1] = todos_pedidos[global_idx_atual + 1], todos_pedidos[global_idx_atual]
                                             for item in todos_pedidos:
                                                 guardar_pedido_musica(item)
-                                        st.rerun()
+                                            st.rerun()
                             with b_del:
                                 if st.button("❌", key=f"del_{pedido_id}", use_container_width=True):
                                     apagar_pedido_musica(pedido_id)
@@ -410,7 +404,7 @@ def render():
 
         st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
-        # Rodapé estruturado com colunas nativas do Streamlit (Totalmente restaurado)
+        # Rodapé estruturado com colunas nativas do Streamlit
         st.markdown(
             """
             <style>
@@ -427,7 +421,9 @@ def render():
         )
 
         with st.container():
-            st.markdown('<div class="footer-box">', unsafe_allow_html=True)
+            st.markdown(
+                '<div class="footer-box">', unsafe_allow_html=True
+            )
             f1, f2, f3, f4 = st.columns(4)
 
             with f1:
@@ -467,11 +463,11 @@ def render():
                     """
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <div style="width: 38px; height: 38px; border: 1px solid #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <span style="color: #3b82f6; font-size: 16px;">🎵</span>
+                            <span style="color: #3b82f6; font-size: 16px;">⚡</span>
                         </div>
                         <div>
-                            <div style="color: #3b82f6; font-weight: bold; font-size: 10px; letter-spacing: 0.5px;">KARAOKE AO VIVO</div>
-                            <div style="color: #a1a1aa; font-size: 10px; line-height: 1.2;">Experiência interativa.</div>
+                            <div style="color: #3b82f6; font-weight: bold; font-size: 10px; letter-spacing: 0.5px;">TEMPO REAL</div>
+                            <div style="color: #a1a1aa; font-size: 10px; line-height: 1.2;">Atualizações instantâneas.</div>
                         </div>
                     </div>
                     """,
@@ -483,15 +479,15 @@ def render():
                     """
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <div style="width: 38px; height: 38px; border: 1px solid #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <span style="color: #10b981; font-size: 16px;">⭐</span>
+                            <span style="color: #10b981; font-size: 16px;">💎</span>
                         </div>
                         <div>
-                            <div style="color: #10b981; font-weight: bold; font-size: 10px; letter-spacing: 0.5px;">GRUPO FF</div>
+                            <div style="color: #10b981; font-weight: bold; font-size: 10px; letter-spacing: 0.5px;">GRUPO FF KARAOKE</div>
                             <div style="color: #a1a1aa; font-size: 10px; line-height: 1.2;">Qualidade garantida.</div>
                         </div>
                     </div>
                     """,
                     unsafe_allow_html=True,
                 )
-            
+
             st.markdown('</div>', unsafe_allow_html=True)
