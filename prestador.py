@@ -57,7 +57,7 @@ def render():
             )
 
         # ==========================================
-        # 🎨 ESTILO COM LARGURA AUMENTADA NOVAMENTE EM 20% (1613px)
+        # 🎨 ESTILO COM LARGURA AUMENTADA (1613px)
         # ==========================================
         st.markdown(
             """
@@ -125,7 +125,28 @@ def render():
             unsafe_allow_html=True,
         )
 
-        col_relogio, col_top_btn = st.columns([1, 1])
+        # Cabeçalho reorganizado em 3 colunas: [Logotipo / Identidade], [Relógio], [Botão Sair]
+        col_logo_info, col_relogio, col_top_btn = st.columns([2, 1, 0.8])
+
+        with col_logo_info:
+            nome_prestador = prestador_atual.get("nome", "Prestador") if prestador_atual else "Prestador"
+            estabelecimento_prestador = prestador_atual.get("estabelecimento", "") if prestador_atual else ""
+            sub_texto = f"📍 {estabelecimento_prestador}" if estabelecimento_prestador else "Painel de Controlo"
+
+            st.markdown(
+                f"""
+                <div style="display: flex; align-items: center; gap: 12px; background-color: #121215; border: 1px solid #27272a; padding: 6px 12px; border-radius: 8px; height: 50px;">
+                    <div style="width: 36px; height: 36px; border: 2px solid #eab308; border-radius: 50%; display: flex; align-items: center; justify-content: center; background-color: rgba(234, 179, 8, 0.1); flex-shrink: 0;">
+                        <span style="color: #eab308; font-size: 16px;">⭐</span>
+                    </div>
+                    <div style="overflow: hidden;">
+                        <div style="color: #eab308; font-weight: 800; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{nome_prestador}</div>
+                        <div style="color: #a1a1aa; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{sub_texto}</div>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
         with col_relogio:
             @st.fragment(run_every=3)
@@ -165,9 +186,9 @@ def render():
 
                 st.markdown(
                     f"""
-                    <div style="background-color: #121215; border: 2px solid #eab308; padding: 6px 10px; border-radius: 8px; text-align: center; box-shadow: 0 0 10px rgba(234, 179, 8, 0.3);">
-                        <div style="color: #eab308; font-size: 9px; font-weight: bold; letter-spacing: 1px; margin-bottom: 2px;">⏳ TEMPO RESTANTE</div>
-                        <div style="color: #ffffff; font-family: monospace; font-size: 22px; font-weight: 900; letter-spacing: 1px;">{tempo_formatado}</div>
+                    <div style="background-color: #121215; border: 1px solid #eab308; padding: 4px 8px; border-radius: 8px; text-align: center; height: 50px; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 0 10px rgba(234, 179, 8, 0.2);">
+                        <div style="color: #eab308; font-size: 8px; font-weight: bold; letter-spacing: 1px;">⏳ TEMPO RESTANTE</div>
+                        <div style="color: #ffffff; font-family: monospace; font-size: 16px; font-weight: 900; letter-spacing: 1px;">{tempo_formatado}</div>
                     </div>
                     """,
                     unsafe_allow_html=True,
@@ -176,7 +197,7 @@ def render():
             renderizar_relogio_topo()
 
         with col_top_btn:
-            st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 2px;'></div>", unsafe_allow_html=True)
             if st.button("🚪 Sair", use_container_width=True):
                 st.session_state.pedido_submetido = False
                 st.session_state.token_prestador = None
@@ -404,7 +425,7 @@ def render():
 
         st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
-        # Rodapé estruturado com colunas nativas do Streamlit
+        # Rodapé estruturado
         st.markdown(
             """
             <style>
