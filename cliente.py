@@ -74,7 +74,7 @@ def render():
             font-weight: 600;
         }
         
-        /* Caixa de Identificação do Cantor com Nome Animado (+50% tamanho) */
+        /* Caixa de Identificação do Cantor com Nome Animado */
         .ff-cantor-box {
             background: linear-gradient(135deg, #151026, #1e133a);
             border: 1px solid rgba(138, 43, 226, 0.4);
@@ -98,7 +98,7 @@ def render():
         }
 
         .ff-cantor-name {
-            font-size: 42px; /* Aumentado em 50% */
+            font-size: 42px;
             font-weight: 900;
             display: inline-flex;
             gap: 4px;
@@ -117,6 +117,23 @@ def render():
         .ff-cantor-name span:nth-child(5n+4) { color: #b19cd9; animation-delay: 0.6s; }
         .ff-cantor-name span:nth-child(5n+5) { color: #2ecc71; animation-delay: 0.8s; }
         
+        /* Animação de Oscilação para o Número de Posição sem Círculo */
+        @keyframes oscillate {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-6px) scale(1.08); }
+        }
+
+        .ff-number-oscillate {
+            display: inline-block;
+            font-size: 32px;
+            font-weight: 900;
+            color: #ffffff;
+            text-shadow: 0 0 15px rgba(157, 78, 221, 0.8);
+            animation: oscillate 1.8s infinite ease-in-out;
+            margin: 4px 0;
+            line-height: 1;
+        }
+
         /* Blocos de Notificação Centralizados */
         .ff-card-status-centered {
             background-color: #120e21;
@@ -126,7 +143,6 @@ def render():
             margin-bottom: 10px;
             text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            position: relative;
         }
         .ff-card-title-yellow {
             font-size: 13px;
@@ -164,40 +180,42 @@ def render():
             font-size: 16px;
             color: #ffffff;
             font-weight: 700;
-            margin: 0;
+            margin: 4px 0 0 0;
         }
-        
-        /* Círculo da posição absoluto para canto superior direito do cartão */
-        .ff-badge-circle-abs {
-            position: absolute;
-            top: 12px;
-            right: 14px;
-            border: 2px solid #9d4edd;
-            color: #ffffff;
-            background: rgba(157, 78, 221, 0.15);
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            box-shadow: 0 0 12px rgba(157, 78, 221, 0.4);
+
+        /* Retângulo em Rodapé com Letreiro Animado (Marquee) */
+        .ff-marquee-container {
+            background: linear-gradient(90deg, #120e21, #1a1333, #120e21);
+            border: 1px solid rgba(138, 43, 226, 0.4);
+            border-radius: 8px;
+            overflow: hidden;
+            padding: 8px 10px;
+            margin-top: 10px;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
+            white-space: nowrap;
         }
-        .ff-badge-circle-abs .number {
-            font-size: 18px;
-            font-weight: 900;
-            line-height: 1;
-            color: #ffffff;
-        }
-        .ff-badge-circle-abs .label {
-            font-size: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .ff-marquee-title {
+            font-size: 9px;
             color: #b19cd9;
-            margin-top: 1px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 3px;
             font-weight: 700;
+            text-align: center;
+        }
+        .ff-marquee-content {
+            display: inline-block;
+            animation: marquee 20s linear infinite;
+            font-size: 12px;
+            color: #ffffff;
+            font-weight: 600;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        .ff-marquee-container:hover .ff-marquee-content {
+            animation-play-state: paused;
         }
 
         /* Caixa de Ação Compacta */
@@ -329,7 +347,7 @@ def render():
         
         letras_html = "".join([f"<span>{char}</span>" if char != " " else "<span>&nbsp;</span>" for char in cantor])
         
-        # Bloco de Identificação do Cantor Animado (+50% tamanho)
+        # Bloco de Identificação do Cantor Animado
         st.markdown(f"""
             <div class="ff-cantor-box">
                 <div class="ff-cantor-label">🎤 Cantor(a) em Sessão</div>
@@ -381,34 +399,41 @@ def render():
                 musicas_acima = posicao_real - 1 if posicao_real > 0 else 0
                 musica_nome_atv = pedido_ativo.get('musica', '')
                 
-                # Identificar quem está imediatamente acima na fila (se houver)
+                # Identificar quem está imediatamente acima na fila
                 cantor_acima = "Ninguém"
                 if posicao_real > 1 and len(pendentes_geral) >= (posicao_real - 1):
                     cantor_acima = pendentes_geral[posicao_real - 2].get('cantor', 'outro cantor')
 
-                # CARTÃO 1: A SUA POSIÇÃO ACTUAL É (Centralizado)
+                # Preparar texto da fila para o rodapé animado
+                itens_fila_str = " &nbsp;&nbsp;|&nbsp;&nbsp; ".join([f"#{i+1} - {item.get('cantor', 'Cantor')} ({item.get('musica', 'Música')})" for i, item in enumerate(pendentes_geral)])
+                if not itens_fila_str:
+                    itens_fila_str = "A fila está vazia no momento."
+
+                # CARTÃO 1: A SUA POSIÇÃO ACTUAL É (Sem círculo, número negrito e oscilante)
                 st.markdown(f"""
                     <div class="ff-card-status-centered">
                         <div class="ff-card-title-yellow">A SUA POSIÇÃO ACTUAL É</div>
-                        <div class="ff-card-subtitle">Título da Música que escolheu</div>
+                        <div class="ff-number-oscillate">#{posicao_real}</div>
+                        <div class="ff-card-subtitle" style="margin-top: 4px;">Título da Música que escolheu</div>
                         <div class="ff-card-main-text">🎵 {musica_nome_atv}</div>
-                        <div class="ff-badge-circle-abs">
-                            <span class="number">#{posicao_real}</span>
-                            <span class="label">Posição</span>
-                        </div>
                     </div>
                 """, unsafe_allow_html=True)
                 
-                # CARTÃO 2: AGUARDE A SUA VEZ (Centralizado)
+                # CARTÃO 2: AGUARDE A SUA VEZ (Com o texto exato e retângulo de rodapé para a fila)
                 if musicas_acima > 0:
                     st.markdown(f"""
                         <div class="ff-card-status-centered" style="border-color: rgba(231, 76, 60, 0.4);">
                             <div class="ff-card-title-orange">AGUARDE A SUA VEZ</div>
-                            <div class="ff-card-subtitle">Estado na Fila ({musicas_acima} à frente)</div>
-                            <div class="ff-card-main-text" style="font-size: 14px; color: #f1c40f;">Assim que cantar o cantor <b>{cantor_acima}</b> será a sua vez!</div>
-                            <div class="ff-badge-circle-abs" style="border-color: #e74c3c;">
-                                <span class="number">#{musicas_acima}</span>
-                                <span class="label">Restam</span>
+                            <div class="ff-card-main-text" style="font-size: 14px; color: #f1c40f; margin-bottom: 8px;">
+                                Assim que cantar o cantor <b>{cantor_acima}</b> será a sua vez!
+                            </div>
+                            <div class="ff-card-subtitle" style="font-size: 10px;">({musicas_acima} músicas à sua frente)</div>
+                            
+                            <div class="ff-marquee-container">
+                                <div class="ff-marquee-title">🎶 Fila de Espera em Direto 🎶</div>
+                                <div style="overflow: hidden; width: 100%;">
+                                    <div class="ff-marquee-content">{itens_fila_str}</div>
+                                </div>
                             </div>
                         </div>
                     """, unsafe_allow_html=True)
@@ -416,11 +441,13 @@ def render():
                     st.markdown(f"""
                         <div class="ff-card-status-centered" style="border-color: rgba(46, 204, 113, 0.4);">
                             <div class="ff-card-title-green">É A SUA VEZ DE CANTAR!</div>
-                            <div class="ff-card-subtitle">Palco Principal</div>
-                            <div class="ff-card-main-text" style="color: #2ecc71;">Prepare-se para subir ao palco agora.</div>
-                            <div class="ff-badge-circle-abs" style="border-color: #2ecc71;">
-                                <span class="number">#1</span>
-                                <span class="label">Palco</span>
+                            <div class="ff-card-main-text" style="color: #2ecc71; margin-bottom: 8px;">Prepare-se para subir ao palco agora.</div>
+                            
+                            <div class="ff-marquee-container">
+                                <div class="ff-marquee-title">🎶 Fila de Espera em Direto 🎶</div>
+                                <div style="overflow: hidden; width: 100%;">
+                                    <div class="ff-marquee-content">{itens_fila_str}</div>
+                                </div>
                             </div>
                         </div>
                     """, unsafe_allow_html=True)
