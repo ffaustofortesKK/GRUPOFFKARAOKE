@@ -184,6 +184,29 @@ def render():
                 st.session_state.aprovado = False
                 st.rerun()
 
+        # Exibição do Nome do Prestador e Estabelecimento Ativo
+        nome_prestador_txt = prestador_atual.get("nome", "Prestador") if prestador_atual else "Prestador"
+        estabelecimento_txt = prestador_atual.get("estabelecimento", "") if prestador_atual else ""
+        sub_info = f" — {estabelecimento_txt}" if estabelecimento_txt else ""
+
+        st.markdown(
+            f"""
+            <div style="background-color: #121215; border: 1px solid #8b5cf6; padding: 10px 16px; border-radius: 8px; margin-top: 10px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 18px;">🎙️</span>
+                    <div>
+                        <div style="color: #c084fc; font-size: 10px; font-weight: bold; letter-spacing: 0.5px;">PRESTADOR EM SESSÃO</div>
+                        <div style="color: #ffffff; font-size: 14px; font-weight: bold;">{nome_prestador_txt}{sub_info}</div>
+                    </div>
+                </div>
+                <div style="color: #eab308; font-size: 12px; font-weight: bold; background: rgba(234, 179, 8, 0.1); padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(234, 179, 8, 0.3);">
+                    🟢 Ativo
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
         st.markdown(
             """
             <div style="margin: 8px 0px 14px 0px; text-align: center;">
@@ -298,7 +321,7 @@ def render():
                                             todos_pedidos[global_idx_atual], todos_pedidos[global_idx_atual - 1] = todos_pedidos[global_idx_atual - 1], todos_pedidos[global_idx_atual]
                                             for item in todos_pedidos:
                                                 guardar_pedido_musica(item)
-                                        st.rerun()
+                                            st.rerun()
                             with b_down:
                                 if idx < total_pedidos - 1:
                                     if st.button("⬇️", key=f"down_{pedido_id}", use_container_width=True):
@@ -307,7 +330,7 @@ def render():
                                             todos_pedidos[global_idx_atual], todos_pedidos[global_idx_atual + 1] = todos_pedidos[global_idx_atual + 1], todos_pedidos[global_idx_atual]
                                             for item in todos_pedidos:
                                                 guardar_pedido_musica(item)
-                                        st.rerun()
+                                            st.rerun()
                             with b_del:
                                 if st.button("❌", key=f"del_{pedido_id}", use_container_width=True):
                                     apagar_pedido_musica(pedido_id)
