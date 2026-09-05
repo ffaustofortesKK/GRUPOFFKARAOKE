@@ -16,7 +16,7 @@ def render():
     if "aprovado" not in st.session_state:
         st.session_state.aprovado = False
 
-    # 2. SINCRONIZAÇÃO DE DADOS DO PRESTADOR
+    # 2. SINCRONIZAÇÃO DE DADOS DO PRESTADOR NA BASE DE DADOS
     prestador_atual = None
     if st.session_state.token_prestador:
         prestadores = obter_prestadores() or []
@@ -33,14 +33,13 @@ def render():
             elif status_atual == "pendente":
                 st.session_state.pedido_submetido = True
         else:
-            # Se o token não for encontrado na BD, limpa a sessão
             st.session_state.token_prestador = None
             st.session_state.pedido_submetido = False
             st.session_state.aprovado = False
             st.session_state.estado_pedido = "pendente"
 
     # =========================================================================
-    # 3. BLOQUEIO ABSOLUTO DE ECRÃ (SE ESTIVER PENDENTE)
+    # 3. BLOQUEIO ABSOLUTO (SE ESTIVER PENDENTE) - IMPEDE O FORMULÁRIO DE APARECER
     # =========================================================================
     if st.session_state.pedido_submetido and st.session_state.get("estado_pedido", "pendente") == "pendente":
         st.markdown(
@@ -68,7 +67,7 @@ def render():
         )
         time.sleep(3)
         st.rerun()
-        return
+        st.stop()  # Para a execução aqui garantindo que o formulário abaixo nunca é renderizado
 
     # ==========================================
     # 4. SE ESTIVER APROVADO: Painel Operacional
