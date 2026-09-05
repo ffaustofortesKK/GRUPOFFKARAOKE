@@ -411,28 +411,28 @@ def render():
     # 3. SE ESTIVER PENDENTE: Fundo totalmente preto, Logotipo com anéis rotativos e Rodapé animado
     if st.session_state.pedido_submetido:
         st.markdown(
-            f"""
+            """
             <style>
-                .stApp {{
+                .stApp {
                     background-color: #000000 !important;
-                }}
-                header[data-testid="stHeader"] {{
+                }
+                header[data-testid="stHeader"] {
                     background-color: transparent !important;
-                }}
-                .block-container {{
+                }
+                .block-container {
                     background-color: #000000 !important;
                     max-width: 500px !important;
                     padding-top: 2rem !important;
-                }}
-                @keyframes spinLeft {{
-                    0% {{ transform: rotate(0deg); }}
-                    100% {{ transform: rotate(-360deg); }}
-                }}
-                @keyframes spinRight {{
-                    0% {{ transform: rotate(0deg); }}
-                    100% {{ transform: rotate(360deg); }}
-                }}
-                .logo-container {{
+                }
+                @keyframes spinLeft {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(-360deg); }
+                }
+                @keyframes spinRight {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+                .logo-container {
                     position: relative;
                     width: 140px;
                     height: 140px;
@@ -440,72 +440,77 @@ def render():
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                }}
-                .ring-red {{
+                }
+                .ring-red {
                     position: absolute;
                     width: 135px;
                     height: 135px;
                     border: 3px dashed #ef4444;
                     border-radius: 50%;
                     animation: spinLeft 6s linear infinite;
-                }}
-                .ring-yellow {{
+                }
+                .ring-yellow {
                     position: absolute;
                     width: 155px;
                     height: 155px;
                     border: 3px dashed #eab308;
                     border-radius: 50%;
                     animation: spinRight 8s linear infinite;
-                }}
-                .logo-img {{
+                }
+                .logo-img {
                     width: 100px;
                     height: 100px;
                     border-radius: 50%;
                     object-fit: cover;
                     z-index: 2;
-                }}
-                @keyframes pulseDot1 {{
-                    0%, 100% {{ transform: scale(0.6); opacity: 0.3; }}
-                    50% {{ transform: scale(1.5); opacity: 1; }}
-                }}
-                @keyframes pulseDot2 {{
-                    0%, 100% {{ transform: scale(1.5); opacity: 1; }}
-                    50% {{ transform: scale(0.6); opacity: 0.3; }}
-                }}
-                @keyframes pulseDot3 {{
-                    0%, 100% {{ transform: scale(0.8); opacity: 0.4; }}
-                    50% {{ transform: scale(1.7); opacity: 1; }}
-                }}
-                .dot-container {{
+                }
+                @keyframes pulseDot1 {
+                    0%, 100% { transform: scale(0.6); opacity: 0.3; }
+                    50% { transform: scale(1.5); opacity: 1; }
+                }
+                @keyframes pulseDot2 {
+                    0%, 100% { transform: scale(1.5); opacity: 1; }
+                    50% { transform: scale(0.6); opacity: 0.3; }
+                }
+                @keyframes pulseDot3 {
+                    0%, 100% { transform: scale(0.8); opacity: 0.4; }
+                    50% { transform: scale(1.7); opacity: 1; }
+                }
+                .dot-container {
                     display: flex;
                     justify-content: center;
                     align-items: center;
                     gap: 14px;
                     margin-top: 25px;
-                }}
-                .dot-1 {{
+                }
+                .dot-1 {
                     width: 8px;
                     height: 8px;
                     background-color: #ef4444;
                     border-radius: 50%;
                     animation: pulseDot1 1.2s infinite ease-in-out;
-                }}
-                .dot-2 {{
+                }
+                .dot-2 {
                     width: 14px;
                     height: 14px;
                     background-color: #eab308;
                     border-radius: 50%;
                     animation: pulseDot2 1.2s infinite ease-in-out;
-                }}
-                .dot-3 {{
+                }
+                .dot-3 {
                     width: 11px;
                     height: 11px;
                     background-color: #c084fc;
                     border-radius: 50%;
                     animation: pulseDot3 1.2s infinite ease-in-out;
-                }}
+                }
             </style>
+            """,
+            unsafe_allow_html=True,
+        )
 
+        st.markdown(
+            f"""
             <div style="background-color: #000000; padding: 10px; text-align: center;">
                 <div class="logo-container">
                     <div class="ring-yellow"></div>
@@ -525,9 +530,10 @@ def render():
             """,
             unsafe_allow_html=True,
         )
+        
         time.sleep(3)
         st.rerun()
-        return  # <-- ESTE RETURN É CRUCIAL PARA PARAR O SCRIPT AQUI E NÃO MOSTRAR O REGISTO EM BAIXO!
+        return  # Impede estritamente que o resto do código execute em baixo
 
     # ==========================================
     # 🎨 4. TELA INICIAL: REGISTO / LOGIN
