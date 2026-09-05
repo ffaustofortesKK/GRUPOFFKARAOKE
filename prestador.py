@@ -233,6 +233,7 @@ def render():
 
             nome_prestador_txt = prestador_atual.get("nome", "Prestador") if prestador_atual else "Prestador"
             estabelecimento_txt = prestador_atual.get("estabelecimento", "") if prestador_atual else ""
+            video_fundo_atual = prestador_atual.get("video_fundo", "") if prestador_atual else ""
 
             st.markdown(
                 f"""
@@ -260,13 +261,25 @@ def render():
                 unsafe_allow_html=True,
             )
 
-            # NOTA INFORMATIVA LOGO ABAIXO DO LOGOTIPO
+            # SECÇÃO DE CONFIGURAÇÃO DO VÍDEO CLIPE NO PAINEL LATERAL
+            with st.container():
+                st.markdown('<div style="color: #c084fc; font-size: 10px; font-weight: bold; margin-bottom: 3px;">🎬 VÍDEO CLIPE DE FUNDO (TV)</div>', unsafe_allow_html=True)
+                novo_video_fundo = st.text_input("Vídeo Clipe de Fundo", value=video_fundo_atual, placeholder="Cole o link do vídeo...", label_visibility="collapsed", key="input_atualizar_video")
+                if st.button("💾 Guardar Vídeo", use_container_width=True):
+                    if prestador_atual:
+                        prestador_atual["video_fundo"] = novo_video_fundo.strip()
+                        guardar_prestador(prestador_atual)
+                        st.success("Vídeo de fundo atualizado com sucesso!")
+                        time.sleep(0.5)
+                        st.rerun()
+
+            # NOTA INFORMATIVA
             st.markdown(
                 """
-                <div style="background-color: #0d0d10; border: 1px solid #3b2c60; padding: 10px 10px; border-radius: 4px; margin-bottom: 6px; font-size: 10px; color: #d4d4d8; line-height: 1.3;">
+                <div style="background-color: #0d0d10; border: 1px solid #3b2c60; padding: 10px 10px; border-radius: 4px; margin-top: 6px; margin-bottom: 6px; font-size: 10px; color: #d4d4d8; line-height: 1.3;">
                     <div style="color: #c084fc; font-weight: bold; margin-bottom: 3px;">📌 NOTAS IMPORTANTES:</div>
-                    <div>• <b>Tela do Código QR:</b> Abra o link/botão "TV" num projetor ou ecrã secundário para os clientes verem o QR Code em tamanho grande.</div>
-                    <div style="margin-top: 4px;">• <b>Ícone Cliente:</b> O link/botão "Cliente" serve para os clientes lerem o código ou abrirem no telemóvel para pedirem músicas.</div>
+                    <div>• <b>Tela do Código QR:</b> Abra o link/botão "TV" num projetor ou ecrã secundário.</div>
+                    <div style="margin-top: 4px;">• <b>Ícone Cliente:</b> O link/botão "Cliente" serve para os clientes pedirem músicas.</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -536,7 +549,7 @@ def render():
                     label_visibility="collapsed",
                 )
 
-            # CAMPO DE VÍDEO CLIPE / FUNDO RESTAURADO
+            # CAMPO DE VÍDEO CLIPE / FUNDO RESTAURADO NO REGISTO
             c_emo5, c_inp5 = st.columns([0.08, 0.92])
             with c_emo5:
                 st.markdown('<div style="font-size: 18px; text-align: center; line-height: 1.5;">🎬</div>', unsafe_allow_html=True)
