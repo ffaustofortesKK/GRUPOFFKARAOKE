@@ -198,10 +198,10 @@ def render():
                 f"""
                 <div style="background-color: #0d0d10; border: 1px solid #8b5cf6; padding: 6px 8px; border-radius: 4px; margin-bottom: 4px;">
                     <div style="display: flex; align-items: center; gap: 6px;">
-                        <span style="font-size: 16px;">🎙️</span>
+                        <span style="font-size: 22px;">🎙️</span>
                         <div>
                             <div style="color: #c084fc; font-size: 8px; font-weight: bold;">PRESTADOR</div>
-                            <div style="color: #ffffff; font-size: 13px; font-weight: bold; line-height: 1.1;">{nome_prestador_txt}</div>
+                            <div style="color: #ffffff; font-size: 25px; font-weight: bold; line-height: 1.1;">{nome_prestador_txt}</div>
                             <div style="color: #a1a1aa; font-size: 9px;">{estabelecimento_txt}</div>
                         </div>
                     </div>
@@ -409,14 +409,75 @@ def render():
             st.rerun()
         return
 
-    # 3. SE ESTIVER PENDENTE
+    # 3. SE ESTIVER PENDENTE (Fundo totalmente preto + Animação de Rodapé com bolinhas)
     if st.session_state.pedido_submetido:
         st.markdown(
             """
-                <div style="background-color: #050507; padding: 15px; text-align: center; border-radius: 4px; max-width: 400px; margin: 15px auto;">
-                    <h3 style="color: #ffffff; font-size: 15px; margin-bottom: 2px;">Aguardando Aprovação</h3>
-                    <p style="color: #d4d4d8; font-size: 11px; margin-bottom: 2px;">O seu registo está a aguardar validação do Administrador.</p>
+            <style>
+                .stApp {
+                    background-color: #000000 !important;
+                }
+                header[data-testid="stHeader"] {
+                    background-color: transparent !important;
+                }
+                .block-container {
+                    background-color: #000000 !important;
+                    max-width: 500px !important;
+                    padding-top: 4rem !important;
+                }
+                @keyframes pulseDot1 {
+                    0%, 100% { transform: scale(0.6); opacity: 0.3; }
+                    50% { transform: scale(1.4); opacity: 1; }
+                }
+                @keyframes pulseDot2 {
+                    0%, 100% { transform: scale(1.4); opacity: 1; }
+                    50% { transform: scale(0.6); opacity: 0.3; }
+                }
+                @keyframes pulseDot3 {
+                    0%, 100% { transform: scale(0.8); opacity: 0.4; }
+                    50% { transform: scale(1.6); opacity: 1; }
+                }
+                .dot-container {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    gap: 12px;
+                    margin-top: 30px;
+                }
+                .dot-1 {
+                    width: 8px;
+                    height: 8px;
+                    background-color: #eab308;
+                    border-radius: 50%;
+                    animation: pulseDot1 1.2s infinite ease-in-out;
+                }
+                .dot-2 {
+                    width: 14px;
+                    height: 14px;
+                    background-color: #c084fc;
+                    border-radius: 50%;
+                    animation: pulseDot2 1.2s infinite ease-in-out;
+                }
+                .dot-3 {
+                    width: 10px;
+                    height: 10px;
+                    background-color: #3b82f6;
+                    border-radius: 50%;
+                    animation: pulseDot3 1.2s infinite ease-in-out;
+                }
+            </style>
+
+            <div style="background-color: #000000; padding: 30px 20px; text-align: center; border-radius: 8px; border: 1px solid #27272a; margin-top: 40px;">
+                <div style="font-size: 32px; margin-bottom: 10px;">⏳</div>
+                <h3 style="color: #eab308; font-size: 20px; font-weight: bold; margin-bottom: 10px;">Aguardando Aprovação</h3>
+                <p style="color: #d4d4d8; font-size: 13px; margin-bottom: 20px;">O seu registo está a aguardar validação do Administrador.</p>
+                
+                <div class="dot-container">
+                    <div class="dot-1"></div>
+                    <div class="dot-2"></div>
+                    <div class="dot-3"></div>
                 </div>
+            </div>
             """,
             unsafe_allow_html=True,
         )
