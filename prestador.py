@@ -112,7 +112,6 @@ def render():
                     border-color: #eab308 !important;
                     color: #eab308 !important;
                 }
-                /* Força fundo branco e visibilidade total nos botões da fila */
                 div[data-testid="column"] button {
                     background-color: #ffffff !important;
                     color: #000000 !important;
@@ -409,68 +408,113 @@ def render():
             st.rerun()
         return
 
-    # 3. SE ESTIVER PENDENTE (Fundo totalmente preto + Animação de Rodapé com bolinhas)
+    # 3. SE ESTIVER PENDENTE: Fundo totalmente preto, Logotipo com anéis rotativos e Rodapé animado
     if st.session_state.pedido_submetido:
         st.markdown(
-            """
+            f"""
             <style>
-                .stApp {
+                .stApp {{
                     background-color: #000000 !important;
-                }
-                header[data-testid="stHeader"] {
+                }}
+                header[data-testid="stHeader"] {{
                     background-color: transparent !important;
-                }
-                .block-container {
+                }}
+                .block-container {{
                     background-color: #000000 !important;
                     max-width: 500px !important;
-                    padding-top: 4rem !important;
-                }
-                @keyframes pulseDot1 {
+                    padding-top: 3rem !important;
+                }}
+                @keyframes spinLeft {{
+                    0% {{ transform: rotate(0deg); }}
+                    100% {{ transform: rotate(-360deg); }}
+                }}
+                @keyframes spinRight {{
+                    0% {{ transform: rotate(0deg); }}
+                    100% {{ transform: rotate(360deg); }}
+                }}
+                .logo-container {{
+                    position: relative;
+                    width: 140px;
+                    height: 140px;
+                    margin: 0 auto 20px auto;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }}
+                .ring-red {{
+                    position: absolute;
+                    width: 135px;
+                    height: 135px;
+                    border: 3px dashed #ef4444;
+                    border-radius: 50%;
+                    animation: spinLeft 6s linear infinite;
+                }}
+                .ring-yellow {{
+                    position: absolute;
+                    width: 155px;
+                    height: 155px;
+                    border: 3px dashed #eab308;
+                    border-radius: 50%;
+                    animation: spinRight 8s linear infinite;
+                }}
+                .logo-img {{
+                    width: 100px;
+                    height: 100px;
+                    border-radius: 50%;
+                    object-fit: cover;
+                    z-index: 2;
+                }}
+                @keyframes pulseDot1 {{
                     0%, 100% { transform: scale(0.6); opacity: 0.3; }
-                    50% { transform: scale(1.4); opacity: 1; }
-                }
-                @keyframes pulseDot2 {
-                    0%, 100% { transform: scale(1.4); opacity: 1; }
+                    50% { transform: scale(1.5); opacity: 1; }
+                }}
+                @keyframes pulseDot2 {{
+                    0%, 100% { transform: scale(1.5); opacity: 1; }
                     50% { transform: scale(0.6); opacity: 0.3; }
-                }
-                @keyframes pulseDot3 {
+                }}
+                @keyframes pulseDot3 {{
                     0%, 100% { transform: scale(0.8); opacity: 0.4; }
-                    50% { transform: scale(1.6); opacity: 1; }
-                }
-                .dot-container {
+                    50% { transform: scale(1.7); opacity: 1; }
+                }}
+                .dot-container {{
                     display: flex;
                     justify-content: center;
                     align-items: center;
-                    gap: 12px;
-                    margin-top: 30px;
-                }
-                .dot-1 {
+                    gap: 14px;
+                    margin-top: 35px;
+                }}
+                .dot-1 {{
                     width: 8px;
                     height: 8px;
-                    background-color: #eab308;
+                    background-color: #ef4444;
                     border-radius: 50%;
                     animation: pulseDot1 1.2s infinite ease-in-out;
-                }
-                .dot-2 {
+                }}
+                .dot-2 {{
                     width: 14px;
                     height: 14px;
-                    background-color: #c084fc;
+                    background-color: #eab308;
                     border-radius: 50%;
                     animation: pulseDot2 1.2s infinite ease-in-out;
-                }
-                .dot-3 {
-                    width: 10px;
-                    height: 10px;
-                    background-color: #3b82f6;
+                }}
+                .dot-3 {{
+                    width: 11px;
+                    height: 11px;
+                    background-color: #c084fc;
                     border-radius: 50%;
                     animation: pulseDot3 1.2s infinite ease-in-out;
-                }
+                }}
             </style>
 
-            <div style="background-color: #000000; padding: 30px 20px; text-align: center; border-radius: 8px; border: 1px solid #27272a; margin-top: 40px;">
-                <div style="font-size: 32px; margin-bottom: 10px;">⏳</div>
-                <h3 style="color: #eab308; font-size: 20px; font-weight: bold; margin-bottom: 10px;">Aguardando Aprovação</h3>
-                <p style="color: #d4d4d8; font-size: 13px; margin-bottom: 20px;">O seu registo está a aguardar validação do Administrador.</p>
+            <div style="background-color: #000000; padding: 25px 20px; text-align: center; border-radius: 8px; margin-top: 20px;">
+                <div class="logo-container">
+                    <div class="ring-yellow"></div>
+                    <div class="ring-red"></div>
+                    <img src="{LINK_LOGO}" class="logo-img" />
+                </div>
+                
+                <h3 style="color: #eab308; font-size: 21px; font-weight: bold; margin-bottom: 8px;">Aguardando Aprovação</h3>
+                <p style="color: #d4d4d8; font-size: 13px; margin-bottom: 10px;">O seu registo está a aguardar validação do Administrador.</p>
                 
                 <div class="dot-container">
                     <div class="dot-1"></div>
@@ -486,7 +530,7 @@ def render():
         return
 
     # ==========================================
-    # 🎨 4. TELA INICIAL: REGISTO / LOGIN AJUSTADO
+    # 🎨 4. TELA INICIAL: REGISTO / LOGIN
     # ==========================================
     st.markdown(
         f"""
