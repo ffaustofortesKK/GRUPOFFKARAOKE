@@ -288,78 +288,81 @@ def render():
                 st.markdown("<div style='height: 2px;'></div>", unsafe_allow_html=True)
 
                 @st.fragment(run_every=3)
-                def renderizar_fila_pedidos():
-                    try:
-                        todos_pedidos = obter_pedidos_musicas() or []
-                    except Exception:
-                        todos_pedidos = []
+def renderizar_fila_pedidos():
+    try:
+        todos_pedidos = obter_pedidos_musicas() or []
+    except Exception:
+        todos_pedidos = []
 
-                    token_ativo = str(st.session_state.get("token_prestador", ""))
-                    lista_pedidos = [p for p in todos_pedidos if p.get("status", "pendente") == "pendente" and (str(p.get("token_prestador", "")) in ["", "None", token_ativo])]
-                    total_pedidos = len(lista_pedidos)
+    token_ativo = str(st.session_state.get("token_prestador", ""))
+    lista_pedidos = [p for p in todos_pedidos if p.get("status", "pendente") == "pendente" and (str(p.get("token_prestador", "")) in ["", "None", token_ativo])]
+    total_pedidos = len(lista_pedidos)
 
-                    st.markdown(
-                        """
-                        <style>
-                            /* Força o fundo branco nos botões específicos desta área / gerais */
-                            div[data-testid="column"] button {
-                                background-color: #ffffff !important;
-                                color: #000000 !important;
-                                border: 1px solid #d4d4d8 !important;
-                            }
-                            div[data-testid="column"] button:hover {
-                                background-color: #f4f4f5 !important;
-                                border-color: #eab308 !important;
-                                color: #000000 !important;
-                            }
-                        </style>
-                        """,
-                        unsafe_allow_html=True,
-                    )
+    st.markdown(
+        """
+        <style>
+            /* Força fundo branco e visibilidade total nos botões da fila */
+            div[data-testid="column"] button {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+                border: 1px solid #d4d4d8 !important;
+                font-size: 10px !important;
+                font-weight: bold !important;
+            }
+            div[data-testid="column"] button:hover {
+                background-color: #f4f4f5 !important;
+                border-color: #eab308 !important;
+                color: #000000 !important;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
-                    st.markdown(
-                        f"""
-                            <div class="box-container" style="max-height: 140px; overflow-y: auto;">
-                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; border-bottom: 1px solid #27272a; padding-bottom: 2px;">
-                                    <span style="color: #c084fc; font-weight: bold; font-size: 10px;">👥 FILA DE PEDIDOS ({total_pedidos})</span>
-                                </div>
-                        """,
-                        unsafe_allow_html=True,
-                    )
+    st.markdown(
+        f"""
+            <div class="box-container" style="max-height: 150px; overflow-y: auto;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; border-bottom: 1px solid #27272a; padding-bottom: 2px;">
+                    <span style="color: #c084fc; font-weight: bold; font-size: 10px;">👥 FILA DE PEDIDOS ({total_pedidos})</span>
+                </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
-                    if total_pedidos > 0:
-                        for idx, pedido in enumerate(lista_pedidos):
-                            musica = pedido.get("musica", "Desconhecida")
-                            cantor = pedido.get("cantor", "Convidado")
-                            pedido_id = pedido.get("id") or pedido.get("timestamp") or idx
+    if total_pedidos > 0:
+        for idx, pedido in enumerate(lista_pedidos):
+            musica = pedido.get("musica", "Desconhecida")
+            cantor = pedido.get("cantor", "Convidado")
+            pedido_id = pedido.get("id") or pedido.get("timestamp") or idx
 
-                            col_info, col_botoes = st.columns([3, 1.2])
-                            with col_info:
-                                st.markdown(
-                                    f"""
-                                    <div style="background-color: #0d0d10; border: 1px solid #27272a; border-radius: 3px; padding: 2px 6px; display: flex; align-items: center; gap: 4px; height: 24px; margin-bottom: 3px;">
-                                        <span style="color: #c084fc; font-weight: bold; font-size: 9px;">{idx+1}º</span>
-                                        <span style="color: #ffffff; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{musica} — <span style="color: #a1a1aa;">{cantor}</span></span>
-                                    </div>
-                                    """,
-                                    unsafe_allow_html=True,
-                                )
-                            with col_botoes:
-                                b_up, b_down, b_del = st.columns(3)
-                                with b_up:
-                                    if idx > 0 and st.button("⬆️", key=f"up_{pedido_id}", use_container_width=True):
-                                        pass
-                                with b_down:
-                                    if idx < total_pedidos - 1 and st.button("⬇️", key=f"down_{pedido_id}", use_container_width=True):
-                                        pass
-                                with b_del:
-                                    if st.button("❌", key=f"del_{pedido_id}", use_container_width=True):
-                                        apagar_pedido_musica(pedido_id)
-                                        st.rerun()
-                    else:
-                        st.markdown("<p style='color: #a1a1aa; margin: 0; font-size: 10px;'>Sem pedidos na fila.</p>", unsafe_allow_html=True)
+            # Alargamos o espaço dedicado aos botões para caberem confortavelmente
+            col_info, col_botoes = st.columns([2.2, 1.8])
+            with col_info:
+                st.markdown(
+                    f"""
+                    <div style="background-color: #0d0d10; border: 1px solid #27272a; border-radius: 3px; padding: 2px 6px; display: flex; align-items: center; gap: 4px; height: 26px; margin-bottom: 3px;">
+                        <span style="color: #c084fc; font-weight: bold; font-size: 9px;">{idx+1}º</span>
+                        <span style="color: #ffffff; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{musica} — <span style="color: #a1a1aa;">{cantor}</span></span>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+            with col_botoes:
+                b_up, b_down, b_del = st.columns(3)
+                with b_up:
+                    if idx > 0 and st.button("⬆", key=f"up_{pedido_id}", use_container_width=True):
+                        pass
+                with b_down:
+                    if idx < total_pedidos - 1 and st.button("⬇", key=f"down_{pedido_id}", use_container_width=True):
+                        pass
+                with b_del:
+                    if st.button("✕", key=f"del_{pedido_id}", use_container_width=True):
+                        apagar_pedido_musica(pedido_id)
+                        st.rerun()
+    else:
+        st.markdown("<p style='color: #a1a1aa; margin: 0; font-size: 10px;'>Sem pedidos na fila.</p>", unsafe_allow_html=True)
 
-                    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
                 renderizar_fila_pedidos()
             
