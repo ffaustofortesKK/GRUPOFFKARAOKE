@@ -62,23 +62,23 @@ def render():
             """
             <style>
                 .stApp {
-                    background-color: #08080a !important;
+                    background-color: #000000 !important;
                 }
                 .block-container {
-                    max-width: 1344px !important;
+                    max-width: 1075px !important;
                     padding-top: 1.8rem !important;
                     padding-bottom: 2.2rem !important;
                     padding-left: 2rem !important;
                     padding-right: 2rem !important;
-                    background-color: #0b0714 !important;
+                    background-color: #000000 !important;
                     border-radius: 20px;
-                    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+                    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
                     border: 1px solid rgba(138, 43, 226, 0.25);
                     margin-top: 1.5rem;
                     margin-bottom: 1.5rem;
                 }
                 .box-container {
-                    background-color: #0c0c0e;
+                    background-color: #050507;
                     border: 1px solid #27272a;
                     border-radius: 8px;
                     padding: 12px 16px;
@@ -99,7 +99,7 @@ def render():
                     padding: 0px !important;
                 }
                 .stButton button {
-                    background-color: #121215 !important;
+                    background-color: #0d0d10 !important;
                     color: #ffffff !important;
                     border: 1px solid #27272a !important;
                     border-radius: 6px !important;
@@ -167,7 +167,7 @@ def render():
 
                 st.markdown(
                     f"""
-                    <div style="background-color: #121215; border: 2px solid #eab308; padding: 6px 10px; border-radius: 8px; text-align: center; box-shadow: 0 0 10px rgba(234, 179, 8, 0.3); margin-bottom: 8px;">
+                    <div style="background-color: #0d0d10; border: 2px solid #eab308; padding: 6px 10px; border-radius: 8px; text-align: center; box-shadow: 0 0 10px rgba(234, 179, 8, 0.3); margin-bottom: 8px;">
                         <div style="color: #eab308; font-size: 9px; font-weight: bold; letter-spacing: 1px; margin-bottom: 2px;">⏳ TEMPO RESTANTE</div>
                         <div style="color: #ffffff; font-family: monospace; font-size: 20px; font-weight: 900; letter-spacing: 1px;">{tempo_formatado}</div>
                     </div>
@@ -182,7 +182,7 @@ def render():
 
             st.markdown(
                 f"""
-                <div style="background-color: #121215; border: 1px solid #8b5cf6; padding: 12px 14px; border-radius: 8px; margin-bottom: 8px;">
+                <div style="background-color: #0d0d10; border: 1px solid #8b5cf6; padding: 12px 14px; border-radius: 8px; margin-bottom: 8px;">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <span style="font-size: 22px;">🎙️</span>
                         <div>
@@ -298,7 +298,7 @@ def render():
                             with col_info:
                                 st.markdown(
                                     f"""
-                                    <div style="background-color: #121215; border: 1px solid #27272a; border-radius: 6px; padding: 8px 12px; display: flex; align-items: center; gap: 10px; height: 40px; margin-bottom: 6px;">
+                                    <div style="background-color: #0d0d10; border: 1px solid #27272a; border-radius: 6px; padding: 8px 12px; display: flex; align-items: center; gap: 10px; height: 40px; margin-bottom: 6px;">
                                         <span style="background-color: #27272a; color: #c084fc; font-weight: bold; font-size: 12px; padding: 2px 6px; border-radius: 4px;">{idx+1}º</span>
                                         <span style="color: #ffffff; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{musica} — <span style="color: #a1a1aa;">{cantor}</span></span>
                                     </div>
@@ -345,9 +345,9 @@ def render():
 
                 col_bt_tv, col_bt_cli = st.columns(2)
                 with col_bt_tv:
-                    st.markdown(f'<a href="{url_tela}" target="_blank"><button style="width: 100%; background-color: #121215; color: #ffffff; border: 1px solid #27272a; padding: 6px; border-radius: 6px; font-size: 12px; font-weight: 500;">🖥️ TV</button></a>', unsafe_allow_html=True)
+                    st.markdown(f'<a href="{url_tela}" target="_blank"><button style="width: 100%; background-color: #0d0d10; color: #ffffff; border: 1px solid #27272a; padding: 6px; border-radius: 6px; font-size: 12px; font-weight: 500;">🖥️ TV</button></a>', unsafe_allow_html=True)
                 with col_bt_cli:
-                    st.markdown(f'<a href="{url_cliente}" target="_blank"><button style="width: 100%; background-color: #121215; color: #ffffff; border: 1px solid #27272a; padding: 6px; border-radius: 6px; font-size: 12px; font-weight: 500;">📱 Cliente</button></a>', unsafe_allow_html=True)
+                    st.markdown(f'<a href="{url_cliente}" target="_blank"><button style="width: 100%; background-color: #0d0d10; color: #ffffff; border: 1px solid #27272a; padding: 6px; border-radius: 6px; font-size: 12px; font-weight: 500;">📱 Cliente</button></a>', unsafe_allow_html=True)
 
                 videos_disponiveis = {
                     "- Sem vídeo -": "",
@@ -374,7 +374,7 @@ def render():
     if st.session_state.pedido_submetido and st.session_state.estado_pedido == "recusado":
         st.markdown(
             """
-                <div style="background-color: #0f0f11; border: 1px solid #ef4444; padding: 20px; text-align: center; border-radius: 8px; max-width: 500px; margin: 30px auto;">
+                <div style="background-color: #050507; border: 1px solid #ef4444; padding: 20px; text-align: center; border-radius: 8px; max-width: 500px; margin: 30px auto;">
                     <div style="font-size: 35px; margin-bottom: 8px;">❌</div>
                     <h3 style="color: #ef4444; font-size: 18px; margin-bottom: 8px;">Pedido Recusado</h3>
                     <p style="color: #d4d4d8; font-size: 14px; margin-bottom: 12px;">O seu pedido foi recusado pelo Administrador.</p>
@@ -394,7 +394,7 @@ def render():
     if st.session_state.pedido_submetido:
         st.markdown(
             """
-                <div style="background-color: #0f0f11; padding: 25px; text-align: center; border-radius: 8px; max-width: 500px; margin: 30px auto;">
+                <div style="background-color: #050507; padding: 25px; text-align: center; border-radius: 8px; max-width: 500px; margin: 30px auto;">
                     <h3 style="color: #ffffff; font-size: 18px; margin-bottom: 8px;">Aguardando Aprovação</h3>
                     <p style="color: #d4d4d8; font-size: 14px; margin-bottom: 6px;">O seu registo está a aguardar validação do Administrador.</p>
                 </div>
@@ -406,25 +406,26 @@ def render():
         return
 
     # ==========================================
-    # 🎨 4. TELA INICIAL: REGISTO / LOGIN EXATO À IMAGEM
+    # 🎨 4. TELA INICIAL: REGISTO / LOGIN (LARGURA REDUZIDA EM MAIS 20%: 840px E FUNDO PRETO)
     # ==========================================
     st.markdown(
         f"""
         <style>
             .stApp {{
-                background-color: #070709 !important;
+                background-color: #000000 !important;
             }}
             .block-container {{
-                max-width: 1050px !important;
-                padding-top: 2rem !important;
-                padding-bottom: 2rem !important;
-                background-color: #0c0914 !important;
+                max-width: 840px !important;
+                padding-top: 1.8rem !important;
+                padding-bottom: 1.8rem !important;
+                padding-left: 1.8rem !important;
+                padding-right: 1.8rem !important;
+                background-color: #000000 !important;
                 border-radius: 16px;
                 border: 1px solid rgba(138, 43, 226, 0.25);
             }}
-            /* Estilo dos campos com ícones embutidos e caixas escuras */
             .input-group-custom {{
-                background-color: #120e1f;
+                background-color: #050507;
                 border: 1px solid #27203d;
                 border-radius: 8px;
                 padding: 10px 14px;
@@ -444,22 +445,21 @@ def render():
         <!-- CABEÇALHO COM LOGOTIPO NO CANTO E TÍTULO -->
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
             <div style="display: flex; align-items: center; gap: 8px;">
-                <img src="{LINK_LOGO}" style="width: 150px; border-radius: 6px;" />
+                <img src="{LINK_LOGO}" style="width: 140px; border-radius: 6px;" />
             </div>
             <div style="text-align: right;">
-                <div style="width: 40px; height: 40px; background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.4); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #eab308; font-size: 18px;">👤</div>
+                <div style="width: 38px; height: 38px; background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.4); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #eab308; font-size: 16px;">👤</div>
             </div>
         </div>
 
-        <div style="text-align: center; margin-top: -10px; margin-bottom: 24px;">
-            <h1 style="color: #eab308; font-size: 26px; font-weight: 900; letter-spacing: 0.5px; margin-bottom: 4px;">ÁREA DO PRESTADOR</h1>
-            <p style="color: #a1a1aa; font-size: 13px; margin: 0;">Faça o seu registo de acesso ou entre com os seus dados se já tiver uma sessão ativa.</p>
+        <div style="text-align: center; margin-top: -10px; margin-bottom: 20px;">
+            <h1 style="color: #eab308; font-size: 24px; font-weight: 900; letter-spacing: 0.5px; margin-bottom: 4px;">ÁREA DO PRESTADOR</h1>
+            <p style="color: #a1a1aa; font-size: 12px; margin: 0;">Faça o seu registo de acesso ou entre com os seus dados se já tiver uma sessão ativa.</p>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    # Abas customizadas para Alternar Modo
     modo_acesso = st.radio(
         "Escolha a opção:",
         ["Novo Registo", "Já estou online / Entrar com Nome e Telefone"],
@@ -470,7 +470,7 @@ def render():
         with st.form("form_registo_prestador_idêntico"):
             st.markdown(
                 """
-                <div style="background-color: #120e1f; border: 1px solid #3b2c60; border-radius: 12px; padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.6);">
+                <div style="background-color: #050507; border: 1px solid #3b2c60; border-radius: 12px; padding: 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.8);">
                 """,
                 unsafe_allow_html=True,
             )
@@ -495,7 +495,7 @@ def render():
                 label_visibility="collapsed",
             )
 
-            st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
             submitted = st.form_submit_button("🚀 SUBMETER PEDIDO", use_container_width=True)
             
             st.markdown("</div>", unsafe_allow_html=True)
@@ -536,7 +536,7 @@ def render():
         with st.form("form_login_prestador_idêntico"):
             st.markdown(
                 """
-                <div style="background-color: #120e1f; border: 1px solid #3b2c60; border-radius: 12px; padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.6);">
+                <div style="background-color: #050507; border: 1px solid #3b2c60; border-radius: 12px; padding: 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.8);">
                 """,
                 unsafe_allow_html=True,
             )
@@ -547,7 +547,7 @@ def render():
             st.markdown('<div class="input-label-custom">📞 Telemóvel / Telefone</div>', unsafe_allow_html=True)
             login_telefone = st.text_input("Telefone", placeholder="Digite o número de telefone registado", label_visibility="collapsed")
 
-            st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
             btn_entrar = st.form_submit_button("🔑 ACEDER AO PAINEL", use_container_width=True)
 
             st.markdown("</div>", unsafe_allow_html=True)
@@ -579,17 +579,17 @@ def render():
                 else:
                     st.error("Preencha o Nome e o Telefone.")
 
-    # 3 BLOCOS INFORMATIVOS NO RODAPÉ (Igual à imagem de referência)
-    st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
+    # 3 BLOCOS INFORMATIVOS NO RODAPÉ
+    st.markdown("<div style='height: 14px;'></div>", unsafe_allow_html=True)
     c_f1, c_f2, c_f3 = st.columns(3)
     with c_f1:
         st.markdown(
             """
-            <div style="background-color: #110d1c; border: 1px solid #27203d; padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 20px;">🎧</span>
+            <div style="background-color: #050507; border: 1px solid #27203d; padding: 10px; border-radius: 8px; display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 18px;">🎧</span>
                 <div>
-                    <div style="color: #eab308; font-size: 11px; font-weight: bold;">RÁPIDO E FÁCIL</div>
-                    <div style="color: #a1a1aa; font-size: 11px;">Registe-se em poucos passos e comece já.</div>
+                    <div style="color: #eab308; font-size: 10px; font-weight: bold;">RÁPIDO E FÁCIL</div>
+                    <div style="color: #a1a1aa; font-size: 10px;">Registe-se em poucos passos e comece já.</div>
                 </div>
             </div>
             """,
@@ -598,11 +598,11 @@ def render():
     with c_f2:
         st.markdown(
             """
-            <div style="background-color: #110d1c; border: 1px solid #27203d; padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 20px;">🛡️</span>
+            <div style="background-color: #050507; border: 1px solid #27203d; padding: 10px; border-radius: 8px; display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 18px;">🛡️</span>
                 <div>
-                    <div style="color: #eab308; font-size: 11px; font-weight: bold;">SEGURO</div>
-                    <div style="color: #a1a1aa; font-size: 11px;">Os seus dados estão protegidos com total segurança.</div>
+                    <div style="color: #eab308; font-size: 10px; font-weight: bold;">SEGURO</div>
+                    <div style="color: #a1a1aa; font-size: 10px;">Os seus dados estão protegidos com total segurança.</div>
                 </div>
             </div>
             """,
@@ -611,11 +611,11 @@ def render():
     with c_f3:
         st.markdown(
             """
-            <div style="background-color: #110d1c; border: 1px solid #27203d; padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 20px;">⭐</span>
+            <div style="background-color: #050507; border: 1px solid #27203d; padding: 10px; border-radius: 8px; display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 18px;">⭐</span>
                 <div>
-                    <div style="color: #eab308; font-size: 11px; font-weight: bold;">FAZ A VOZ, FAZ A FESTA!</div>
-                    <div style="color: #a1a1aa; font-size: 11px;">Junte-se à comunidade do FF KARAOKE e brilhe!</div>
+                    <div style="color: #eab308; font-size: 10px; font-weight: bold;">FAZ A VOZ, FAZ A FESTA!</div>
+                    <div style="color: #a1a1aa; font-size: 10px;">Junte-se à comunidade do FF KARAOKE e brilhe!</div>
                 </div>
             </div>
             """,
