@@ -43,21 +43,9 @@ def render():
             video_id = video_fundo.split("watch?v=")[1].split("&")[0]
             embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=0&loop=1&playlist={video_id}&controls=0"
 
-    # 1. VÍDEO DE FUNDO FIXO (Comandado pelo Prestador) - Mantém-se a tocar sem interrupções
-    if embed_url:
-        st.markdown(f"""
-            <iframe src="{embed_url}" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; border: none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-        """, unsafe_allow_html=True)
-    else:
-        st.markdown("""
-            <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #0c0c0e; z-index: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #eab308; font-size: 28px; font-weight: bold; text-align: center; padding: 20px;">
-                📺 Aguardando o prestador iniciar o vídeo clipe...
-            </div>
-        """, unsafe_allow_html=True)
-
-    # 2. PLAYLIST NO CENTRO (Renderizada via componente HTML isolado para aceitar as tags visualmente)
+    # Bloco unificado em tempo real (Atualiza a playlist a cada 3 segundos sem recarregar a página inteira)
     @st.fragment(run_every=3)
-    def renderizar_playlist_centro():
+    def renderizar_tela_unificada():
         try:
             todos_pedidos = obter_pedidos_musicas() or []
         except Exception:
@@ -90,21 +78,58 @@ def render():
             </div>
             """
 
-        html_conteudo = f"""
+        if embed_url:
+            conteudo_fundo = f"""
+            <iframe class="video-fundo" src="{embed_url}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            """
+        else:
+            conteudo_fundo = """
+            <div class="sem-video">📺 Aguardando o prestador iniciar o vídeo clipe...</div>
+            """
+
+        html_completo = f"""
         <!DOCTYPE html>
         <html>
         <head>
         <meta charset="utf-8">
         <style>
             body {{
-                background-color: transparent;
+                background-color: #0c0c0e;
                 margin: 0;
                 padding: 0;
                 font-family: sans-serif;
                 overflow: hidden;
+                width: 100vw;
+                height: 100vh;
+            }}
+            .video-fundo {{
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                z-index: 1;
+                border: none;
+                pointer-events: none;
+            }}
+            .sem-video {{
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                z-index: 1;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                color: #eab308;
+                font-size: 28px;
+                font-weight: bold;
+                text-align: center;
+                background: #0c0c0e;
             }}
             .playlist-overlay {{
-                position: absolute;
+                position: fixed;
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
@@ -119,6 +144,7 @@ def render():
                 display: flex;
                 flex-direction: column;
                 box-sizing: border-box;
+                z-index: 99999;
             }}
             .playlist-scroll {{
                 overflow-y: auto;
@@ -135,6 +161,8 @@ def render():
         </style>
         </head>
         <body>
+            {conteudo_fundo}
+
             <div class="playlist-overlay">
                 <div style="color: #eab308; font-weight: bold; font-size: 16px; margin-bottom: 12px; border-bottom: 2px solid #3f3f46; padding-bottom: 8px; text-align: center; text-transform: uppercase;">
                     🎶 Playlist · Fila ({len(lista_pedidos)})
@@ -146,7 +174,7 @@ def render():
         </body>
         </html>
         """
-        # Renderiza usando components.html para interpretar as tags corretamente sem exibir código na tela
-        components.html(html_conteudo, height=800, scrolling=False)
+        # Altura ocupada em tela cheia na TV
+        components.html(html_completo, height=850, scrolling=False)
 
-    renderizar_playlist_centro()
+    renderizar_tela_unificada()
