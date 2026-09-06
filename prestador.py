@@ -264,7 +264,15 @@ def render():
             )
 
             # 4. GESTÃO DO VÍDEO CLIPE DE FUNDO (TV) NA COLUNA ESQUERDA
-            st.markdown('<div style="color: #c084fc; font-size: 10px; font-weight: bold; margin-bottom: 3px; margin-top: 4px;">🎬 VÍDEO CLIPE DE FUNDO (TV)</div>', unsafe_allow_html=True)
+            st.markdown(
+                """
+                <div style="margin-top: 4px; margin-bottom: 3px;">
+                    <div style="color: #c084fc; font-size: 10px; font-weight: bold;">🎬 VÍDEO CLIPE DE FUNDO (TV)</div>
+                    <div style="color: #a1a1aa; font-size: 9px; margin-bottom: 3px;">Cola abaixo o Link do video clipe</div>
+                </div>
+                """, 
+                unsafe_allow_html=True
+            )
             
             link_atual = prestador_atual.get("video_fundo", "") if prestador_atual else ""
             novo_video_fundo = st.text_input(
@@ -275,7 +283,7 @@ def render():
                 key="input_atualizar_video"
             )
             
-            if st.button("💾 Guardar Vídeo", use_container_width=True):
+            if st.button("🚀 Iniciar Video Clipe", use_container_width=True):
                 if prestador_atual:
                     link_limpo = novo_video_fundo.strip()
                     prestador_atual["video_fundo"] = link_limpo
@@ -289,15 +297,15 @@ def render():
                     if hasattr(st, "cache_data"):
                         st.cache_data.clear()
                         
-                    st.success("Vídeo atualizado com sucesso!")
+                    st.success("Vídeo iniciado com sucesso!")
                     time.sleep(0.3)
                     st.rerun()
 
             st.markdown("---")
             
-            # 5. NOTA INFORMATIVA NA COLUNA ESQUERDA
+            # 5. NOTA INFORMATIVA NA COLUNA ESQUERDA (Aumentada 40% em relação ao original de 10px -> 14px)
             st.markdown("""
-            <div style="font-size: 10px; color: #a1a1aa; background: rgba(24, 24, 27, 0.6); padding: 8px; border-radius: 4px; border: 1px solid #3f3f46; margin-bottom: 8px;">
+            <div style="font-size: 14px; color: #a1a1aa; background: rgba(24, 24, 27, 0.6); padding: 10px; border-radius: 4px; border: 1px solid #3f3f46; margin-bottom: 8px; line-height: 1.4;">
                 <b style="color: #eab308;">📌 NOTAS IMPORTANTES:</b><br>
                 • <b>Código QR:</b> O cliente deve apontar a câmara do telemóvel para fazer o seu registo e pedido de música.<br>
                 • <b>Tela (TV):</b> Abra o link/botão "TV" num projetor ou ecrã secundário para exibir o vídeo e a playlist.
@@ -368,10 +376,11 @@ def render():
                     lista_pedidos = [p for p in todos_pedidos if p.get("status", "pendente") == "pendente" and (str(p.get("token_prestador", "")) in ["", "None", token_ativo])]
                     total_pedidos = len(lista_pedidos)
 
+                    # Caixa ajustada para iniciar logo os títulos das músicas após o cabeçalho (sem espaço vazio excessivo)
                     st.markdown(
                         f"""
-                            <div class="box-container" style="max-height: 380px; min-height: 250px; overflow-y: auto;">
-                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid #27272a; padding-bottom: 4px;">
+                            <div class="box-container" style="max-height: 420px; overflow-y: auto;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; border-bottom: 1px solid #27272a; padding-bottom: 4px;">
                                     <span style="color: #c084fc; font-weight: bold; font-size: 11px;">👥 FILA DE PEDIDOS ({total_pedidos})</span>
                                 </div>
                         """,
@@ -408,13 +417,14 @@ def render():
                                     apagar_pedido_musica(pedido_id)
                                     st.rerun()
                     else:
-                        st.markdown("<p style='color: #a1a1aa; margin: 8px 0; font-size: 11px;'>Sem pedidos na fila.</p>", unsafe_allow_html=True)
+                        st.markdown("<p style='color: #a1a1aa; margin: 4px 0; font-size: 11px;'>Sem pedidos na fila.</p>", unsafe_allow_html=True)
 
                     st.markdown("</div>", unsafe_allow_html=True)
 
                 renderizar_fila_pedidos()
         
             with col_dir:
+                # QR Code aumentado 30% (de 115px para ~150px)
                 st.markdown(
                     f"""
                         <div class="box-container">
@@ -426,7 +436,7 @@ def render():
                                 <span style="color: #3b82f6;">TV:</span> {url_tela}
                             </div>
                             <div style="text-align: center; background: #ffffff; padding: 6px; border-radius: 3px;">
-                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=115x115&data={url_cliente}" width="115" />
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={url_cliente}" width="150" />
                             </div>
                         </div>
                     """,
