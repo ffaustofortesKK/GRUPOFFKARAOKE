@@ -261,24 +261,31 @@ def render():
                 unsafe_allow_html=True,
             )
 
-        # SECÇÃO DE CONFIGURAÇÃO DO VÍDEO CLIPE NO PAINEL LATERAL
+       # SECÇÃO DE CONFIGURAÇÃO DO VÍDEO CLIPE NO PAINEL LATERAL
         with st.container():
             st.markdown('<div style="color: #c084fc; font-size: 10px; font-weight: bold; margin-bottom: 3px;">🎬 VÍDEO CLIPE DE FUNDO (TV)</div>', unsafe_allow_html=True)
             
-            # Garantir que lê diretamente do prestador_atual
             link_atual = prestador_atual.get("video_fundo", "") if prestador_atual else ""
             novo_video_fundo = st.text_input("Vídeo Clipe de Fundo", value=link_atual, placeholder="Cole o link do vídeo...", label_visibility="collapsed", key="input_atualizar_video")
             
             if st.button("💾 Guardar Vídeo", use_container_width=True):
                 if prestador_atual:
-                    prestador_atual["video_fundo"] = novo_video_fundo.strip()
+                    link_limpo = novo_video_fundo.strip()
+                    prestador_atual["video_fundo"] = link_limpo
+                    
+                    # 1. Guarda na base de dados
                     guardar_prestador(prestador_atual)
                     
-                    # OBRIGA O STREAMLIT A ATUALIZAR OS DADOS PARA A TELA DA TV RECONHECER O NOVO LINK
+                    # 2. Salva também numa chave global partilhada na sessão do Streamlit
+                    token_p = str(prestador_atual.get("token", ""))
+                    st.session_state[f"video_global_{token_p}"] = link_limpo
+                    st.session_state["video_global_atual"] = link_limpo
+                    
+                    # 3. Limpa caches
                     if hasattr(st, "cache_data"):
                         st.cache_data.clear()
                         
-                    st.success("Vídeo de fundo atualizado com sucesso!")
+                    st.success("Vídeo de fundo atualizado e sincronizado!")
                     time.sleep(0.3)
                     st.rerun()
 
