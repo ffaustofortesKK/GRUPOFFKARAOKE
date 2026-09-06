@@ -542,10 +542,13 @@ def render():
                 background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
                 color: #000000 !important;
             }}
-            /* Estilização para deixar as opções do rádio em Negrito e Branco */
-            div[data-baseweb="radio"] label div p {{
+            /* Estilização para forçar Negrito e Cor Branca nos textos das opções do rádio */
+            div[data-baseweb="radio"] label span p,
+            div[data-baseweb="radio"] label div p,
+            div[data-baseweb="radio"] label span,
+            div[data-baseweb="radio"] label {{
                 color: #ffffff !important;
-                font-weight: bold !important;
+                font-weight: 700 !important;
                 font-size: 12px !important;
             }}
         </style>
