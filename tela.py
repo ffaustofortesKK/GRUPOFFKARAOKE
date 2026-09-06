@@ -210,5 +210,5 @@ def renderizar_tela_unificada():
         </html>
         """
         components.html(html_completo, height=850, scrolling=False)
-
-    renderizar_tela_unificada()
+ 
+        renderizar_tela_unificada()
