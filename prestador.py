@@ -258,8 +258,7 @@ def render():
                     <img src="{LINK_LOGO}" style="max-width: 100%; width: 140px; border-radius: 4px;" />
                 </div>
                 """,
-                unsafe_allow_html=True,
-            )
+                unsafe_allow_html=True)
 
       with st.sidebar:
         # ... (os outros elementos da barra lateral, como o perfil, botões de ação, etc.)
