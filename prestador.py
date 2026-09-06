@@ -190,11 +190,9 @@ def render():
             unsafe_allow_html=True,
         )
         
-        # COLUNAS DO PAINEL PRINCIPAL (Lateral Esquerda + Conteúdo Principal)
         col_lateral, col_principal = st.columns([1, 2.9])
 
         with col_lateral:
-            # 1. LOGOTIPO NO TOPO ESQUERDO
             st.markdown(
                 f"""
                 <div style="text-align: center; margin-top: 2px; margin-bottom: 6px;">
@@ -204,7 +202,6 @@ def render():
                 unsafe_allow_html=True
             )
 
-            # 2. CRONÓMETRO / TEMPO RESTANTE
             @st.fragment(run_every=3)
             def renderizar_relogio_topo():
                 p_atual = None
@@ -243,7 +240,6 @@ def render():
 
             renderizar_relogio_topo()
 
-            # 3. CARTÃO DO PRESTADOR
             nome_prestador_txt = prestador_atual.get("nome", "Prestador") if prestador_atual else "Prestador"
             estabelecimento_txt = prestador_atual.get("estabelecimento", "") if prestador_atual else ""
             
@@ -263,7 +259,6 @@ def render():
                 unsafe_allow_html=True,
             )
 
-            # 4. GESTÃO DO VÍDEO CLIPE DE FUNDO (TV) NA COLUNA ESQUERDA
             st.markdown(
                 """
                 <div style="margin-top: 4px; margin-bottom: 3px;">
@@ -287,23 +282,17 @@ def render():
                 if prestador_atual:
                     link_limpo = novo_video_fundo.strip()
                     prestador_atual["video_fundo"] = link_limpo
-                    
                     guardar_prestador(prestador_atual)
-                    
                     token_p = str(prestador_atual.get("token", ""))
                     st.session_state[f"video_global_{token_p}"] = link_limpo
                     st.session_state["video_global_atual"] = link_limpo
-                    
                     if hasattr(st, "cache_data"):
                         st.cache_data.clear()
-                        
                     st.success("Vídeo iniciado com sucesso!")
                     time.sleep(0.3)
                     st.rerun()
 
             st.markdown("---")
-            
-            # 5. NOTA INFORMATIVA NA COLUNA ESQUERDA (Tamanho aumentado)
             st.markdown("""
             <div style="font-size: 14px; color: #a1a1aa; background: rgba(24, 24, 27, 0.6); padding: 10px; border-radius: 4px; border: 1px solid #3f3f46; margin-bottom: 8px; line-height: 1.4;">
                 <b style="color: #eab308;">📌 NOTAS IMPORTANTES:</b><br>
@@ -319,7 +308,6 @@ def render():
                 st.session_state.aprovado = False
                 st.rerun()
 
-        # COLUNA PRINCIPAL DIREITA
         with col_principal:
             col_esq, col_dir = st.columns([1.4, 1])
 
@@ -376,7 +364,6 @@ def render():
                     lista_pedidos = [p for p in todos_pedidos if p.get("status", "pendente") == "pendente" and (str(p.get("token_prestador", "")) in ["", "None", token_ativo])]
                     total_pedidos = len(lista_pedidos)
 
-                    # Fila de pedidos sem retângulos individuais, dispostos em linhas contínuas
                     st.markdown(
                         f"""
                             <div class="box-container" style="max-height: 420px; overflow-y: auto;">
@@ -424,7 +411,6 @@ def render():
                 renderizar_fila_pedidos()
         
             with col_dir:
-                # QR Code aumentado mais 30% (~195px)
                 st.markdown(
                     f"""
                         <div class="box-container">
@@ -474,118 +460,135 @@ def render():
         return
 
     # =========================================================================
-    # 🎨 6. TELA DE REGISTO / LOGIN
+    # 🎨 6. TELA DE REGISTO / LOGIN (IDÊNTICA À SEGUNDA IMAGEM)
     # =========================================================================
     st.markdown(
         f"""
         <style>
             .stApp {{
                 background-color: #000000 !important;
+                background-image: radial-gradient(circle at 50% 0%, rgba(138, 43, 226, 0.15) 0%, transparent 60%);
             }}
             header[data-testid="stHeader"] {{
                 background-color: transparent !important;
             }}
             .block-container {{
-                max-width: 720px !important;
-                padding-top: 0.1rem !important;
-                padding-bottom: 0.2rem !important;
-                padding-left: 1rem !important;
-                padding-right: 1rem !important;
-                background-color: #000000 !important;
-                border-radius: 6px;
-                border: 1px solid rgba(138, 43, 226, 0.25);
-                margin-top: 0rem;
-                margin-bottom: 0rem;
-            }}
+                max-width: 900px !important;
+                padding-top: 1rem !important;
+                padding-bottom: 1rem !important;
+                padding-left: 1.5rem !important;
+                padding-right: 1.5rem !important;
+                background-color: #050509 !important;
+                border-radius: 12px;
+                border: 1px solid rgba(138, 43, 226, 0.4);
+                box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+                margin-top: 1rem;
+                margin-bottom: 1rem;
+            }
             div[data-baseweb="input"] input {{
-                min-height: 20px !important;
-                height: 22px !important;
-                padding-top: 2px !important;
-                padding-bottom: 2px !important;
-                font-size: 11px !important;
+                min-height: 32px !important;
+                height: 34px !important;
+                padding-top: 4px !important;
+                padding-bottom: 4px !important;
+                font-size: 12px !important;
+                background-color: #0d0d13 !important;
+                color: #ffffff !important;
             }}
             div[data-baseweb="base-input"] {{
-                min-height: 22px !important;
+                background-color: #0d0d13 !important;
+                border-radius: 4px !important;
+                border: 1px solid #27272a !important;
             }}
             div[data-baseweb="select"] div {{
-                min-height: 22px !important;
-                font-size: 11px !important;
-            }}
-            div.row-widget.stRadio div[role="radiogroup"] label p {{
+                min-height: 34px !important;
+                font-size: 12px !important;
+                background-color: #0d0d13 !important;
                 color: #ffffff !important;
-                font-weight: bold !important;
-                font-size: 11px !important;
+            }}
+            /* Estilo dos botões de submissão com gradiente amarelo */
+            .stButton button[kind="primary"], div.stFormSubmitButton button {{
+                background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+                color: #000000 !important;
+                font-weight: 900 !important;
+                font-size: 13px !important;
+                border-radius: 6px !important;
+                border: none !important;
+                height: 42px !important;
+                box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+            }}
+            .stButton button[kind="primary"]:hover, div.stFormSubmitButton button:hover {{
+                background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
+                color: #000000 !important;
             }}
         </style>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
-            <img src="{LINK_LOGO}" style="width: 130px; border-radius: 4px; display: block;" />
-            <div style="width: 26px; height: 26px; background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.4); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #eab308; font-size: 11px;">👤</div>
+        <!-- CABEÇALHO DO TOPO -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <img src="{LINK_LOGO}" style="width: 140px; border-radius: 4px; display: block;" />
+            </div>
+            <div style="text-align: center;">
+                <div style="width: 38px; height: 38px; background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.5); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #c084fc; font-size: 16px; margin: auto;">👤</div>
+                <div style="color: #ffffff; font-size: 10px; margin-top: 2px; font-weight: bold;">PORTAL DO PRESTADOR</div>
+            </div>
         </div>
 
-        <div style="text-align: center; margin-bottom: 3px;">
-            <h1 style="color: #eab308; font-size: 17px; font-weight: 900; margin-bottom: 1px;">ÁREA DO PRESTADOR</h1>
+        <div style="text-align: center; margin-bottom: 15px;">
+            <h1 style="color: #eab308; font-size: 22px; font-weight: 900; margin-bottom: 4px; text-shadow: 0 2px 10px rgba(234,179,8,0.2);">ÁREA DO PRESTADOR</h1>
+            <p style="color: #a1a1aa; font-size: 11px; margin: 0;">Registe-se ou entre com a sua sessão ativa.</p>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    st.markdown('<div style="color: #eab308; font-size: 17px; font-weight: 900; margin-bottom: 2px;">Escolha a opção:</div>', unsafe_allow_html=True)
+    # SELETOR DE MODO (CARTÕES LADO A LADO)
     modo_acesso = st.radio(
-        "Escolha a opção:",
-        ["Novo Registo", "Já estou online / Entrar com Nome e Telefone"],
+        "Modo de Acesso",
+        ["Novo Registo", "Entrar com Sessão Ativa"],
         horizontal=True,
-        label_visibility="collapsed",
+        label_visibility="collapsed"
     )
+
+    st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
     if modo_acesso == "Novo Registo":
         with st.form("form_registo_prestador_idêntico"):
             st.markdown(
                 """
-                <div style="background-color: #050507; border: 1px solid #3b2c60; border-radius: 6px; padding: 4px 8px;">
+                <div style="background-color: #0b0b0f; border: 1px solid #3b2c60; border-radius: 8px; padding: 16px;">
                 """,
                 unsafe_allow_html=True,
             )
 
-            c_emo1, c_inp1 = st.columns([0.08, 0.92])
-            with c_emo1:
-                st.markdown('<div style="font-size: 18px; text-align: center; line-height: 1.5;">👤</div>', unsafe_allow_html=True)
-            with c_inp1:
+            # 2 Colunas para os campos de entrada (como na imagem 2)
+            c1, c2 = st.columns(2, gap="medium")
+            
+            with c1:
+                st.markdown('<div style="color: #c084fc; font-size: 11px; font-weight: bold; margin-bottom: 4px;">👤 Nome Completo *</div>', unsafe_allow_html=True)
                 nome = st.text_input("Nome Completo", placeholder="Digite o seu nome completo", label_visibility="collapsed")
+                
+                st.markdown('<div style="color: #c084fc; font-size: 11px; font-weight: bold; margin-top: 10px; margin-bottom: 4px;">🏢 Nome do Estabelecimento *</div>', unsafe_allow_html=True)
+                estabelecimento = st.text_input("Estabelecimento", placeholder="Digite o nome do seu estabelecimento", label_visibility="collapsed")
 
-            c_emo2, c_inp2 = st.columns([0.08, 0.92])
-            with c_emo2:
-                st.markdown('<div style="font-size: 18px; text-align: center; line-height: 1.5;">📞</div>', unsafe_allow_html=True)
-            with c_inp2:
-                telefone = st.text_input("Telemóvel / Telefone", placeholder="Digite o seu número de telefone", label_visibility="collapsed")
-
-            c_emo3, c_inp3 = st.columns([0.08, 0.92])
-            with c_emo3:
-                st.markdown('<div style="font-size: 18px; text-align: center; line-height: 1.5;">📍</div>', unsafe_allow_html=True)
-            with c_inp3:
-                estabelecimento = st.text_input("Estabelecimento", placeholder="Ex: Bar do Zé, Restaurante Bom Sabor...", label_visibility="collapsed")
-
-            c_emo4, c_inp4 = st.columns([0.08, 0.92])
-            with c_emo4:
-                st.markdown('<div style="font-size: 18px; text-align: center; line-height: 1.5;">📄</div>', unsafe_allow_html=True)
-            with c_inp4:
+            with c2:
+                st.markdown('<div style="color: #c084fc; font-size: 11px; font-weight: bold; margin-bottom: 4px;">📞 Telemóvel / Telefone *</div>', unsafe_allow_html=True)
+                telefone = st.text_input("Telemóvel / Telefone", placeholder="Ex: 9XX XXX XXX", label_visibility="collapsed")
+                
+                st.markdown('<div style="color: #c084fc; font-size: 11px; font-weight: bold; margin-top: 10px; margin-bottom: 4px;">⏱️ Tempo / Valor *</div>', unsafe_allow_html=True)
                 contrato = st.selectbox(
                     "Contrato",
                     [
-                        "1 Hora - 12.000,00 Kwanzaas",
-                        "2 Horas - 17.000,00 Kwanzaas",
-                        "3 Horas - 20.000,00 Kwanzaas",
+                        "1 Hora - 12.000,00 Kz",
+                        "2 Horas - 17.000,00 Kz",
+                        "3 Horas - 20.000,00 Kz",
                     ],
                     label_visibility="collapsed",
                 )
 
-            c_emo5, c_inp5 = st.columns([0.08, 0.92])
-            with c_emo5:
-                st.markdown('<div style="font-size: 18px; text-align: center; line-height: 1.5;">🎬</div>', unsafe_allow_html=True)
-            with c_inp5:
-                video_fundo = st.text_input("Link do Vídeo Clipe de Fundo (Opcional)", placeholder="Cole aqui o link do vídeo de fundo para a TV...", label_visibility="collapsed")
+            st.markdown('<div style="color: #c084fc; font-size: 11px; font-weight: bold; margin-top: 10px; margin-bottom: 4px;">🎬 Link do Vídeo Clipe de Fundo (Opcional)</div>', unsafe_allow_html=True)
+            video_fundo = st.text_input("Vídeo Clipe", placeholder="Cole aqui o link do vídeo de fundo para a TV...", label_visibility="collapsed")
 
-            st.markdown("<div style='height: 1px;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
             submitted = st.form_submit_button("🚀 SUBMETER PEDIDO", use_container_width=True)
             
             st.markdown("</div>", unsafe_allow_html=True)
@@ -626,25 +629,21 @@ def render():
         with st.form("form_login_prestador_idêntico"):
             st.markdown(
                 """
-                <div style="background-color: #050507; border: 1px solid #3b2c60; border-radius: 6px; padding: 5px 8px;">
+                <div style="background-color: #0b0b0f; border: 1px solid #3b2c60; border-radius: 8px; padding: 16px;">
                 """,
                 unsafe_allow_html=True,
             )
 
-            c_emo_l1, c_inp_l1 = st.columns([0.08, 0.92])
-            with c_emo_l1:
-                st.markdown('<div style="font-size: 18px; text-align: center; line-height: 1.5;">👤</div>', unsafe_allow_html=True)
-            with c_inp_l1:
+            c1, c2 = st.columns(2, gap="medium")
+            with c1:
+                st.markdown('<div style="color: #c084fc; font-size: 11px; font-weight: bold; margin-bottom: 4px;">👤 Nome Cadastrado *</div>', unsafe_allow_html=True)
                 login_nome = st.text_input("Nome", placeholder="Digite o seu nome cadastrado", label_visibility="collapsed")
-
-            c_emo_l2, c_inp_l2 = st.columns([0.08, 0.92])
-            with c_emo_l2:
-                st.markdown('<div style="font-size: 18px; text-align: center; line-height: 1.5;">📞</div>', unsafe_allow_html=True)
-            with c_inp_l2:
+            with c2:
+                st.markdown('<div style="color: #c084fc; font-size: 11px; font-weight: bold; margin-bottom: 4px;">📞 Telemóvel / Telefone *</div>', unsafe_allow_html=True)
                 login_telefone = st.text_input("Telemóvel / Telefone", placeholder="Digite o seu número de telefone", label_visibility="collapsed")
 
-            st.markdown("<div style='height: 1px;'></div>", unsafe_allow_html=True)
-            login_submitted = st.form_submit_button("🔓 ENTRAR", use_container_width=True)
+            st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+            login_submitted = st.form_submit_button("🔓 ENTRAR NA SESSÃO", use_container_width=True)
 
             st.markdown("</div>", unsafe_allow_html=True)
 
@@ -667,3 +666,24 @@ def render():
                         st.error("Prestador não encontrado com este Nome e Telefone.")
                 else:
                     st.error("Preencha o Nome e o Telefone para entrar.")
+
+    # RODAPÉ INFORMATIVO IGUAL À SEGUNDA IMAGEM
+    st.markdown(
+        """
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 15px; font-size: 10px; color: #a1a1aa; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 16px; color: #eab308;">🛡️</span>
+                <div><b style="color: #ffffff;">RÁPIDO E SEGURO</b><br>O seu pedido é processado com total segurança.</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 16px; color: #c084fc;">⏰</span>
+                <div><b style="color: #ffffff;">ATENDIMENTO 24/7</b><br>Estamos sempre à sua disposição.</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 16px; color: #eab308;">🎵</span>
+                <div><b style="color: #ffffff;">MAIS MÚSICA, MAIS FESTA!</b><br>Junte-se à nossa comunidade de prestadores.</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
