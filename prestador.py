@@ -261,46 +261,55 @@ def render():
                 unsafe_allow_html=True,
             )
 
-       # SECÇÃO DE CONFIGURAÇÃO DO VÍDEO CLIPE NO PAINEL LATERAL
-        with st.container():
-            st.markdown('<div style="color: #c084fc; font-size: 10px; font-weight: bold; margin-bottom: 3px;">🎬 VÍDEO CLIPE DE FUNDO (TV)</div>', unsafe_allow_html=True)
-            
-            link_atual = prestador_atual.get("video_fundo", "") if prestador_atual else ""
-            novo_video_fundo = st.text_input("Vídeo Clipe de Fundo", value=link_atual, placeholder="Cole o link do vídeo...", label_visibility="collapsed", key="input_atualizar_video")
-            
-            if st.button("💾 Guardar Vídeo", use_container_width=True):
-                if prestador_atual:
-                    link_limpo = novo_video_fundo.strip()
-                    prestador_atual["video_fundo"] = link_limpo
+      with st.sidebar:
+        # ... (os outros elementos da barra lateral, como o perfil, botões de ação, etc.)
+        
+        st.markdown("---")
+        
+        # SECÇÃO DE CONFIGURAÇÃO DO VÍDEO CLIPE DE FUNDO (DE VOLTA À BARRA LATERAL)
+        st.markdown('<div style="color: #c084fc; font-size: 11px; font-weight: bold; margin-bottom: 3px;">🎬 VÍDEO CLIPE DE FUNDO (TV)</div>', unsafe_allow_html=True)
+        
+        link_atual = prestador_atual.get("video_fundo", "") if prestador_atual else ""
+        novo_video_fundo = st.text_input(
+            "Vídeo Clipe de Fundo", 
+            value=link_atual, 
+            placeholder="Cole o link do vídeo...", 
+            label_visibility="collapsed", 
+            key="input_atualizar_video"
+        )
+        
+        if st.button("💾 Guardar Vídeo", use_container_width=True):
+            if prestador_atual:
+                link_limpo = novo_video_fundo.strip()
+                prestador_atual["video_fundo"] = link_limpo
+                
+                # 1. Guarda na base de dados
+                guardar_prestador(prestador_atual)
+                
+                # 2. Sincroniza na sessão global para a TV apanhar de imediato
+                token_p = str(prestador_atual.get("token", ""))
+                st.session_state[f"video_global_{token_p}"] = link_limpo
+                st.session_state["video_global_atual"] = link_limpo
+                
+                # 3. Limpa cache
+                if hasattr(st, "cache_data"):
+                    st.cache_data.clear()
                     
-                    # 1. Guarda na base de dados
-                    guardar_prestador(prestador_atual)
-                    
-                    # 2. Salva também numa chave global partilhada na sessão do Streamlit
-                    token_p = str(prestador_atual.get("token", ""))
-                    st.session_state[f"video_global_{token_p}"] = link_limpo
-                    st.session_state["video_global_atual"] = link_limpo
-                    
-                    # 3. Limpa caches
-                    if hasattr(st, "cache_data"):
-                        st.cache_data.clear()
-                        
-                    st.success("Vídeo de fundo atualizado e sincronizado!")
-                    time.sleep(0.3)
-                    st.rerun()
+                st.success("Vídeo atualizado com sucesso!")
+                time.sleep(0.3)
+                st.rerun()
 
-            # NOTA INFORMATIVA ATUALIZADA
-            st.markdown(
-                """
-                <div style="background-color: #0d0d10; border: 1px solid #3b2c60; padding: 10px 10px; border-radius: 4px; margin-top: 6px; margin-bottom: 6px; font-size: 10px; color: #d4d4d8; line-height: 1.3;">
-                    <div style="color: #c084fc; font-weight: bold; margin-bottom: 3px;">📌 NOTAS IMPORTANTES:</div>
-                    <div>• <b>Código QR:</b> O cliente deve apontar a câmara do telemóvel para fazer o seu registo e pedido de música.</div>
-                    <div style="margin-top: 4px;">• <b>Tela (TV):</b> Abra o link/botão "TV" num projetor ou ecrã secundário para exibir o vídeo e a playlist.</div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+        st.markdown("---")
 
+        # NOTAS IMPORTANTES (DE VOLTA À BARRA LATERAL)
+        st.markdown("""
+        <div style="font-size: 11px; color: #a1a1aa; background: rgba(24, 24, 27, 0.6); padding: 10px; border-radius: 6px; border: 1px solid #3f3f46;">
+            <b style="color: #eab308;">📌 NOTAS IMPORTANTES:</b><br>
+            • <b>Código QR:</b> O cliente deve apontar a câmara do telemóvel para fazer o seu registo e pedido de música.<br>
+            • <b>Tela (TV):</b> Abra o link/botão "TV" num projetor ou ecrã secundário para exibir o vídeo e a playlist.
+        </div>
+        """, unsafe_allow_html=True)
+        
             if st.button("🚪 Sair", use_container_width=True):
                 st.session_state.pedido_submetido = False
                 st.session_state.token_prestador = None
