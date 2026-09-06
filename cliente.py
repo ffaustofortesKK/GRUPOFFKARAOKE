@@ -45,12 +45,16 @@ def render():
             align-items: center;
             gap: 10px;
         }
-        /* Estilo para a imagem real do Logótipo */
-        .ff-logo-img {
+        .ff-logo-icon {
+            background: linear-gradient(135deg, #7b2cbf, #9d4edd);
+            width: 38px;
             height: 38px;
-            width: auto;
-            object-fit: contain;
-            filter: drop-shadow(0 0 8px rgba(123, 44, 191, 0.6));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 12px rgba(123, 44, 191, 0.7);
+            flex-shrink: 0;
         }
         .ff-logo-text-group {
             display: flex;
@@ -288,7 +292,7 @@ def render():
             margin: 0;
             font-size: 8px;
             color: #9a8c98;
-            line-align: 1.1;
+            line-height: 1.1;
         }
         
         div.stButton > button {
@@ -329,11 +333,17 @@ def render():
     if "meu_pedido_timestamp" not in st.session_state:
         st.session_state["meu_pedido_timestamp"] = None
 
-    # CABEÇALHO COM LOGÓTIPO EM IMAGEM REAL (Substitua o link abaixo se necessário)
+    # CABEÇALHO COM LOGÓTIPO EMBUTIDO SEGURO (SVG Integrado - Nunca falha)
     st.markdown("""
         <div class="ff-header">
             <div class="ff-logo-area">
-                <img src="https://i.imgur.com/7D226Zs.png" class="ff-logo-img" alt="Logotipo FF Karaoke">
+                <div class="ff-logo-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v1a7 7 0 0 1-14 0v-1"></path>
+                        <line x1="12" y1="19" x2="12" y2="22"></line>
+                    </svg>
+                </div>
                 <div class="ff-logo-text-group">
                     <span class="ff-logo-title">FF KARAOKE</span>
                     <span class="ff-logo-subtitle">FAZ A VOZ, FAZ A FESTA!</span>
