@@ -24,10 +24,9 @@ def render():
     token = query_params.get("token", None)
     token_str = str(token) if token else ""
 
-    # Fragmento unificado de alta responsividade (atualiza a cada 2 segundos em segundo plano)
+    # Fragmento unificado de alta responsividade (atualiza a cada 2 segundos)
     @st.fragment(run_every=2)
     def renderizar_tela_unificada():
-        # Consultar prestadores e pedidos DENTRO do fragmento para refletir instantaneamente a ação do prestador
         try:
             prestadores = obter_prestadores() or []
         except Exception:
@@ -37,30 +36,41 @@ def render():
         if token_str and token_str != "None":
             prestador_ativo = next((p for p in prestadores if str(p.get("token")) == token_str), None)
         
-        if not prestador_ativo:
-            prestador_ativo = next((p for p in prestadores if p.get("status_str") == "aprovado"), None)
+        if not prestador_ativo and prestadores:
+            # Fallback: se não houver token na URL, pega o primeiro que tenha vídeo ou o primeiro aprovado
+            prestador_ativo = next((p for p in prestadores if p.get("video_fundo")), prestadores[0])
 
         video_fundo = prestador_ativo.get("video_fundo", "") if prestador_ativo else ""
+        nome_prestador = prestador_ativo.get("nome", "Desconhecido") if prestador_ativo else "Nenhum"
 
-        # Extração limpa do ID do YouTube
+        # Extração limpa do ID do YouTube (suporta links normais e youtu.be)
         embed_url = ""
         if video_fundo:
-            if "youtu.be/" in video_fundo:
-                video_id = video_fundo.split("youtu.be/")[1].split("?")[0]
-                embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=0&controls=0&loop=1&playlist={video_id}"
-            elif "watch?v=" in video_fundo:
-                video_id = video_fundo.split("watch?v=")[1].split("&")[0]
-                embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=0&controls=0&loop=1&playlist={video_id}"
+            cleaned_url = video_fundo.strip()
+            if "youtu.be/" in cleaned_url:
+                try:
+                    video_id = cleaned_url.split("youtu.be/")[1].split("?")[0].split("&")[0]
+                    embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=0&controls=0&loop=1&playlist={video_id}"
+                except:
+                    pass
+            elif "watch?v=" in cleaned_url:
+                try:
+                    video_id = cleaned_url.split("watch?v=")[1].split("&")[0]
+                    embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=0&controls=0&loop=1&playlist={video_id}"
+                except:
+                    pass
 
         try:
             todos_pedidos = obter_pedidos_musicas() or []
         except Exception:
             todos_pedidos = []
 
+        token_prestador_ativo = str(prestador_ativo.get("token", "")) if prestador_ativo else ""
+
         lista_pedidos = [
             p for p in todos_pedidos 
             if p.get("status", "pendente") == "pendente" 
-            and (str(p.get("token_prestador", "")) in ["", "None", token_str])
+            and (str(p.get("token_prestador", "")) in ["", "None", token_prestador_ativo])
         ]
 
         itens_html = ""
@@ -89,8 +99,11 @@ def render():
             <iframe class="video-fundo" src="{embed_url}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
             """
         else:
-            conteudo_fundo = """
-            <div class="sem-video">📺 Aguardando o prestador iniciar o vídeo clipe...</div>
+            conteudo_fundo = f"""
+            <div class="sem-video">
+                <div>📺 Aguardando vídeo do prestador...</div>
+                <div style="font-size: 12px; color: #71717a; margin-top: 10px;">Link atual guardado: {video_fundo if video_fundo else 'Nenhum'}</div>
+            </div>
             """
 
         html_completo = f"""
@@ -126,13 +139,15 @@ def render():
                 height: 100vh;
                 z-index: 1;
                 display: flex;
+                flex-direction: column;
                 justify-content: center;
                 align-items: center;
                 color: #eab308;
-                font-size: 28px;
+                font-size: 26px;
                 font-weight: bold;
                 text-align: center;
                 background: #0c0c0e;
+                padding: 20px;
             }}
             .playlist-overlay {{
                 position: fixed;
