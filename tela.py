@@ -25,7 +25,7 @@ def render():
     token_str = str(token) if token else ""
 
     # Fragmento unificado de alta responsividade (atualiza a cada 2 segundos)
-    @st.fragment(run_every=2)
+   @st.fragment(run_every=2)
     def renderizar_tela_unificada():
         try:
             prestadores = obter_prestadores() or []
@@ -40,7 +40,19 @@ def render():
             # Fallback: se não houver token na URL, pega o primeiro que tenha vídeo ou o primeiro aprovado
             prestador_ativo = next((p for p in prestadores if p.get("video_fundo")), prestadores[0])
 
-        video_fundo = prestador_ativo.get("video_fundo", "") if prestador_ativo else ""
+        token_prestador_ativo = str(prestador_ativo.get("token", "")) if prestador_ativo else ""
+        
+        # 1. TENTA LER PRIMEIRO DA SESSÃO GLOBAL (caso estejam na mesma sessão ou partilhadas)
+        video_fundo = ""
+        if token_prestador_ativo and st.session_state.get(f"video_global_{token_prestador_ativo}"):
+            video_fundo = st.session_state.get(f"video_global_{token_prestador_ativo}")
+        elif st.session_state.get("video_global_atual"):
+            video_fundo = st.session_state.get("video_global_atual")
+        
+        # 2. SE NÃO ESTIVER NA SESSÃO, LÊ DIRETAMENTE DA BASE DE DADOS DO PRESTADOR ATIVO
+        if not video_fundo and prestador_ativo:
+            video_fundo = prestador_ativo.get("video_fundo", "")
+
         nome_prestador = prestador_ativo.get("nome", "Desconhecido") if prestador_ativo else "Nenhum"
 
         # Extração limpa do ID do YouTube (suporta links normais e youtu.be)
