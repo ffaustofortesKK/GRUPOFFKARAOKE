@@ -303,7 +303,7 @@ def render():
 
             st.markdown("---")
             
-            # 5. NOTA INFORMATIVA NA COLUNA ESQUERDA (Aumentada 40% em relação ao original de 10px -> 14px)
+            # 5. NOTA INFORMATIVA NA COLUNA ESQUERDA (Tamanho aumentado)
             st.markdown("""
             <div style="font-size: 14px; color: #a1a1aa; background: rgba(24, 24, 27, 0.6); padding: 10px; border-radius: 4px; border: 1px solid #3f3f46; margin-bottom: 8px; line-height: 1.4;">
                 <b style="color: #eab308;">📌 NOTAS IMPORTANTES:</b><br>
@@ -376,7 +376,7 @@ def render():
                     lista_pedidos = [p for p in todos_pedidos if p.get("status", "pendente") == "pendente" and (str(p.get("token_prestador", "")) in ["", "None", token_ativo])]
                     total_pedidos = len(lista_pedidos)
 
-                    # Caixa ajustada para iniciar logo os títulos das músicas após o cabeçalho (sem espaço vazio excessivo)
+                    # Fila de pedidos sem retângulos individuais, dispostos em linhas contínuas
                     st.markdown(
                         f"""
                             <div class="box-container" style="max-height: 420px; overflow-y: auto;">
@@ -397,7 +397,7 @@ def render():
                             with cols_item[0]:
                                 st.markdown(
                                     f"""
-                                    <div style="background-color: #0d0d10; border: 1px solid #27272a; border-radius: 3px; padding: 4px 6px; display: flex; align-items: center; gap: 6px; height: 32px; margin-bottom: 4px;">
+                                    <div style="display: flex; align-items: center; gap: 6px; height: 32px; margin-bottom: 2px; border-bottom: 1px solid rgba(39, 39, 42, 0.4);">
                                         <span style="color: #c084fc; font-weight: bold; font-size: 10px;">{idx+1}º</span>
                                         <span style="color: #ffffff; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{musica} — <span style="color: #a1a1aa;">{cantor}</span></span>
                                     </div>
@@ -424,7 +424,7 @@ def render():
                 renderizar_fila_pedidos()
         
             with col_dir:
-                # QR Code aumentado 30% (de 115px para ~150px)
+                # QR Code aumentado mais 30% (~195px)
                 st.markdown(
                     f"""
                         <div class="box-container">
@@ -436,7 +436,7 @@ def render():
                                 <span style="color: #3b82f6;">TV:</span> {url_tela}
                             </div>
                             <div style="text-align: center; background: #ffffff; padding: 6px; border-radius: 3px;">
-                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={url_cliente}" width="150" />
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=195x195&data={url_cliente}" width="195" />
                             </div>
                         </div>
                     """,
