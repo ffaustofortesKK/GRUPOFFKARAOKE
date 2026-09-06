@@ -11,10 +11,12 @@ def render():
             color: #ffffff;
         }
         
+        /* Remover a barra branca superior do Streamlit */
         header[data-testid="stHeader"] {
             background-color: #06040b !important;
         }
         
+        /* Moldura de Tablet Compacta - Tudo visível sem scroll */
         .block-container {
             max-width: 780px !important;
             padding-top: 1rem !important;
@@ -29,6 +31,7 @@ def render():
             margin-bottom: 1rem;
         }
 
+        /* Topo / Header Banner Compacto */
         .ff-header {
             background: linear-gradient(135deg, #1a1333 0%, #0b0714 100%);
             border: 1px solid rgba(138, 43, 226, 0.3);
@@ -45,12 +48,16 @@ def render():
             align-items: center;
             gap: 10px;
         }
-        /* Estilo para a imagem real do Logótipo */
-        .ff-logo-img {
-            height: 38px;
-            width: auto;
-            object-fit: contain;
-            filter: drop-shadow(0 0 8px rgba(123, 44, 191, 0.6));
+        .ff-logo-icon {
+            background: linear-gradient(135deg, #7b2cbf, #9d4edd);
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 10px rgba(123, 44, 191, 0.6);
+            flex-shrink: 0;
         }
         .ff-logo-text-group {
             display: flex;
@@ -80,6 +87,7 @@ def render():
             font-weight: 600;
         }
         
+        /* Caixa de Identificação do Cantor com Nome Animado */
         .ff-cantor-box {
             background: linear-gradient(135deg, #151026, #1e133a);
             border: 1px solid rgba(138, 43, 226, 0.4);
@@ -122,6 +130,7 @@ def render():
         .ff-cantor-name span:nth-child(5n+4) { color: #b19cd9; animation-delay: 0.6s; }
         .ff-cantor-name span:nth-child(5n+5) { color: #2ecc71; animation-delay: 0.8s; }
         
+        /* Número Fixo Amarelo para a Posição Actual (Sem movimento) */
         .ff-number-fixed {
             display: inline-block;
             font-size: 28px;
@@ -132,6 +141,7 @@ def render():
             line-height: 1;
         }
 
+        /* Blocos de Notificação Centralizados */
         .ff-card-status-centered {
             background-color: #120e21;
             border: 1px solid rgba(138, 43, 226, 0.3);
@@ -180,6 +190,7 @@ def render():
             margin: 2px 0 0 0;
         }
 
+        /* Rodapé de Fila de Espera de Ponta a Ponta */
         .ff-fila-wrapper {
             background: linear-gradient(90deg, #18122c, #22183d, #18122c);
             border: 1px solid rgba(138, 43, 226, 0.4);
@@ -203,6 +214,7 @@ def render():
             text-align: center;
         }
 
+        /* Animação de Letreiro Contínuo (Marquee) - Ponta a Ponta */
         @keyframes marquee-anim {
             0% { transform: translateX(0%); }
             100% { transform: translateX(-50%); }
@@ -225,6 +237,7 @@ def render():
             animation-play-state: paused;
         }
 
+        /* Estilo para os itens da fila: Posição Amarela e Cantor Branco com Borda Preta */
         .fila-pos {
             color: #eab308;
             font-weight: 900;
@@ -235,6 +248,7 @@ def render():
             text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 0 2px 4px rgba(0,0,0,0.9);
         }
 
+        /* Caixa de Ação Compacta */
         .ff-action-box {
             background-color: #120e21;
             border: 1px solid rgba(138, 43, 226, 0.3);
@@ -243,6 +257,7 @@ def render():
             margin-top: 6px;
         }
 
+        /* Secção Como Funciona Compacta */
         .ff-how-it-works-title {
             text-align: center;
             color: #b19cd9;
@@ -288,7 +303,7 @@ def render():
             margin: 0;
             font-size: 8px;
             color: #9a8c98;
-            line-align: 1.1;
+            line-height: 1.1;
         }
         
         div.stButton > button {
@@ -329,11 +344,17 @@ def render():
     if "meu_pedido_timestamp" not in st.session_state:
         st.session_state["meu_pedido_timestamp"] = None
 
-    # CABEÇALHO COM LOGÓTIPO EM IMAGEM REAL (Substitua o link abaixo se necessário)
+    # CABEÇALHO COM LOGOTIPO SVG INTEGRADO (Garantido sem erros de link)
     st.markdown("""
         <div class="ff-header">
             <div class="ff-logo-area">
-                <img src="https://i.imgur.com/7D226Zs.png" class="ff-logo-img" alt="Logotipo FF Karaoke">
+                <div class="ff-logo-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v1a7 7 0 0 1-14 0v-1"></path>
+                        <line x1="12" y1="19" x2="12" y2="22"></line>
+                    </svg>
+                </div>
                 <div class="ff-logo-text-group">
                     <span class="ff-logo-title">FF KARAOKE</span>
                     <span class="ff-logo-subtitle">FAZ A VOZ, FAZ A FESTA!</span>
@@ -365,6 +386,7 @@ def render():
         
         letras_html = "".join([f"<span>{char}</span>" if char != " " else "<span>&nbsp;</span>" for char in cantor])
         
+        # Bloco de Identificação do Cantor Animado
         st.markdown(f"""
             <div class="ff-cantor-box">
                 <div class="ff-cantor-label">🎤 Cantor(a) em Sessão</div>
@@ -407,6 +429,7 @@ def render():
                     pedido_ativo = pedidos_do_cantor[0]
                     st.session_state["meu_pedido_timestamp"] = pedido_ativo.get("timestamp")
 
+            # Montagem rigorosamente limpa e sequencial sem duplicação interna cruzada de IDs/registos
             lista_itens_fila = []
             for i, item in enumerate(pendentes_geral):
                 pos_num = i + 1
@@ -417,6 +440,7 @@ def render():
             texto_base = " &nbsp;&nbsp;&bull;&nbsp;&nbsp; ".join(lista_itens_fila) if lista_itens_fila else "A fila está vazia no momento."
             texto_fila_resumo = f"{texto_base} &nbsp;&nbsp;&bull;&nbsp;&nbsp; {texto_base}"
 
+            # Bloco Rodapé Fila de Espera Ocupando Toda a Coluna (Ponta a Ponta)
             html_rodape_fila = f"""
                 <div class="ff-fila-wrapper">
                     <div class="ff-fila-header-title">🎶 Fila de Espera Atual 🎶</div>
@@ -443,6 +467,7 @@ def render():
                 if posicao_real > 1 and len(pendentes_geral) >= (posicao_real - 1):
                     cantor_acima = pendentes_geral[posicao_real - 2].get('cantor', 'outro cantor')
 
+                # CARTÃO 1: A SUA POSIÇÃO ACTUAL É
                 st.markdown(f"""
                     <div class="ff-card-status-centered">
                         <div class="ff-card-title-yellow">A SUA POSIÇÃO ACTUAL É</div>
@@ -452,6 +477,7 @@ def render():
                     </div>
                 """, unsafe_allow_html=True)
                 
+                # CARTÃO 2: AGUARDE A SUA VEZ + RODAPÉ DA FILA COMPLETO
                 if musicas_acima > 0:
                     html_cartao_espera = f'<div class="ff-card-status-centered" style="border-color: rgba(231, 76, 60, 0.4);"><div class="ff-card-title-orange">AGUARDE A SUA VEZ</div><div class="ff-card-main-text" style="font-size: 13px; color: #f1c40f; margin-bottom: 2px;">Assim que cantar o cantor <b>{cantor_acima}</b> será a sua vez!</div><div class="ff-card-subtitle" style="font-size: 9px; margin-bottom: 4px;">({musicas_acima} músicas à sua frente)</div>{html_rodape_fila}</div>'
                     st.markdown(html_cartao_espera, unsafe_allow_html=True)
@@ -495,6 +521,7 @@ def render():
 
         renderizar_painel_fila(cantor, token_prestador)
             
+        # SECÇÃO COMO FUNCIONA COMPACTA
         st.markdown('<div class="ff-how-it-works-title">🎧 COMO FUNCIONA?</div>', unsafe_allow_html=True)
         st.markdown("""
             <div class="ff-steps-container">
