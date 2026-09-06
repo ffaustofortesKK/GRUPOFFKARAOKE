@@ -19,44 +19,63 @@ def render():
         /* Moldura de Tablet Compacta - Tudo visível sem scroll */
         .block-container {
             max-width: 780px !important;
-            padding-top: 0.5rem !important;
-            padding-bottom: 0.8rem !important;
-            padding-left: 0.8rem !important;
-            padding-right: 0.8rem !important;
+            padding-top: 1rem !important;
+            padding-bottom: 1rem !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
             background-color: #0b0714;
             border-radius: 16px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8);
             border: 1px solid rgba(138, 43, 226, 0.25);
-            margin-top: 0.2rem;
-            margin-bottom: 0.2rem;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
         }
 
         /* Topo / Header Banner Compacto */
         .ff-header {
             background: linear-gradient(135deg, #1a1333 0%, #0b0714 100%);
             border: 1px solid rgba(138, 43, 226, 0.3);
-            padding: 6px 12px;
+            padding: 10px 14px;
             border-radius: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
             box-shadow: 0 3px 15px rgba(0, 0, 0, 0.5);
+        }
+        .ff-logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .ff-logo-icon {
+            background: linear-gradient(135deg, #7b2cbf, #9d4edd);
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 10px rgba(123, 44, 191, 0.6);
+            flex-shrink: 0;
+        }
+        .ff-logo-text-group {
+            display: flex;
+            flex-direction: column;
         }
         .ff-logo-title {
             font-size: 16px;
-            font-weight: 800;
+            font-weight: 900;
             color: #ffffff;
             letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            line-height: 1.1;
         }
-        .ff-logo-img {
-            height: 32px;
-            width: auto;
-            object-fit: contain;
-            filter: drop-shadow(0 0 8px rgba(123, 44, 191, 0.6));
+        .ff-logo-subtitle {
+            font-size: 8.5px;
+            font-weight: 500;
+            color: #b19cd9;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
         .ff-badge-online {
             background-color: rgba(46, 204, 113, 0.15);
@@ -73,8 +92,8 @@ def render():
             background: linear-gradient(135deg, #151026, #1e133a);
             border: 1px solid rgba(138, 43, 226, 0.4);
             border-radius: 12px;
-            padding: 8px 12px;
-            margin-bottom: 8px;
+            padding: 10px 14px;
+            margin-bottom: 10px;
             text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.4);
         }
@@ -126,9 +145,9 @@ def render():
         .ff-card-status-centered {
             background-color: #120e21;
             border: 1px solid rgba(138, 43, 226, 0.3);
-            border-radius: 10px;
-            padding: 10px 12px;
-            margin-bottom: 8px;
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
             text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
@@ -171,7 +190,31 @@ def render():
             margin: 2px 0 0 0;
         }
 
-        /* Animação de Letreiro Contínuo (Marquee) - Velocidade Aumentada (10s) */
+        /* Rodapé de Fila de Espera de Ponta a Ponta */
+        .ff-fila-wrapper {
+            background: linear-gradient(90deg, #18122c, #22183d, #18122c);
+            border: 1px solid rgba(138, 43, 226, 0.4);
+            border-radius: 8px;
+            padding: 8px 0;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: left;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);
+            margin-top: 10px;
+            margin-bottom: 6px;
+            overflow: hidden;
+        }
+        .ff-fila-header-title {
+            font-size: 9.5px;
+            color: #b19cd9;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            text-align: center;
+        }
+
+        /* Animação de Letreiro Contínuo (Marquee) - Ponta a Ponta */
         @keyframes marquee-anim {
             0% { transform: translateX(0%); }
             100% { transform: translateX(-50%); }
@@ -187,14 +230,14 @@ def render():
         .ff-marquee-content {
             display: inline-block;
             white-space: nowrap;
-            animation: marquee-anim 10s linear infinite;
+            animation: marquee-anim 12s linear infinite;
         }
 
         .ff-marquee-content:hover {
             animation-play-state: paused;
         }
 
-        /* Estilo para os itens da fila: Posição Amarela e Cantor Branco com Borda Preta e Sombra */
+        /* Estilo para os itens da fila: Posição Amarela e Cantor Branco com Borda Preta */
         .fila-pos {
             color: #eab308;
             font-weight: 900;
@@ -221,7 +264,7 @@ def render():
             font-size: 10px;
             text-transform: uppercase;
             letter-spacing: 1.5px;
-            margin: 6px 0 4px 0;
+            margin: 8px 0 4px 0;
             font-weight: 600;
         }
         .ff-steps-container {
@@ -301,14 +344,20 @@ def render():
     if "meu_pedido_timestamp" not in st.session_state:
         st.session_state["meu_pedido_timestamp"] = None
 
-    # CABEÇALHO COM LOGOTIPO
+    # CABEÇALHO COM LOGOTIPO SVG INTEGRADO (Garantido sem erros de link)
     st.markdown("""
         <div class="ff-header">
-            <div class="ff-logo-title">
-                <img src="https://i.imgur.com/7D226Zs.png" class="ff-logo-img" alt="FF Karaoke Logo">
-                <div>
-                    FF KARAOKE 
-                    <span style="font-size:8px; font-weight:400; color:#b19cd9; display:block; line-height:1;">FAZ A VOZ, FAZ A FESTA!</span>
+            <div class="ff-logo-area">
+                <div class="ff-logo-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v1a7 7 0 0 1-14 0v-1"></path>
+                        <line x1="12" y1="19" x2="12" y2="22"></line>
+                    </svg>
+                </div>
+                <div class="ff-logo-text-group">
+                    <span class="ff-logo-title">FF KARAOKE</span>
+                    <span class="ff-logo-subtitle">FAZ A VOZ, FAZ A FESTA!</span>
                 </div>
             </div>
             <div><span class="ff-badge-online">● Online</span></div>
@@ -350,13 +399,17 @@ def render():
             todos_pedidos = obter_pedidos_musicas()
             
             pendentes_geral = []
+            vistos_timestamps = set()
             for p in todos_pedidos:
                 status = str(p.get("status", "pendente")).strip().lower()
                 t_ped = str(p.get("token_prestador", "geral")).strip()
+                ts_id = str(p.get("timestamp", ""))
                 
                 if status == "pendente":
                     if token_p == "geral" or not t_ped or t_ped == "geral" or t_ped == token_p:
-                        pendentes_geral.append(p)
+                        if ts_id not in vistos_timestamps:
+                            vistos_timestamps.add(ts_id)
+                            pendentes_geral.append(p)
             
             ts_ativo = st.session_state.get("meu_pedido_timestamp")
             pedido_ativo = None
@@ -376,7 +429,7 @@ def render():
                     pedido_ativo = pedidos_do_cantor[0]
                     st.session_state["meu_pedido_timestamp"] = pedido_ativo.get("timestamp")
 
-            # Montagem correta dos itens da fila limpos (1º, 2º, 3º...) sem duplicação interna cruzada
+            # Montagem rigorosamente limpa e sequencial sem duplicação interna cruzada de IDs/registos
             lista_itens_fila = []
             for i, item in enumerate(pendentes_geral):
                 pos_num = i + 1
@@ -385,11 +438,17 @@ def render():
                 lista_itens_fila.append(f'<span class="fila-pos">{pos_str}</span> — <span class="fila-cantor">{nome_c}</span>')
 
             texto_base = " &nbsp;&nbsp;&bull;&nbsp;&nbsp; ".join(lista_itens_fila) if lista_itens_fila else "A fila está vazia no momento."
-            # Duplicamos o bloco exatamente uma vez apenas para garantir o efeito de rotação contínua sem quebrar a contagem
             texto_fila_resumo = f"{texto_base} &nbsp;&nbsp;&bull;&nbsp;&nbsp; {texto_base}"
 
-            # Bloco de Fila de Espera Atual
-            html_rodape_fila = f'<div style="background: linear-gradient(90deg, #18122c, #22183d, #18122c); border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 8px; padding: 8px; text-align: left; box-shadow: inset 0 2px 5px rgba(0,0,0,0.4); margin-bottom: 6px;"><div style="font-size: 9px; color: #b19cd9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 2px; text-align: center;">🎶 Fila de Espera Atual 🎶</div><div class="ff-marquee-container"><div class="ff-marquee-content" style="font-size: 11px;">{texto_fila_resumo}</div></div></div>'
+            # Bloco Rodapé Fila de Espera Ocupando Toda a Coluna (Ponta a Ponta)
+            html_rodape_fila = f"""
+                <div class="ff-fila-wrapper">
+                    <div class="ff-fila-header-title">🎶 Fila de Espera Atual 🎶</div>
+                    <div class="ff-marquee-container">
+                        <div class="ff-marquee-content" style="font-size: 11px;">{texto_fila_resumo}</div>
+                    </div>
+                </div>
+            """
             
             if pedido_ativo:
                 posicao_real = -1
@@ -418,12 +477,12 @@ def render():
                     </div>
                 """, unsafe_allow_html=True)
                 
-                # CARTÃO 2: AGUARDE A SUA VEZ + RODAPÉ DA FILA
+                # CARTÃO 2: AGUARDE A SUA VEZ + RODAPÉ DA FILA COMPLETO
                 if musicas_acima > 0:
-                    html_cartao_espera = f'<div class="ff-card-status-centered" style="border-color: rgba(231, 76, 60, 0.4);"><div class="ff-card-title-orange">AGUARDE A SUA VEZ</div><div class="ff-card-main-text" style="font-size: 13px; color: #f1c40f; margin-bottom: 4px;">Assim que cantar o cantor <b>{cantor_acima}</b> será a sua vez!</div><div class="ff-card-subtitle" style="font-size: 9px; margin-bottom: 6px;">({musicas_acima} músicas à sua frente)</div>{html_rodape_fila}</div>'
+                    html_cartao_espera = f'<div class="ff-card-status-centered" style="border-color: rgba(231, 76, 60, 0.4);"><div class="ff-card-title-orange">AGUARDE A SUA VEZ</div><div class="ff-card-main-text" style="font-size: 13px; color: #f1c40f; margin-bottom: 2px;">Assim que cantar o cantor <b>{cantor_acima}</b> será a sua vez!</div><div class="ff-card-subtitle" style="font-size: 9px; margin-bottom: 4px;">({musicas_acima} músicas à sua frente)</div>{html_rodape_fila}</div>'
                     st.markdown(html_cartao_espera, unsafe_allow_html=True)
                 else:
-                    html_cartao_vez = f'<div class="ff-card-status-centered" style="border-color: rgba(46, 204, 113, 0.4);"><div class="ff-card-title-green">É A SUA VEZ DE CANTAR!</div><div class="ff-card-main-text" style="color: #2ecc71; margin-bottom: 6px;">Prepare-se para subir ao palco agora.</div>{html_rodape_fila}</div>'
+                    html_cartao_vez = f'<div class="ff-card-status-centered" style="border-color: rgba(46, 204, 113, 0.4);"><div class="ff-card-title-green">É A SUA VEZ DE CANTAR!</div><div class="ff-card-main-text" style="color: #2ecc71; margin-bottom: 4px;">Prepare-se para subir ao palco agora.</div>{html_rodape_fila}</div>'
                     st.markdown(html_cartao_vez, unsafe_allow_html=True)
             else:
                 if st.session_state["meu_pedido_timestamp"] is not None:
