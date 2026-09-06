@@ -1,6 +1,7 @@
 from datetime import datetime
 import time
 import streamlit as st
+import streamlit.components.v1 as components
 from db import guardar_prestador, obter_pedidos_musicas, obter_prestadores, apagar_pedido_musica
 
 LINK_LOGO = "https://cdn.phototourl.com/free/2026-07-03-793a0f18-6143-44c8-b56e-e44af828c30c.png"
@@ -55,9 +56,26 @@ def render():
 
         verificar_aprovacao_em_segundo_plano()
 
+        # Estilização global da página de espera para fundo preto
         st.markdown(
             """
-            <div style="background-color: #050507; border: 1px solid #3b2c60; padding: 25px; text-align: center; border-radius: 10px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
+            <style>
+                .stApp { background-color: #000000 !important; overflow: auto !important; }
+                header[data-testid="stHeader"] { background-color: transparent !important; }
+                .block-container {
+                    max-width: 550px !important;
+                    padding-top: 2rem !important;
+                    padding-bottom: 2rem !important;
+                    background-color: #000000 !important;
+                }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        components.html(
+            """
+            <div style="background-color: #050507; border: 1px solid #3b2c60; padding: 25px; text-align: center; border-radius: 10px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.8); font-family: sans-serif;">
                 <div style="font-size: 32px; margin-bottom: 8px;">⏳</div>
                 <h3 style="color: #ffffff; font-size: 18px; margin-bottom: 6px; font-weight: 900;">Aguardando Aprovação</h3>
                 <p style="color: #d4d4d8; font-size: 12px; margin-bottom: 20px; line-height: 1.4;">O seu registo está a aguardar validação do Administrador. A tela abrirá automaticamente assim que for aprovado.</p>
@@ -71,21 +89,14 @@ def render():
                 </div>
             </div>
             <style>
-                .stApp { background-color: #000000 !important; overflow: auto !important; }
-                header[data-testid="stHeader"] { background-color: transparent !important; }
-                .block-container {
-                    max-width: 550px !important;
-                    padding-top: 2rem !important;
-                    padding-bottom: 2rem !important;
-                    background-color: #000000 !important;
-                }
+                body { background-color: #000000; margin: 0; }
                 @keyframes pulse-dot {
                     0%, 100% { transform: scale(0.4); opacity: 0.3; }
                     50% { transform: scale(1.3); opacity: 1; }
                 }
             </style>
             """,
-            unsafe_allow_html=True,
+            height=200,
         )
         
         st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
