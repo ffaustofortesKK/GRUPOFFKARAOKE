@@ -26,8 +26,8 @@ def render():
 
     # Fragmento unificado de alta responsividade (atualiza a cada 2 segundos)
 
-   @st.fragment(run_every=2)
-    def renderizar_tela_unificada():
+@st.fragment(run_every=2)    
+def renderizar_tela_unificada():
         try:
             prestadores = obter_prestadores() or []
         except Exception:
