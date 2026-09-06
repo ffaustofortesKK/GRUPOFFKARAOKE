@@ -58,12 +58,8 @@ def render():
         st.markdown(
             """
             <style>
-                .stApp {
-                    background-color: #000000 !important;
-                }
-                header[data-testid="stHeader"] {
-                    background-color: transparent !important;
-                }
+                .stApp { background-color: #000000 !important; }
+                header[data-testid="stHeader"] { background-color: transparent !important; }
                 .block-container {
                     max-width: 600px !important;
                     padding-top: 5rem !important;
@@ -108,12 +104,8 @@ def render():
         st.markdown(
             """
             <style>
-                .stApp {
-                    background-color: #000000 !important;
-                }
-                header[data-testid="stHeader"] {
-                    background-color: transparent !important;
-                }
+                .stApp { background-color: #000000 !important; }
+                header[data-testid="stHeader"] { background-color: transparent !important; }
                 .block-container {
                     max-width: 1400px !important;
                     min-height: 98vh !important;
@@ -143,9 +135,7 @@ def render():
                     justify-content: space-between;
                     align-items: center;
                 }
-                div[data-testid="column"] {
-                    padding: 0px !important;
-                }
+                div[data-testid="column"] { padding: 0px !important; }
                 .stButton button {
                     background-color: #0d0d10 !important;
                     color: #ffffff !important;
@@ -460,7 +450,7 @@ def render():
         return
 
     # =========================================================================
-    # 🎨 6. TELA DE REGISTO / LOGIN (IDÊNTICA À SEGUNDA IMAGEM)
+    # 🎨 6. TELA DE REGISTO / LOGIN (COMPACTA - SEM SCROLL + LOGO +40%)
     # =========================================================================
     st.markdown(
         f"""
@@ -468,29 +458,31 @@ def render():
             .stApp {{
                 background-color: #000000 !important;
                 background-image: radial-gradient(circle at 50% 0%, rgba(138, 43, 226, 0.15) 0%, transparent 60%);
+                overflow: hidden !important;
             }}
             header[data-testid="stHeader"] {{
                 background-color: transparent !important;
+                display: none;
             }}
             .block-container {{
-                max-width: 900px !important;
-                padding-top: 1rem !important;
-                padding-bottom: 1rem !important;
-                padding-left: 1.5rem !important;
-                padding-right: 1.5rem !important;
+                max-width: 820px !important;
+                padding-top: 0.4rem !important;
+                padding-bottom: 0.4rem !important;
+                padding-left: 1.2rem !important;
+                padding-right: 1.2rem !important;
                 background-color: #050509 !important;
-                border-radius: 12px;
+                border-radius: 10px;
                 border: 1px solid rgba(138, 43, 226, 0.4);
                 box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-                margin-top: 1rem;
-                margin-bottom: 1rem;
+                margin-top: 0.2rem !important;
+                margin-bottom: 0.2rem !important;
             }}
             div[data-baseweb="input"] input {{
-                min-height: 32px !important;
-                height: 34px !important;
-                padding-top: 4px !important;
-                padding-bottom: 4px !important;
-                font-size: 12px !important;
+                min-height: 28px !important;
+                height: 30px !important;
+                padding-top: 2px !important;
+                padding-bottom: 2px !important;
+                font-size: 11px !important;
                 background-color: #0d0d13 !important;
                 color: #ffffff !important;
             }}
@@ -500,8 +492,8 @@ def render():
                 border: 1px solid #27272a !important;
             }}
             div[data-baseweb="select"] div {{
-                min-height: 34px !important;
-                font-size: 12px !important;
+                min-height: 30px !important;
+                font-size: 11px !important;
                 background-color: #0d0d13 !important;
                 color: #ffffff !important;
             }}
@@ -509,10 +501,10 @@ def render():
                 background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
                 color: #000000 !important;
                 font-weight: 900 !important;
-                font-size: 13px !important;
-                border-radius: 6px !important;
+                font-size: 12px !important;
+                border-radius: 5px !important;
                 border: none !important;
-                height: 42px !important;
+                height: 36px !important;
                 box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
             }}
             .stButton button[kind="primary"]:hover, div.stFormSubmitButton button:hover {{
@@ -521,19 +513,19 @@ def render():
             }}
         </style>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <img src="{LINK_LOGO}" style="width: 140px; border-radius: 4px; display: block;" />
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 6px;">
+            <div style="display: flex; align-items: center;">
+                <img src="{LINK_LOGO}" style="width: 196px; border-radius: 4px; display: block;" />
             </div>
             <div style="text-align: center;">
-                <div style="width: 38px; height: 38px; background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.5); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #c084fc; font-size: 16px; margin: auto;">👤</div>
-                <div style="color: #ffffff; font-size: 10px; margin-top: 2px; font-weight: bold;">PORTAL DO PRESTADOR</div>
+                <div style="width: 32px; height: 32px; background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.5); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #c084fc; font-size: 14px; margin: auto;">👤</div>
+                <div style="color: #ffffff; font-size: 9px; margin-top: 1px; font-weight: bold;">PORTAL DO PRESTADOR</div>
             </div>
         </div>
 
-        <div style="text-align: center; margin-bottom: 15px;">
-            <h1 style="color: #eab308; font-size: 22px; font-weight: 900; margin-bottom: 4px; text-shadow: 0 2px 10px rgba(234,179,8,0.2);">ÁREA DO PRESTADOR</h1>
-            <p style="color: #a1a1aa; font-size: 11px; margin: 0;">Registe-se ou entre com a sua sessão ativa.</p>
+        <div style="text-align: center; margin-bottom: 8px;">
+            <h1 style="color: #eab308; font-size: 18px; font-weight: 900; margin-bottom: 2px; text-shadow: 0 2px 10px rgba(234,179,8,0.2);">ÁREA DO PRESTADOR</h1>
+            <p style="color: #a1a1aa; font-size: 10px; margin: 0;">Registe-se ou entre com a sua sessão ativa.</p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -546,13 +538,13 @@ def render():
         label_visibility="collapsed"
     )
 
-    st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
 
     if modo_acesso == "Novo Registo":
         with st.form("form_registo_prestador_idêntico"):
             st.markdown(
                 """
-                <div style="background-color: #0b0b0f; border: 1px solid #3b2c60; border-radius: 8px; padding: 16px;">
+                <div style="background-color: #0b0b0f; border: 1px solid #3b2c60; border-radius: 6px; padding: 10px 12px;">
                 """,
                 unsafe_allow_html=True,
             )
@@ -560,17 +552,17 @@ def render():
             c1, c2 = st.columns(2, gap="medium")
             
             with c1:
-                st.markdown('<div style="color: #c084fc; font-size: 11px; font-weight: bold; margin-bottom: 4px;">👤 Nome Completo *</div>', unsafe_allow_html=True)
+                st.markdown('<div style="color: #c084fc; font-size: 10px; font-weight: bold; margin-bottom: 2px;">👤 Nome Completo *</div>', unsafe_allow_html=True)
                 nome = st.text_input("Nome Completo", placeholder="Digite o seu nome completo", label_visibility="collapsed")
                 
-                st.markdown('<div style="color: #c084fc; font-size: 11px; font-weight: bold; margin-top: 10px; margin-bottom: 4px;">🏢 Nome do Estabelecimento *</div>', unsafe_allow_html=True)
+                st.markdown('<div style="color: #c084fc; font-size: 10px; font-weight: bold; margin-top: 6px; margin-bottom: 2px;">🏢 Nome do Estabelecimento *</div>', unsafe_allow_html=True)
                 estabelecimento = st.text_input("Estabelecimento", placeholder="Digite o nome do seu estabelecimento", label_visibility="collapsed")
 
             with c2:
-                st.markdown('<div style="color: #c084fc; font-size: 11px; font-weight: bold; margin-bottom: 4px;">📞 Telemóvel / Telefone *</div>', unsafe_allow_html=True)
+                st.markdown('<div style="color: #c084fc; font-size: 10px; font-weight: bold; margin-bottom: 2px;">📞 Telemóvel / Telefone *</div>', unsafe_allow_html=True)
                 telefone = st.text_input("Telemóvel / Telefone", placeholder="Ex: 9XX XXX XXX", label_visibility="collapsed")
                 
-                st.markdown('<div style="color: #c084fc; font-size: 11px; font-weight: bold; margin-top: 10px; margin-bottom: 4px;">⏱️ Tempo / Valor *</div>', unsafe_allow_html=True)
+                st.markdown('<div style="color: #c084fc; font-size: 10px; font-weight: bold; margin-top: 6px; margin-bottom: 2px;">⏱️ Tempo / Valor *</div>', unsafe_allow_html=True)
                 contrato = st.selectbox(
                     "Contrato",
                     [
@@ -581,10 +573,7 @@ def render():
                     label_visibility="collapsed",
                 )
 
-            st.markdown('<div style="color: #c084fc; font-size: 11px; font-weight: bold; margin-top: 10px; margin-bottom: 4px;">🎬 Link do Vídeo Clipe de Fundo (Opcional)</div>', unsafe_allow_html=True)
-            video_fundo = st.text_input("Vídeo Clipe", placeholder="Cole aqui o link do vídeo de fundo para a TV...", label_visibility="collapsed")
-
-            st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
             submitted = st.form_submit_button("🚀 SUBMETER PEDIDO", use_container_width=True)
             
             st.markdown("</div>", unsafe_allow_html=True)
@@ -609,7 +598,7 @@ def render():
                         "token": token_gerado,
                         "segundos_restantes": segundos_contrato,
                         "data_pedido": datetime.now().strftime("%d/%m/%Y %H:%M"),
-                        "video_fundo": video_fundo.strip() if 'video_fundo' in locals() else "",
+                        "video_fundo": "",
                     }
 
                     guardar_prestador(novo_prestador)
@@ -625,20 +614,20 @@ def render():
         with st.form("form_login_prestador_idêntico"):
             st.markdown(
                 """
-                <div style="background-color: #0b0b0f; border: 1px solid #3b2c60; border-radius: 8px; padding: 16px;">
+                <div style="background-color: #0b0b0f; border: 1px solid #3b2c60; border-radius: 6px; padding: 12px;">
                 """,
                 unsafe_allow_html=True,
             )
 
             c1, c2 = st.columns(2, gap="medium")
             with c1:
-                st.markdown('<div style="color: #c084fc; font-size: 11px; font-weight: bold; margin-bottom: 4px;">👤 Nome Cadastrado *</div>', unsafe_allow_html=True)
+                st.markdown('<div style="color: #c084fc; font-size: 10px; font-weight: bold; margin-bottom: 2px;">👤 Nome Cadastrado *</div>', unsafe_allow_html=True)
                 login_nome = st.text_input("Nome", placeholder="Digite o seu nome cadastrado", label_visibility="collapsed")
             with c2:
-                st.markdown('<div style="color: #c084fc; font-size: 11px; font-weight: bold; margin-bottom: 4px;">📞 Telemóvel / Telefone *</div>', unsafe_allow_html=True)
+                st.markdown('<div style="color: #c084fc; font-size: 10px; font-weight: bold; margin-bottom: 2px;">📞 Telemóvel / Telefone *</div>', unsafe_allow_html=True)
                 login_telefone = st.text_input("Telemóvel / Telefone", placeholder="Digite o seu número de telefone", label_visibility="collapsed")
 
-            st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
             login_submitted = st.form_submit_button("🔓 ENTRAR NA SESSÃO", use_container_width=True)
 
             st.markdown("</div>", unsafe_allow_html=True)
@@ -665,17 +654,17 @@ def render():
 
     st.markdown(
         """
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 15px; font-size: 10px; color: #a1a1aa; flex-wrap: wrap; gap: 10px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 16px; color: #eab308;">🛡️</span>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 8px; font-size: 9px; color: #a1a1aa; flex-wrap: wrap; gap: 6px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 14px; color: #eab308;">🛡️</span>
                 <div><b style="color: #ffffff;">RÁPIDO E SEGURO</b><br>O seu pedido é processado com total segurança.</div>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 16px; color: #c084fc;">⏰</span>
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 14px; color: #c084fc;">⏰</span>
                 <div><b style="color: #ffffff;">ATENDIMENTO 24/7</b><br>Estamos sempre à sua disposição.</div>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 16px; color: #eab308;">🎵</span>
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 14px; color: #eab308;">🎵</span>
                 <div><b style="color: #ffffff;">MAIS MÚSICA, MAIS FESTA!</b><br>Junte-se à nossa comunidade de prestadores.</div>
             </div>
         </div>
