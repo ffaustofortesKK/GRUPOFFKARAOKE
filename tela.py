@@ -25,9 +25,8 @@ def render():
     token_str = str(token) if token else ""
 
     # Fragmento unificado de alta responsividade (atualiza a cada 2 segundos)
-
-@st.fragment(run_every=2)    
-def renderizar_tela_unificada():
+    @st.fragment(run_every=2)
+    def renderizar_tela_unificada():
         try:
             prestadores = obter_prestadores() or []
         except Exception:
@@ -77,8 +76,6 @@ def renderizar_tela_unificada():
             todos_pedidos = obter_pedidos_musicas() or []
         except Exception:
             todos_pedidos = []
-
-        token_prestador_ativo = str(prestador_ativo.get("token", "")) if prestador_ativo else ""
 
         lista_pedidos = [
             p for p in todos_pedidos 
@@ -210,5 +207,6 @@ def renderizar_tela_unificada():
         </html>
         """
         components.html(html_completo, height=850, scrolling=False)
- 
-        renderizar_tela_unificada()
+
+    # Chamada correta do fragmento dentro da função render()
+    renderizar_tela_unificada()
