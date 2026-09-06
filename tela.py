@@ -33,15 +33,13 @@ def render():
     video_fundo = prestador_ativo.get("video_fundo", "") if prestador_ativo else ""
     token_str = str(token or (prestador_ativo.get("token") if prestador_ativo else ""))
 
-    # URL do YouTube configurada com mute=1 para forçar o autoplay imediato do navegador
-    embed_url = ""
+    # Extrair o ID do YouTube de forma limpa para a API
+    video_id = ""
     if video_fundo:
         if "youtu.be/" in video_fundo:
             video_id = video_fundo.split("youtu.be/")[1].split("?")[0]
-            embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=1&controls=0&loop=1&playlist={video_id}&enablejsapi=1"
         elif "watch?v=" in video_fundo:
             video_id = video_fundo.split("watch?v=")[1].split("&")[0]
-            embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=1&controls=0&loop=1&playlist={video_id}&enablejsapi=1"
 
     @st.fragment(run_every=3)
     def renderizar_tela_unificada():
@@ -77,9 +75,54 @@ def render():
             </div>
             """
 
-        if embed_url:
+        if video_id:
             conteudo_fundo = f"""
-            <iframe class="video-fundo" src="{embed_url}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            <div id="player" class="video-fundo"></div>
+            <script>
+                var player;
+                var currentVideoId = '{video_id}';
+                
+                function onYouTubeIframeAPIReady() {{
+                    player = new YT.Player('player', {{
+                        height: '100%',
+                        width: '100%',
+                        videoId: currentVideoId,
+                        playerVars: {{
+                            'autoplay': 1,
+                            'controls': 0,
+                            'loop': 1,
+                            'playlist': currentVideoId,
+                            'mute': 0,
+                            'fs': 0,
+                            'rel': 0
+                        }},
+                        events: {{
+                            'onReady': function(event) {{
+                                event.target.setVolume(100);
+                                event.target.playVideo();
+                            }},
+                            'onStateChange': function(event) {{
+                                if (event.data === YT.PlayerState.ENDED) {{
+                                    event.target.playVideo();
+                                }}
+                            }}
+                        }}
+                    }});
+                }}
+
+                // Carrega a API do YouTube dinamicamente caso ainda não exista
+                if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {{
+                    var tag = document.createElement('script');
+                    tag.src = "https://www.youtube.com/iframe_api";
+                    var firstScriptTag = document.getElementsByTagName('script')[0];
+                    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+                }} else if (player && player.loadVideoById) {{
+                    // Se o prestador trocar de link, atualiza o vídeo sem perder o som nem recarregar
+                    if (player.getVideoData().video_id !== currentVideoId) {{
+                        player.loadVideoById(currentVideoId);
+                    }}
+                }}
+            </script>
             """
         else:
             conteudo_fundo = """
@@ -109,7 +152,6 @@ def render():
                 height: 100vh;
                 z-index: 1;
                 border: none;
-                pointer-events: auto;
             }}
             .sem-video {{
                 position: fixed;
@@ -144,7 +186,6 @@ def render():
                 flex-direction: column;
                 box-sizing: border-box;
                 z-index: 99999;
-                pointer-events: auto;
             }}
             .playlist-scroll {{
                 overflow-y: auto;
