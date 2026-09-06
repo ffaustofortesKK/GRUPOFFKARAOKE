@@ -22,29 +22,36 @@ def render():
     # Recuperar token da URL
     query_params = st.query_params
     token = query_params.get("token", None)
+    token_str = str(token) if token else ""
 
-    prestadores = obter_prestadores() or []
-    prestador_ativo = None
-    if token:
-        prestador_ativo = next((p for p in prestadores if p.get("token") == token), None)
-    if not prestador_ativo:
-        prestador_ativo = next((p for p in prestadores if p.get("status_str") == "aprovado"), None)
-
-    video_fundo = prestador_ativo.get("video_fundo", "") if prestador_ativo else ""
-    token_str = str(token or (prestador_ativo.get("token") if prestador_ativo else ""))
-
-    # URL do YouTube formatada para iframe direto com som ativo e auto-reprodução forçada
-    embed_url = ""
-    if video_fundo:
-        if "youtu.be/" in video_fundo:
-            video_id = video_fundo.split("youtu.be/")[1].split("?")[0]
-            embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=0&controls=0&loop=1&playlist={video_id}&enablejsapi=1"
-        elif "watch?v=" in video_fundo:
-            video_id = video_fundo.split("watch?v=")[1].split("&")[0]
-            embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=0&controls=0&loop=1&playlist={video_id}&enablejsapi=1"
-
-    @st.fragment(run_every=3)
+    # Fragmento unificado de alta responsividade (atualiza a cada 2 segundos em segundo plano)
+    @st.fragment(run_every=2)
     def renderizar_tela_unificada():
+        # Consultar prestadores e pedidos DENTRO do fragmento para refletir instantaneamente a ação do prestador
+        try:
+            prestadores = obter_prestadores() or []
+        except Exception:
+            prestadores = []
+
+        prestador_ativo = None
+        if token_str and token_str != "None":
+            prestador_ativo = next((p for p in prestadores if str(p.get("token")) == token_str), None)
+        
+        if not prestador_ativo:
+            prestador_ativo = next((p for p in prestadores if p.get("status_str") == "aprovado"), None)
+
+        video_fundo = prestador_ativo.get("video_fundo", "") if prestador_ativo else ""
+
+        # Extração limpa do ID do YouTube
+        embed_url = ""
+        if video_fundo:
+            if "youtu.be/" in video_fundo:
+                video_id = video_fundo.split("youtu.be/")[1].split("?")[0]
+                embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=0&controls=0&loop=1&playlist={video_id}"
+            elif "watch?v=" in video_fundo:
+                video_id = video_fundo.split("watch?v=")[1].split("&")[0]
+                embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=0&controls=0&loop=1&playlist={video_id}"
+
         try:
             todos_pedidos = obter_pedidos_musicas() or []
         except Exception:
