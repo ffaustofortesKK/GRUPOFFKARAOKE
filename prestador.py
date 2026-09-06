@@ -229,43 +229,44 @@ def render():
                     unsafe_allow_html=True,
                 )
 
-            renderizar_relogio_topo()
+            # Elementos fora da barra lateral (ecrã principal / topo)
+    renderizar_relogio_topo()
 
-            nome_prestador_txt = prestador_atual.get("nome", "Prestador") if prestador_atual else "Prestador"
-            estabelecimento_txt = prestador_atual.get("estabelecimento", "") if prestador_atual else ""
-            video_fundo_atual = prestador_atual.get("video_fundo", "") if prestador_atual else ""
+    nome_prestador_txt = prestador_atual.get("nome", "Prestador") if prestador_atual else "Prestador"
+    estabelecimento_txt = prestador_atual.get("estabelecimento", "") if prestador_atual else ""
+    video_fundo_atual = prestador_atual.get("video_fundo", "") if prestador_atual else ""
 
-            st.markdown(
-                f"""
-                <div style="background-color: #0d0d10; border: 1px solid #8b5cf6; padding: 10px 10px; border-radius: 4px; margin-bottom: 6px;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 24px;">🎙️</span>
-                        <div>
-                            <div style="color: #c084fc; font-size: 9px; font-weight: bold;">PRESTADOR</div>
-                            <div style="color: #ffffff; font-size: 24px; font-weight: bold; line-height: 1.1;">{nome_prestador_txt}</div>
-                            <div style="color: #a1a1aa; font-size: 10px;">{estabelecimento_txt}</div>
-                        </div>
-                    </div>
+    st.markdown(
+        f"""
+        <div style="background-color: #0d0d10; border: 1px solid #8b5cf6; padding: 10px 10px; border-radius: 4px; margin-bottom: 6px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 24px;">🎙️</span>
+                <div>
+                    <div style="color: #c084fc; font-size: 9px; font-weight: bold;">PRESTADOR</div>
+                    <div style="color: #ffffff; font-size: 24px; font-weight: bold; line-height: 1.1;">{nome_prestador_txt}</div>
+                    <div style="color: #a1a1aa; font-size: 10px;">{estabelecimento_txt}</div>
                 </div>
-                """,
-                unsafe_allow_html=True,
-            )
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
-            # LOGOTIPO
-            st.markdown(
-                f"""
-                <div style="text-align: center; margin-top: 5px; margin-bottom: 6px;">
-                    <img src="{LINK_LOGO}" style="max-width: 100%; width: 140px; border-radius: 4px;" />
-                </div>
-                """,
-                unsafe_allow_html=True)
+    # LOGOTIPO
+    st.markdown(
+        f"""
+        <div style="text-align: center; margin-top: 5px; margin-bottom: 6px;">
+            <img src="{LINK_LOGO}" style="max-width: 100%; width: 140px; border-radius: 4px;" />
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-      with st.sidebar:
-        # ... (os outros elementos da barra lateral, como o perfil, botões de ação, etc.)
-        
+    # BARRA LATERAL (Tudo o que é configuração, vídeo, notas e botão sair fica aqui dentro)
+    with st.sidebar:
         st.markdown("---")
         
-        # SECÇÃO DE CONFIGURAÇÃO DO VÍDEO CLIPE DE FUNDO (DE VOLTA À BARRA LATERAL)
+        # SECÇÃO DE CONFIGURAÇÃO DO VÍDEO CLIPE DE FUNDO
         st.markdown('<div style="color: #c084fc; font-size: 11px; font-weight: bold; margin-bottom: 3px;">🎬 VÍDEO CLIPE DE FUNDO (TV)</div>', unsafe_allow_html=True)
         
         link_atual = prestador_atual.get("video_fundo", "") if prestador_atual else ""
@@ -300,7 +301,7 @@ def render():
 
         st.markdown("---")
 
-        # NOTAS IMPORTANTES (DE VOLTA À BARRA LATERAL)
+        # NOTAS IMPORTANTES
         st.markdown("""
         <div style="font-size: 11px; color: #a1a1aa; background: rgba(24, 24, 27, 0.6); padding: 10px; border-radius: 6px; border: 1px solid #3f3f46;">
             <b style="color: #eab308;">📌 NOTAS IMPORTANTES:</b><br>
@@ -309,12 +310,15 @@ def render():
         </div>
         """, unsafe_allow_html=True)
         
-            if st.button("🚪 Sair", use_container_width=True):
-                st.session_state.pedido_submetido = False
-                st.session_state.token_prestador = None
-                st.session_state.estado_pedido = "pendente"
-                st.session_state.aprovado = False
-                st.rerun()
+        st.markdown("---")
+
+        # BOTÃO SAIR (Dentro da barra lateral)
+        if st.button("🚪 Sair", use_container_width=True):
+            st.session_state.pedido_submetido = False
+            st.session_state.token_prestador = None
+            st.session_state.estado_pedido = "pendente"
+            st.session_state.aprovado = False
+            st.rerun()
 
         with col_principal:
             col_esq, col_dir = st.columns([1.4, 1])
