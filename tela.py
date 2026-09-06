@@ -33,17 +33,16 @@ def render():
     video_fundo = prestador_ativo.get("video_fundo", "") if prestador_ativo else ""
     token_str = str(token or (prestador_ativo.get("token") if prestador_ativo else ""))
 
-    # URL do YouTube com som ativo (mute=0)
+    # URL do YouTube formatada para garantir o Autoplay correto com som ativo (mute=0)
     embed_url = ""
     if video_fundo:
         if "youtu.be/" in video_fundo:
             video_id = video_fundo.split("youtu.be/")[1].split("?")[0]
-            embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=0&loop=1&playlist={video_id}&controls=0"
+            embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=0&controls=0&loop=1&playlist={video_id}&enablejsapi=1"
         elif "watch?v=" in video_fundo:
             video_id = video_fundo.split("watch?v=")[1].split("&")[0]
-            embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=0&loop=1&playlist={video_id}&controls=0"
+            embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=0&controls=0&loop=1&playlist={video_id}&enablejsapi=1"
 
-    # Bloco unificado em tempo real (Atualiza a playlist a cada 3 segundos sem recarregar a página inteira)
     @st.fragment(run_every=3)
     def renderizar_tela_unificada():
         try:
@@ -80,7 +79,7 @@ def render():
 
         if embed_url:
             conteudo_fundo = f"""
-            <iframe class="video-fundo" src="{embed_url}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <iframe class="video-fundo" src="{embed_url}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
             """
         else:
             conteudo_fundo = """
@@ -174,7 +173,6 @@ def render():
         </body>
         </html>
         """
-        # Altura ocupada em tela cheia na TV
         components.html(html_completo, height=850, scrolling=False)
 
     renderizar_tela_unificada()
