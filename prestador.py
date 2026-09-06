@@ -260,30 +260,31 @@ def render():
                 """,
                 unsafe_allow_html=True,
             )
-# SECÇÃO DE CONFIGURAÇÃO DO VÍDEO CLIPE NO PAINEL LATERAL
-        with st.container():
-            st.markdown('<div style="color: #c084fc; font-size: 10px; font-weight: bold; margin-bottom: 3px;">🎬 VÍDEO CLIPE DE FUNDO (TV)</div>', unsafe_allow_html=True)
+
+         # SECÇÃO DE CONFIGURAÇÃO DO VÍDEO CLIPE NO PAINEL LATERAL
+with st.container():
+    st.markdown('<div style="color: #c084fc; font-size: 10px; font-weight: bold; margin-bottom: 3px;">🎬 VÍDEO CLIPE DE FUNDO (TV)</div>', unsafe_allow_html=True)
+    
+    # Garantir que o input reflete o valor atual da BD ou limpa o estado de cache antigo
+    novo_video_fundo = st.text_input(
+        "Vídeo Clipe de Fundo", 
+        value=prestador_atual.get("video_fundo", ""), 
+        placeholder="Cole o link do vídeo...", 
+        label_visibility="collapsed", 
+        key="input_atualizar_video"
+    )
+    
+    if st.button("💾 Guardar Vídeo", use_container_width=True):
+        if prestador_atual:
+            prestador_atual["video_fundo"] = novo_video_fundo.strip()
+            guardar_prestador(prestador_atual)
             
-            # Garantir que o input reflete o valor atual da BD ou limpa o estado de cache antigo
-            novo_video_fundo = st.text_input(
-                "Vídeo Clipe de Fundo", 
-                value=prestador_atual.get("video_fundo", ""), 
-                placeholder="Cole o link do vídeo...", 
-                label_visibility="collapsed", 
-                key="input_atualizar_video"
-            )
+            # Forçar atualização imediata da sessão para propagar para a tela da TV
+            st.session_state["video_fundo_atual"] = novo_video_fundo.strip()
             
-            if st.button("💾 Guardar Vídeo", use_container_width=True):
-                if prestador_atual:
-                    prestador_atual["video_fundo"] = novo_video_fundo.strip()
-                    guardar_prestador(prestador_atual)
-                    
-                    # Forçar atualização imediata da sessão para propagar para a tela da TV
-                    st.session_state["video_fundo_atual"] = novo_video_fundo.strip()
-                    
-                    st.success("Vídeo de fundo atualizado com sucesso!")
-                    time.sleep(0.3)
-                    st.rerun()
+            st.success("Vídeo de fundo atualizado com sucesso!")
+            time.sleep(0.3)
+            st.rerun()
 
             # NOTA INFORMATIVA ATUALIZADA
             st.markdown(
@@ -435,7 +436,8 @@ def render():
                 with col_bt_cli:
                     st.markdown(f'<a href="{url_cliente}" target="_blank"><button style="width: 100%; background-color: #0d0d10; color: #ffffff; border: 1px solid #27272a; padding: 6px; border-radius: 3px; font-size: 11px;">📱 Cliente</button></a>', unsafe_allow_html=True)
 
-        
+        return
+
     # ==========================================
     # 5. SE ESTIVER RECUSADO
     # ==========================================
