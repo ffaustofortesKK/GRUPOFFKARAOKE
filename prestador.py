@@ -57,6 +57,19 @@ def render():
 
         st.markdown(
             """
+            <div style="background-color: #050507; border: 1px solid #3b2c60; padding: 25px; text-align: center; border-radius: 10px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
+                <div style="font-size: 32px; margin-bottom: 8px;">⏳</div>
+                <h3 style="color: #ffffff; font-size: 18px; margin-bottom: 6px; font-weight: 900;">Aguardando Aprovação</h3>
+                <p style="color: #d4d4d8; font-size: 12px; margin-bottom: 20px; line-height: 1.4;">O seu registo está a aguardar validação do Administrador. A tela abrirá automaticamente assim que for aprovado.</p>
+                
+                <div style="display: flex; justify-content: center; align-items: center; gap: 12px; margin: 15px 0 5px 0;">
+                    <div style="width: 14px; height: 14px; background-color: #f59e0b; border-radius: 50%; animation: pulse-dot 1.4s infinite ease-in-out both; animation-delay: -0.32s;"></div>
+                    <div style="width: 14px; height: 14px; background-color: #ec4899; border-radius: 50%; animation: pulse-dot 1.4s infinite ease-in-out both; animation-delay: -0.16s;"></div>
+                    <div style="width: 14px; height: 14px; background-color: #8b5cf6; border-radius: 50%; animation: pulse-dot 1.4s infinite ease-in-out both; animation-delay: 0s;"></div>
+                    <div style="width: 14px; height: 14px; background-color: #3b82f6; border-radius: 50%; animation: pulse-dot 1.4s infinite ease-in-out both; animation-delay: 0.16s;"></div>
+                    <div style="width: 14px; height: 14px; background-color: #10b981; border-radius: 50%; animation: pulse-dot 1.4s infinite ease-in-out both; animation-delay: 0.32s;"></div>
+                </div>
+            </div>
             <style>
                 .stApp { background-color: #000000 !important; overflow: auto !important; }
                 header[data-testid="stHeader"] { background-color: transparent !important; }
@@ -70,39 +83,7 @@ def render():
                     0%, 100% { transform: scale(0.4); opacity: 0.3; }
                     50% { transform: scale(1.3); opacity: 1; }
                 }
-                .loader-wrapper {
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    gap: 10px;
-                    margin: 20px 0 10px 0;
-                }
-                .loader-dot {
-                    width: 14px;
-                    height: 14px;
-                    border-radius: 50%;
-                    display: inline-block;
-                    animation: pulse-dot 1.4s infinite ease-in-out both;
-                }
-                .dot-1 { background-color: #f59e0b; animation-delay: -0.32s; }
-                .dot-2 { background-color: #ec4899; animation-delay: -0.16s; }
-                .dot-3 { background-color: #8b5cf6; animation-delay: 0s; }
-                .dot-4 { background-color: #3b82f6; animation-delay: 0.16s; }
-                .dot-5 { background-color: #10b981; animation-delay: 0.32s; }
             </style>
-            <div style="background-color: #050507; border: 1px solid #3b2c60; padding: 25px; text-align: center; border-radius: 10px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
-                <div style="font-size: 32px; margin-bottom: 8px;">⏳</div>
-                <h3 style="color: #ffffff; font-size: 18px; margin-bottom: 6px; font-weight: 900;">Aguardando Aprovação</h3>
-                <p style="color: #d4d4d8; font-size: 12px; margin-bottom: 15px; line-height: 1.4;">O seu registo está a aguardar validação do Administrador. A tela abrirá automaticamente assim que for aprovado.</p>
-                
-                <div class="loader-wrapper">
-                    <div class="loader-dot dot-1"></div>
-                    <div class="loader-dot dot-2"></div>
-                    <div class="loader-dot dot-3"></div>
-                    <div class="loader-dot dot-4"></div>
-                    <div class="loader-dot dot-5"></div>
-                </div>
-            </div>
             """,
             unsafe_allow_html=True,
         )
