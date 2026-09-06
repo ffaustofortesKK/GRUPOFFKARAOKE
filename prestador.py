@@ -511,6 +511,11 @@ def render():
                 background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
                 color: #000000 !important;
             }}
+            /* Estilização para deixar o texto do radio em Negrito e Branco */
+            div[data-testid="stRadio"] label p {{
+                color: #ffffff !important;
+                font-weight: bold !important;
+            }}
         </style>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 6px;">
@@ -661,7 +666,7 @@ def render():
             </div>
             <div style="flex: 1; min-width: 220px; background-color: #0b0b0f; border: 1px solid #27272a; border-radius: 50px; padding: 6px 12px; display: flex; align-items: center; gap: 10px;">
                 <span style="font-size: 22px; color: #c084fc;">⏰</span>
-                <div style="font-size: 13.5px; color: #a1a1aa; line-height: 1.2;"><b style="color: #ffffff; font-size: 14px;">ATENDIMENTO 24/7</b><br>Estamos sempre à sua disposição.</div>
+                <div style="font-size: 13.5px; color: #a1a1aa; line-height: 1.2;"><b style="color: #ffffff; font-size: 14px;">ATENDIMENTO VIA WHATSAPP</b><br>921205050/955099159 Para qualquer esclarecimento.</div>
             </div>
             <div style="flex: 1; min-width: 220px; background-color: #0b0b0f; border: 1px solid #27272a; border-radius: 50px; padding: 6px 12px; display: flex; align-items: center; gap: 10px;">
                 <span style="font-size: 22px; color: #eab308;">🎵</span>
