@@ -33,15 +33,15 @@ def render():
     video_fundo = prestador_ativo.get("video_fundo", "") if prestador_ativo else ""
     token_str = str(token or (prestador_ativo.get("token") if prestador_ativo else ""))
 
-    # URL do YouTube formatada para garantir o Autoplay correto com som ativo (mute=0)
+    # URL do YouTube configurada com mute=1 para forçar o autoplay imediato do navegador
     embed_url = ""
     if video_fundo:
         if "youtu.be/" in video_fundo:
             video_id = video_fundo.split("youtu.be/")[1].split("?")[0]
-            embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=0&controls=0&loop=1&playlist={video_id}&enablejsapi=1"
+            embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=1&controls=0&loop=1&playlist={video_id}&enablejsapi=1"
         elif "watch?v=" in video_fundo:
             video_id = video_fundo.split("watch?v=")[1].split("&")[0]
-            embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=0&controls=0&loop=1&playlist={video_id}&enablejsapi=1"
+            embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=1&controls=0&loop=1&playlist={video_id}&enablejsapi=1"
 
     @st.fragment(run_every=3)
     def renderizar_tela_unificada():
@@ -109,7 +109,7 @@ def render():
                 height: 100vh;
                 z-index: 1;
                 border: none;
-                pointer-events: none;
+                pointer-events: auto;
             }}
             .sem-video {{
                 position: fixed;
@@ -144,6 +144,7 @@ def render():
                 flex-direction: column;
                 box-sizing: border-box;
                 z-index: 99999;
+                pointer-events: auto;
             }}
             .playlist-scroll {{
                 overflow-y: auto;
