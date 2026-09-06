@@ -450,7 +450,7 @@ def render():
         return
 
     # =========================================================================
-    # 🎨 6. TELA DE REGISTO / LOGIN (+50% TAMANHO EMOJIS E TEXTOS SOLICITADOS)
+    # 🎨 6. TELA DE REGISTO / LOGIN (COMPACTA - SEM SCROLL + LOGO +40%)
     # =========================================================================
     st.markdown(
         f"""
@@ -482,7 +482,7 @@ def render():
                 height: 30px !important;
                 padding-top: 2px !important;
                 padding-bottom: 2px !important;
-                font-size: 12px !important;
+                font-size: 11px !important;
                 background-color: #0d0d13 !important;
                 color: #ffffff !important;
             }}
@@ -493,7 +493,7 @@ def render():
             }}
             div[data-baseweb="select"] div {{
                 min-height: 30px !important;
-                font-size: 12px !important;
+                font-size: 11px !important;
                 background-color: #0d0d13 !important;
                 color: #ffffff !important;
             }}
@@ -501,7 +501,7 @@ def render():
                 background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
                 color: #000000 !important;
                 font-weight: 900 !important;
-                font-size: 13px !important;
+                font-size: 12px !important;
                 border-radius: 5px !important;
                 border: none !important;
                 height: 36px !important;
@@ -562,7 +562,7 @@ def render():
                 st.markdown('<div style="color: #c084fc; font-size: 15px; font-weight: bold; margin-bottom: 2px;">📞 Telemóvel / Telefone *</div>', unsafe_allow_html=True)
                 telefone = st.text_input("Telemóvel / Telefone", placeholder="Ex: 9XX XXX XXX", label_visibility="collapsed")
                 
-                st.markdown('<div style="color: #c084fc; font-size: 15px; font-weight: bold; margin-top: 6px; margin-bottom: 2px;">⏱️ Tempo / Valor *</div>', unsafe_allow_html=True)
+                st.markdown('<div style="color: #c084fc; font-size: 15px; font-weight: bold; margin-top: 6px; margin-bottom: 2px;">⏱️ Tempo / Contrato *</div>', unsafe_allow_html=True)
                 contrato = st.selectbox(
                     "Contrato",
                     [
@@ -654,18 +654,18 @@ def render():
 
     st.markdown(
         """
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 8px; font-size: 14px; color: #a1a1aa; flex-wrap: wrap; gap: 6px;">
-            <div style="display: flex; align-items: center; gap: 6px;">
-                <span style="font-size: 21px; color: #eab308;">🛡️</span>
-                <div><b style="color: #ffffff; font-size: 14px;">RÁPIDO E SEGURO</b><br><span style="font-size: 13px;">O seu pedido é processado com total segurança.</span></div>
+        <div style="display: flex; justify-content: space-between; align-items: stretch; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 8px; flex-wrap: wrap; gap: 6px;">
+            <div style="flex: 1; min-width: 220px; background-color: #0b0b0f; border: 1px solid #27272a; border-radius: 50px; padding: 6px 12px; display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 22px; color: #eab308;">🛡️</span>
+                <div style="font-size: 13.5px; color: #a1a1aa; line-height: 1.2;"><b style="color: #ffffff; font-size: 14px;">RÁPIDO E SEGURO</b><br>O seu pedido é processado com total segurança.</div>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px;">
-                <span style="font-size: 21px; color: #c084fc;">⏰</span>
-                <div><b style="color: #ffffff; font-size: 14px;">ATENDIMENTO 24/7</b><br><span style="font-size: 13px;">Estamos sempre à sua disposição.</span></div>
+            <div style="flex: 1; min-width: 220px; background-color: #0b0b0f; border: 1px solid #27272a; border-radius: 50px; padding: 6px 12px; display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 22px; color: #c084fc;">⏰</span>
+                <div style="font-size: 13.5px; color: #a1a1aa; line-height: 1.2;"><b style="color: #ffffff; font-size: 14px;">ATENDIMENTO 24/7</b><br>Estamos sempre à sua disposição.</div>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px;">
-                <span style="font-size: 21px; color: #eab308;">🎵</span>
-                <div><b style="color: #ffffff; font-size: 14px;">MAIS MÚSICA, MAIS FESTA!</b><br><span style="font-size: 13px;">Junte-se à nossa comunidade de prestadores.</span></div>
+            <div style="flex: 1; min-width: 220px; background-color: #0b0b0f; border: 1px solid #27272a; border-radius: 50px; padding: 6px 12px; display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 22px; color: #eab308;">🎵</span>
+                <div style="font-size: 13.5px; color: #a1a1aa; line-height: 1.2;"><b style="color: #ffffff; font-size: 14px;">MAIS MÚSICA, MAIS FESTA!</b><br>Junte-se à nossa comunidade.</div>
             </div>
         </div>
         """,
