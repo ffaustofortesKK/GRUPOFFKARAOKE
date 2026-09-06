@@ -484,7 +484,7 @@ def render():
                 box-shadow: 0 10px 30px rgba(0,0,0,0.8);
                 margin-top: 1rem;
                 margin-bottom: 1rem;
-            }
+            }}
             div[data-baseweb="input"] input {{
                 min-height: 32px !important;
                 height: 34px !important;
@@ -505,7 +505,6 @@ def render():
                 background-color: #0d0d13 !important;
                 color: #ffffff !important;
             }}
-            /* Estilo dos botões de submissão com gradiente amarelo */
             .stButton button[kind="primary"], div.stFormSubmitButton button {{
                 background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
                 color: #000000 !important;
@@ -522,7 +521,6 @@ def render():
             }}
         </style>
 
-        <!-- CABEÇALHO DO TOPO -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px;">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <img src="{LINK_LOGO}" style="width: 140px; border-radius: 4px; display: block;" />
@@ -541,7 +539,6 @@ def render():
         unsafe_allow_html=True,
     )
 
-    # SELETOR DE MODO (CARTÕES LADO A LADO)
     modo_acesso = st.radio(
         "Modo de Acesso",
         ["Novo Registo", "Entrar com Sessão Ativa"],
@@ -560,7 +557,6 @@ def render():
                 unsafe_allow_html=True,
             )
 
-            # 2 Colunas para os campos de entrada (como na imagem 2)
             c1, c2 = st.columns(2, gap="medium")
             
             with c1:
@@ -667,7 +663,6 @@ def render():
                 else:
                     st.error("Preencha o Nome e o Telefone para entrar.")
 
-    # RODAPÉ INFORMATIVO IGUAL À SEGUNDA IMAGEM
     st.markdown(
         """
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 15px; font-size: 10px; color: #a1a1aa; flex-wrap: wrap; gap: 10px;">
