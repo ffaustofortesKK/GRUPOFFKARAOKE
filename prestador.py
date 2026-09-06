@@ -39,7 +39,7 @@ def render():
             st.session_state.estado_pedido = "pendente"
 
     # =========================================================================
-    # 3. SE ESTIVER PENDENTE: BLOQUEIO COM ATUALIZAÇÃO AUTOMÁTICA (POLLING)
+    # 3. SE ESTIVER PENDENTE: BLOQUEIO COM ANIMAÇÃO DE 5 BOLINHAS E POLLING
     # =========================================================================
     if st.session_state.pedido_submetido and st.session_state.estado_pedido == "pendente":
         
@@ -62,19 +62,50 @@ def render():
                 header[data-testid="stHeader"] { background-color: transparent !important; }
                 .block-container {
                     max-width: 600px !important;
-                    padding-top: 5rem !important;
+                    padding-top: 4rem !important;
                     background-color: #000000 !important;
                 }
+                @keyframes pulse-dot {
+                    0%, 100% { transform: scale(0.4); opacity: 0.3; }
+                    50% { transform: scale(1.2); opacity: 1; }
+                }
+                .dot-container {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    gap: 12px;
+                    margin: 25px 0 15px 0;
+                }
+                .dot {
+                    width: 16px;
+                    height: 16px;
+                    border-radius: 50%;
+                    animation: pulse-dot 1.4s infinite ease-in-out both;
+                }
+                .dot:nth-child(1) { background-color: #f59e0b; animation-delay: -0.32s; }
+                .dot:nth-child(2) { background-color: #ec4899; animation-delay: -0.16s; }
+                .dot:nth-child(3) { background-color: #8b5cf6; animation-delay: 0s; }
+                .dot:nth-child(4) { background-color: #3b82f6; animation-delay: 0.16s; }
+                .dot:nth-child(5) { background-color: #10b981; animation-delay: 0.32s; }
             </style>
-            <div style="background-color: #050507; border: 1px solid #3b2c60; padding: 25px; text-align: center; border-radius: 8px; margin: auto;">
-                <div style="font-size: 32px; margin-bottom: 10px;">⏳</div>
-                <h3 style="color: #ffffff; font-size: 18px; margin-bottom: 8px;">Aguardando Aprovação</h3>
-                <p style="color: #d4d4d8; font-size: 12px; margin-bottom: 15px;">O seu registo está a aguardar validação do Administrador. A tela abrirá automaticamente assim que for aprovado.</p>
+            <div style="background-color: #050507; border: 1px solid #3b2c60; padding: 30px; text-align: center; border-radius: 10px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
+                <div style="font-size: 36px; margin-bottom: 10px;">⏳</div>
+                <h3 style="color: #ffffff; font-size: 20px; margin-bottom: 8px; font-weight: 900;">Aguardando Aprovação</h3>
+                <p style="color: #d4d4d8; font-size: 13px; margin-bottom: 10px; line-height: 1.4;">O seu registo está a aguardar validação do Administrador. A tela abrirá automaticamente assim que for aprovado.</p>
+                
+                <div class="dot-container">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
         
+        st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
         if st.button("🚪 Terminar Sessão / Voltar", use_container_width=True):
             st.session_state.pedido_submetido = False
             st.session_state.token_prestador = None
@@ -450,7 +481,7 @@ def render():
         return
 
     # =========================================================================
-    # 🎨 6. TELA DE REGISTO / LOGIN (COMPACTA - SEM SCROLL + LOGO +40%)
+    # 🎨 6. TELA DE REGISTO / LOGIN (COMPACTA - LOGO +40% CENTRALIZADA)
     # =========================================================================
     st.markdown(
         f"""
@@ -511,24 +542,22 @@ def render():
                 background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
                 color: #000000 !important;
             }}
-            /* Estilização para deixar o texto do radio em Negrito e Branco */
-            div[data-testid="stRadio"] label p {{
+            /* Estilização para deixar as opções do rádio em Negrito e Branco */
+            div[data-baseweb="radio"] label div p {{
                 color: #ffffff !important;
                 font-weight: bold !important;
+                font-size: 12px !important;
             }}
         </style>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 6px;">
-            <div style="display: flex; align-items: center;">
-                <img src="{LINK_LOGO}" style="width: 196px; border-radius: 4px; display: block;" />
+        <div style="text-align: center; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;">
+            <div style="display: inline-block;">
+                <img src="{LINK_LOGO}" style="width: 274px; border-radius: 4px; display: block; margin: auto;" />
             </div>
-            <div style="text-align: center;">
-                <div style="width: 32px; height: 32px; background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.5); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #c084fc; font-size: 14px; margin: auto;">👤</div>
-                <div style="color: #ffffff; font-size: 9px; margin-top: 1px; font-weight: bold;">PORTAL DO PRESTADOR</div>
-            </div>
+            <div style="color: #ffffff; font-size: 10px; margin-top: 4px; font-weight: bold; letter-spacing: 1px;">PORTAL DO PRESTADOR</div>
         </div>
 
-        <div style="text-align: center; margin-bottom: 8px;">
+        <div style="text-align: center; margin-bottom: 6px;">
             <h1 style="color: #eab308; font-size: 18px; font-weight: 900; margin-bottom: 2px; text-shadow: 0 2px 10px rgba(234,179,8,0.2);">ÁREA DO PRESTADOR</h1>
             <p style="color: #a1a1aa; font-size: 10px; margin: 0;">Registe-se ou entre com a sua sessão ativa.</p>
         </div>
@@ -665,8 +694,8 @@ def render():
                 <div style="font-size: 13.5px; color: #a1a1aa; line-height: 1.2;"><b style="color: #ffffff; font-size: 14px;">RÁPIDO E SEGURO</b><br>O seu pedido é processado com total segurança.</div>
             </div>
             <div style="flex: 1; min-width: 220px; background-color: #0b0b0f; border: 1px solid #27272a; border-radius: 50px; padding: 6px 12px; display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 22px; color: #c084fc;">⏰</span>
-                <div style="font-size: 13.5px; color: #a1a1aa; line-height: 1.2;"><b style="color: #ffffff; font-size: 14px;">ATENDIMENTO VIA WHATSAPP</b><br>921205050/955099159 Para qualquer esclarecimento.</div>
+                <span style="font-size: 22px; color: #22c55e;">💬</span>
+                <div style="font-size: 13.5px; color: #a1a1aa; line-height: 1.2;"><b style="color: #ffffff; font-size: 14px;">ATENDIMENTO VIA WHATSAPP</b><br>921204050 / 955099159</div>
             </div>
             <div style="flex: 1; min-width: 220px; background-color: #0b0b0f; border: 1px solid #27272a; border-radius: 50px; padding: 6px 12px; display: flex; align-items: center; gap: 10px;">
                 <span style="font-size: 22px; color: #eab308;">🎵</span>
