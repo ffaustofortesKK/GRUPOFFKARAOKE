@@ -190,9 +190,21 @@ def render():
             unsafe_allow_html=True,
         )
         
+        # COLUNAS DO PAINEL PRINCIPAL (Lateral Esquerda + Conteúdo Principal)
         col_lateral, col_principal = st.columns([1, 2.9])
 
         with col_lateral:
+            # 1. LOGOTIPO NO TOPO ESQUERDO
+            st.markdown(
+                f"""
+                <div style="text-align: center; margin-top: 2px; margin-bottom: 6px;">
+                    <img src="{LINK_LOGO}" style="max-width: 100%; width: 130px; border-radius: 4px;" />
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+            # 2. CRONÓMETRO / TEMPO RESTANTE
             @st.fragment(run_every=3)
             def renderizar_relogio_topo():
                 p_atual = None
@@ -231,18 +243,19 @@ def render():
 
             renderizar_relogio_topo()
 
+            # 3. CARTÃO DO PRESTADOR
             nome_prestador_txt = prestador_atual.get("nome", "Prestador") if prestador_atual else "Prestador"
             estabelecimento_txt = prestador_atual.get("estabelecimento", "") if prestador_atual else ""
             
             st.markdown(
                 f"""
-                <div style="background-color: #0d0d10; border: 1px solid #8b5cf6; padding: 10px 10px; border-radius: 4px; margin-bottom: 6px;">
+                <div style="background-color: #0d0d10; border: 1px solid #8b5cf6; padding: 8px 10px; border-radius: 4px; margin-bottom: 6px;">
                     <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 24px;">🎙️</span>
+                        <span style="font-size: 20px;">🎙️</span>
                         <div>
-                            <div style="color: #c084fc; font-size: 9px; font-weight: bold;">PRESTADOR</div>
-                            <div style="color: #ffffff; font-size: 24px; font-weight: bold; line-height: 1.1;">{nome_prestador_txt}</div>
-                            <div style="color: #a1a1aa; font-size: 10px;">{estabelecimento_txt}</div>
+                            <div style="color: #c084fc; font-size: 8px; font-weight: bold;">PRESTADOR</div>
+                            <div style="color: #ffffff; font-size: 16px; font-weight: bold; line-height: 1.1;">{nome_prestador_txt}</div>
+                            <div style="color: #a1a1aa; font-size: 9px;">{estabelecimento_txt}</div>
                         </div>
                     </div>
                 </div>
@@ -250,20 +263,8 @@ def render():
                 unsafe_allow_html=True,
             )
 
-            # LOGOTIPO DE VOLTA NA COLUNA LATERAL
-            st.markdown(
-                f"""
-                <div style="text-align: center; margin-top: 5px; margin-bottom: 6px;">
-                    <img src="{LINK_LOGO}" style="max-width: 100%; width: 140px; border-radius: 4px;" />
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
-        # BARRA LATERAL DO STREAMLIT (CONFIGURAÇÕES E VÍDEO)
-        with st.sidebar:
-            st.markdown("---")
-            st.markdown('<div style="color: #c084fc; font-size: 11px; font-weight: bold; margin-bottom: 3px;">🎬 VÍDEO CLIPE DE FUNDO (TV)</div>', unsafe_allow_html=True)
+            # 4. GESTÃO DO VÍDEO CLIPE DE FUNDO (TV) NA COLUNA ESQUERDA
+            st.markdown('<div style="color: #c084fc; font-size: 10px; font-weight: bold; margin-bottom: 3px; margin-top: 4px;">🎬 VÍDEO CLIPE DE FUNDO (TV)</div>', unsafe_allow_html=True)
             
             link_atual = prestador_atual.get("video_fundo", "") if prestador_atual else ""
             novo_video_fundo = st.text_input(
@@ -292,24 +293,16 @@ def render():
                     time.sleep(0.3)
                     st.rerun()
 
-            # LEITOR DE VÍDEO CLIPE NA BARRA LATERAL (CASO HAJA LINK)
-            if link_atual:
-                st.markdown('<div style="font-size: 10px; color: #a1a1aa; margin-top: 6px; margin-bottom: 2px;">Pré-visualização do Vídeo:</div>', unsafe_allow_html=True)
-                try:
-                    st.video(link_atual)
-                except Exception:
-                    pass
-
             st.markdown("---")
+            
+            # 5. NOTA INFORMATIVA NA COLUNA ESQUERDA
             st.markdown("""
-            <div style="font-size: 11px; color: #a1a1aa; background: rgba(24, 24, 27, 0.6); padding: 10px; border-radius: 6px; border: 1px solid #3f3f46;">
-                <b style="color: #eab308;">📌 NOTAS INFORMATIVAS:</b><br>
+            <div style="font-size: 10px; color: #a1a1aa; background: rgba(24, 24, 27, 0.6); padding: 8px; border-radius: 4px; border: 1px solid #3f3f46; margin-bottom: 8px;">
+                <b style="color: #eab308;">📌 NOTAS IMPORTANTES:</b><br>
                 • <b>Código QR:</b> O cliente deve apontar a câmara do telemóvel para fazer o seu registo e pedido de música.<br>
                 • <b>Tela (TV):</b> Abra o link/botão "TV" num projetor ou ecrã secundário para exibir o vídeo e a playlist.
             </div>
             """, unsafe_allow_html=True)
-            
-            st.markdown("---")
 
             if st.button("🚪 Sair", use_container_width=True):
                 st.session_state.pedido_submetido = False
@@ -318,6 +311,7 @@ def render():
                 st.session_state.aprovado = False
                 st.rerun()
 
+        # COLUNA PRINCIPAL DIREITA
         with col_principal:
             col_esq, col_dir = st.columns([1.4, 1])
 
