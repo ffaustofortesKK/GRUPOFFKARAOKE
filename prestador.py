@@ -195,18 +195,18 @@ def render():
         with col_lateral:
             @st.fragment(run_every=3)
             def renderizar_relogio_topo():
-                nonlocal prestador_atual
+                p_atual = None
                 if st.session_state.token_prestador:
                     prestadores = obter_prestadores() or []
-                    prestador_atual = next(
+                    p_atual = next(
                         (p for p in prestadores if p.get("token") == st.session_state.token_prestador),
                         None,
                     )
 
                 segundos_restantes = 7200
-                if prestador_atual:
-                    segundos_contrato_inicial = prestador_atual.get("segundos_restantes", 7200)
-                    data_pedido_str = prestador_atual.get("data_pedido", "")
+                if p_atual:
+                    segundos_contrato_inicial = p_atual.get("segundos_restantes", 7200)
+                    data_pedido_str = p_atual.get("data_pedido", "")
                     try:
                         dt_pedido = datetime.strptime(data_pedido_str, "%d/%m/%Y %H:%M")
                         decorrido = int((datetime.now() - dt_pedido).total_seconds())
@@ -229,96 +229,86 @@ def render():
                     unsafe_allow_html=True,
                 )
 
-            # Elementos fora da barra lateral (ecrã principal / topo)
-    renderizar_relogio_topo()
+            renderizar_relogio_topo()
 
-    nome_prestador_txt = prestador_atual.get("nome", "Prestador") if prestador_atual else "Prestador"
-    estabelecimento_txt = prestador_atual.get("estabelecimento", "") if prestador_atual else ""
-    video_fundo_atual = prestador_atual.get("video_fundo", "") if prestador_atual else ""
-
-    st.markdown(
-        f"""
-        <div style="background-color: #0d0d10; border: 1px solid #8b5cf6; padding: 10px 10px; border-radius: 4px; margin-bottom: 6px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 24px;">🎙️</span>
-                <div>
-                    <div style="color: #c084fc; font-size: 9px; font-weight: bold;">PRESTADOR</div>
-                    <div style="color: #ffffff; font-size: 24px; font-weight: bold; line-height: 1.1;">{nome_prestador_txt}</div>
-                    <div style="color: #a1a1aa; font-size: 10px;">{estabelecimento_txt}</div>
+        nome_prestador_txt = prestador_atual.get("nome", "Prestador") if prestador_atual else "Prestador"
+        estabelecimento_txt = prestador_atual.get("estabelecimento", "") if prestador_atual else ""
+        
+        st.markdown(
+            f"""
+            <div style="background-color: #0d0d10; border: 1px solid #8b5cf6; padding: 10px 10px; border-radius: 4px; margin-bottom: 6px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 24px;">🎙️</span>
+                    <div>
+                        <div style="color: #c084fc; font-size: 9px; font-weight: bold;">PRESTADOR</div>
+                        <div style="color: #ffffff; font-size: 24px; font-weight: bold; line-height: 1.1;">{nome_prestador_txt}</div>
+                        <div style="color: #a1a1aa; font-size: 10px;">{estabelecimento_txt}</div>
+                    </div>
                 </div>
             </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    # LOGOTIPO
-    st.markdown(
-        f"""
-        <div style="text-align: center; margin-top: 5px; margin-bottom: 6px;">
-            <img src="{LINK_LOGO}" style="max-width: 100%; width: 140px; border-radius: 4px;" />
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    # BARRA LATERAL (Tudo o que é configuração, vídeo, notas e botão sair fica aqui dentro)
-    with st.sidebar:
-        st.markdown("---")
-        
-        # SECÇÃO DE CONFIGURAÇÃO DO VÍDEO CLIPE DE FUNDO
-        st.markdown('<div style="color: #c084fc; font-size: 11px; font-weight: bold; margin-bottom: 3px;">🎬 VÍDEO CLIPE DE FUNDO (TV)</div>', unsafe_allow_html=True)
-        
-        link_atual = prestador_atual.get("video_fundo", "") if prestador_atual else ""
-        novo_video_fundo = st.text_input(
-            "Vídeo Clipe de Fundo", 
-            value=link_atual, 
-            placeholder="Cole o link do vídeo...", 
-            label_visibility="collapsed", 
-            key="input_atualizar_video"
+            """,
+            unsafe_allow_html=True,
         )
-        
-        if st.button("💾 Guardar Vídeo", use_container_width=True):
-            if prestador_atual:
-                link_limpo = novo_video_fundo.strip()
-                prestador_atual["video_fundo"] = link_limpo
-                
-                # 1. Guarda na base de dados
-                guardar_prestador(prestador_atual)
-                
-                # 2. Sincroniza na sessão global para a TV apanhar de imediato
-                token_p = str(prestador_atual.get("token", ""))
-                st.session_state[f"video_global_{token_p}"] = link_limpo
-                st.session_state["video_global_atual"] = link_limpo
-                
-                # 3. Limpa cache
-                if hasattr(st, "cache_data"):
-                    st.cache_data.clear()
+
+        # LOGOTIPO
+        st.markdown(
+            f"""
+            <div style="text-align: center; margin-top: 5px; margin-bottom: 6px;">
+                <img src="{LINK_LOGO}" style="max-width: 100%; width: 140px; border-radius: 4px;" />
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        # BARRA LATERAL
+        with st.sidebar:
+            st.markdown("---")
+            st.markdown('<div style="color: #c084fc; font-size: 11px; font-weight: bold; margin-bottom: 3px;">🎬 VÍDEO CLIPE DE FUNDO (TV)</div>', unsafe_allow_html=True)
+            
+            link_atual = prestador_atual.get("video_fundo", "") if prestador_atual else ""
+            novo_video_fundo = st.text_input(
+                "Vídeo Clipe de Fundo", 
+                value=link_atual, 
+                placeholder="Cole o link do vídeo...", 
+                label_visibility="collapsed", 
+                key="input_atualizar_video"
+            )
+            
+            if st.button("💾 Guardar Vídeo", use_container_width=True):
+                if prestador_atual:
+                    link_limpo = novo_video_fundo.strip()
+                    prestador_atual["video_fundo"] = link_limpo
                     
-                st.success("Vídeo atualizado com sucesso!")
-                time.sleep(0.3)
+                    guardar_prestador(prestador_atual)
+                    
+                    token_p = str(prestador_atual.get("token", ""))
+                    st.session_state[f"video_global_{token_p}"] = link_limpo
+                    st.session_state["video_global_atual"] = link_limpo
+                    
+                    if hasattr(st, "cache_data"):
+                        st.cache_data.clear()
+                        
+                    st.success("Vídeo atualizado com sucesso!")
+                    time.sleep(0.3)
+                    st.rerun()
+
+            st.markdown("---")
+            st.markdown("""
+            <div style="font-size: 11px; color: #a1a1aa; background: rgba(24, 24, 27, 0.6); padding: 10px; border-radius: 6px; border: 1px solid #3f3f46;">
+                <b style="color: #eab308;">📌 NOTAS IMPORTANTES:</b><br>
+                • <b>Código QR:</b> O cliente deve apontar a câmara do telemóvel para fazer o seu registo e pedido de música.<br>
+                • <b>Tela (TV):</b> Abra o link/botão "TV" num projetor ou ecrã secundário para exibir o vídeo e a playlist.
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown("---")
+
+            if st.button("🚪 Sair", use_container_width=True):
+                st.session_state.pedido_submetido = False
+                st.session_state.token_prestador = None
+                st.session_state.estado_pedido = "pendente"
+                st.session_state.aprovado = False
                 st.rerun()
-
-        st.markdown("---")
-
-        # NOTAS IMPORTANTES
-        st.markdown("""
-        <div style="font-size: 11px; color: #a1a1aa; background: rgba(24, 24, 27, 0.6); padding: 10px; border-radius: 6px; border: 1px solid #3f3f46;">
-            <b style="color: #eab308;">📌 NOTAS IMPORTANTES:</b><br>
-            • <b>Código QR:</b> O cliente deve apontar a câmara do telemóvel para fazer o seu registo e pedido de música.<br>
-            • <b>Tela (TV):</b> Abra o link/botão "TV" num projetor ou ecrã secundário para exibir o vídeo e a playlist.
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown("---")
-
-        # BOTÃO SAIR (Dentro da barra lateral)
-        if st.button("🚪 Sair", use_container_width=True):
-            st.session_state.pedido_submetido = False
-            st.session_state.token_prestador = None
-            st.session_state.estado_pedido = "pendente"
-            st.session_state.aprovado = False
-            st.rerun()
 
         with col_principal:
             col_esq, col_dir = st.columns([1.4, 1])
@@ -330,7 +320,7 @@ def render():
                     delays = [0.0, 0.2, 0.4, 0.1, 0.5, 0.3, 0.6, 0.15, 0.35, 0.45]
                     for i, d in enumerate(delays):
                         bars_html += f'<div class="eq-bar" style="animation-delay: {d}s; height: {8 + (i % 4) * 2}px;"></div>'
-
+                    
                     st.markdown(
                         f"""
                             <div class="box-container">
@@ -376,7 +366,6 @@ def render():
                     lista_pedidos = [p for p in todos_pedidos if p.get("status", "pendente") == "pendente" and (str(p.get("token_prestador", "")) in ["", "None", token_ativo])]
                     total_pedidos = len(lista_pedidos)
 
-                    # INÍCIO DA CAIXA CONTIDA (COM SCROLL INTERNO PARA NÃO SAIR DO RETÂNGULO)
                     st.markdown(
                         f"""
                             <div class="box-container" style="max-height: 380px; min-height: 250px; overflow-y: auto;">
@@ -393,7 +382,6 @@ def render():
                             cantor = pedido.get("cantor", "Convidado")
                             pedido_id = pedido.get("id") or pedido.get("timestamp") or idx
 
-                            # CADA ITEM É RENDERIZADO DENTRO DA CAIXA DA FILA DE PEDIDOS
                             cols_item = st.columns([2.4, 0.7, 0.7, 0.7])
                             with cols_item[0]:
                                 st.markdown(
@@ -408,12 +396,10 @@ def render():
                             with cols_item[1]:
                                 if idx > 0:
                                     if st.button("⬆", key=f"up_{pedido_id}", use_container_width=True):
-                                        # Lógica para subir na ordem (trocar timestamps ou prioridade)
                                         pass
                             with cols_item[2]:
                                 if idx < total_pedidos - 1:
                                     if st.button("⬇", key=f"down_{pedido_id}", use_container_width=True):
-                                        # Lógica para descer na ordem
                                         pass
                             with cols_item[3]:
                                 if st.button("✕", key=f"del_{pedido_id}", use_container_width=True):
@@ -600,7 +586,7 @@ def render():
                         if "1 Hora" in contrato
                         else (7200 if "2 Horas" in contrato else 10800)
                     )
-
+                    
                     novo_prestador = {
                         "nome": nome.strip(),
                         "telefone": telefone.strip(),
@@ -652,23 +638,20 @@ def render():
 
             if login_submitted:
                 if login_nome.strip() and login_telefone.strip():
-                    prestadores = obter_prestadores() or []
+                    prestadores_db = obter_prestadores() or []
                     prestador_encontrado = next(
-                        (
-                            p for p in prestadores
-                            if p.get("nome", "").strip().lower() == login_nome.strip().lower()
-                            and p.get("telefone", "").strip() == login_telefone.strip()
-                        ),
+                        (p for p in prestadores_db if p.get("nome", "").strip().lower() == login_nome.strip().lower() and str(p.get("telefone", "")).strip() == login_telefone.strip()),
                         None
                     )
-
                     if prestador_encontrado:
-                        st.session_state.pedido_submetido = True
                         st.session_state.token_prestador = prestador_encontrado.get("token")
+                        st.session_state.pedido_submetido = True
                         st.session_state.estado_pedido = prestador_encontrado.get("status_str", "pendente")
                         st.session_state.aprovado = (prestador_encontrado.get("status_str") == "aprovado")
+                        st.success("Login efetuado com sucesso!")
+                        time.sleep(0.3)
                         st.rerun()
                     else:
-                        st.error("Prestador não encontrado com estes dados ou ainda não registado.")
+                        st.error("Prestador não encontrado com este Nome e Telefone.")
                 else:
                     st.error("Preencha o Nome e o Telefone para entrar.")
