@@ -55,20 +55,22 @@ def render():
 
         nome_prestador = prestador_ativo.get("nome", "Desconhecido") if prestador_ativo else "Nenhum"
 
-        # Extração limpa do ID do YouTube (suporta links normais e youtu.be)
+        # Extração limpa do ID do YouTube (com mute=1 para forçar o autoplay automático)
         embed_url = ""
         if video_fundo:
             cleaned_url = video_fundo.strip()
             if "youtu.be/" in cleaned_url:
                 try:
                     video_id = cleaned_url.split("youtu.be/")[1].split("?")[0].split("&")[0]
-                    embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=0&controls=0&loop=1&playlist={video_id}"
+                    # ALTERADO DE mute=0 PARA mute=1
+                    embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=1&controls=0&loop=1&playlist={video_id}"
                 except:
                     pass
             elif "watch?v=" in cleaned_url:
                 try:
                     video_id = cleaned_url.split("watch?v=")[1].split("&")[0]
-                    embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=0&controls=0&loop=1&playlist={video_id}"
+                    # ALTERADO DE mute=0 PARA mute=1
+                    embed_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&mute=1&controls=0&loop=1&playlist={video_id}"
                 except:
                     pass
 
@@ -192,7 +194,7 @@ def render():
             }}
         </style>
         </head>
-        <body>
+        <body onclick="document.body.click();">
             {conteudo_fundo}
 
             <div class="playlist-overlay">
@@ -203,6 +205,14 @@ def render():
                     {itens_html}
                 </div>
             </div>
+
+            <script>
+                // Força um clique programático no corpo da página assim que o componente carrega para desbloquear o autoplay do browser
+                setTimeout(function() {{
+                    var ev = new MouseEvent('click', {{ 'view': window, 'bubbles': true, 'cancelable': true }});
+                    document.body.dispatchEvent(ev);
+                }}, 500);
+            </script>
         </body>
         </html>
         """
