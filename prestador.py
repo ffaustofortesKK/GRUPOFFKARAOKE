@@ -261,30 +261,17 @@ def render():
                 unsafe_allow_html=True,
             )
 
-         # SECÇÃO DE CONFIGURAÇÃO DO VÍDEO CLIPE NO PAINEL LATERAL
-with st.container():
-    st.markdown('<div style="color: #c084fc; font-size: 10px; font-weight: bold; margin-bottom: 3px;">🎬 VÍDEO CLIPE DE FUNDO (TV)</div>', unsafe_allow_html=True)
-    
-    # Garantir que o input reflete o valor atual da BD ou limpa o estado de cache antigo
-    novo_video_fundo = st.text_input(
-        "Vídeo Clipe de Fundo", 
-        value=prestador_atual.get("video_fundo", ""), 
-        placeholder="Cole o link do vídeo...", 
-        label_visibility="collapsed", 
-        key="input_atualizar_video"
-    )
-    
-    if st.button("💾 Guardar Vídeo", use_container_width=True):
-        if prestador_atual:
-            prestador_atual["video_fundo"] = novo_video_fundo.strip()
-            guardar_prestador(prestador_atual)
-            
-            # Forçar atualização imediata da sessão para propagar para a tela da TV
-            st.session_state["video_fundo_atual"] = novo_video_fundo.strip()
-            
-            st.success("Vídeo de fundo atualizado com sucesso!")
-            time.sleep(0.3)
-            st.rerun()
+          # SECÇÃO DE CONFIGURAÇÃO DO VÍDEO CLIPE NO PAINEL LATERAL
+            with st.container():
+                st.markdown('<div style="color: #c084fc; font-size: 10px; font-weight: bold; margin-bottom: 3px;">🎬 VÍDEO CLIPE DE FUNDO (TV)</div>', unsafe_allow_html=True)
+                novo_video_fundo = st.text_input("Vídeo Clipe de Fundo", value=video_fundo_atual, placeholder="Cole o link do vídeo...", label_visibility="collapsed", key="input_atualizar_video")
+                if st.button("💾 Guardar Vídeo", use_container_width=True):
+                    if prestador_atual:
+                        prestador_atual["video_fundo"] = novo_video_fundo.strip()
+                        guardar_prestador(prestador_atual)
+                        st.success("Vídeo de fundo atualizado com sucesso!")
+                        time.sleep(0.5)
+                        st.rerun()
 
             # NOTA INFORMATIVA ATUALIZADA
             st.markdown(
