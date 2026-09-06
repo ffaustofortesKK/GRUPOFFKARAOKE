@@ -25,6 +25,7 @@ def render():
     token_str = str(token) if token else ""
 
     # Fragmento unificado de alta responsividade (atualiza a cada 2 segundos)
+
    @st.fragment(run_every=2)
     def renderizar_tela_unificada():
         try:
